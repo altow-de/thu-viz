@@ -1,6 +1,6 @@
 import { NavigationPage } from "@/frontend/constants";
 
-interface NavProps {
+export interface NavProps {
   selectedNav: number;
   setSelectedNav: (selected: number) => void;
 }

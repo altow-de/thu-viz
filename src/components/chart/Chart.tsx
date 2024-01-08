@@ -51,15 +51,6 @@ const Chart = ({ width, height, title }: LineChartProps) => {
     const svgElement = d3.select(axesRef.current);
     // remove everything from previous data rendering
     svgElement.selectAll("*").remove();
-
-    const brushXScale = d3
-      .scaleLinear()
-      .domain([0, data.length - 1])
-      .range([0, boundsWidth]);
-    const brushYScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(data, (d) => d.y) ?? 0])
-      .range([boundsHeight, 0]);
     // x axis generator
     const xAxisGenerator = d3.axisBottom(xScale);
     const xAxis = svgElement
@@ -69,10 +60,6 @@ const Chart = ({ width, height, title }: LineChartProps) => {
       .call((g) => g.select(".domain").remove())
       .call((g) => g.selectAll(".tick line").attr("stroke-opacity", 0));
 
-    areaBuilder = areaBuilder
-      .x((d) => xScale(d.x))
-      .y0(yScale(0))
-      .y1((d) => yScale(d.y));
     // y axis generator
     const yAxisGenerator = d3.axisLeft(yScale);
     const yAxis = svgElement
@@ -131,7 +118,7 @@ const Chart = ({ width, height, title }: LineChartProps) => {
         if (!event.selection) return; // Ignore empty selections.
 
         // Get the selected range.
-        const [x0, x1] = event.selection.map(brushXScale.invert);
+        const [x0, x1] = event.selection.map(xScale.invert);
 
         // Update the scales with the new domain.
         xScale.domain([x0, x1]);

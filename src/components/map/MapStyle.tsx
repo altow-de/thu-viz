@@ -1,20 +1,18 @@
 import { MapStyles } from "@/frontend/constants";
-import React from "react";
-import Checkbox from "../basic/Checkbox";
+import React, { useState } from "react";
+import RadioButton from "../basic/RadioButton";
 
-interface MapStyleProps {
+export interface MapStyleProps {
   selectedStyle: string;
+  setSelectedStyle: (selectedStyle: string) => void;
 }
 
-const MapStyle = () => {
+const MapStyle = ({ selectedStyle, setSelectedStyle }: MapStyleProps) => {
   return (
-    <div className="absolute bg-white w-40 h-auto right-0 top-4 z-10 rounded-l-lg p-2 text-sm">
+    <div className="absolute bg-white w-auto h-auto right-0 top-4 z-10 rounded-l-lg p-2 text-sm flex shadow-md flex-col">
       {Object.keys(MapStyles).map((key) => {
         return (
-          <div className="w-full">
-            <Checkbox />
-            {MapStyles[key]}
-          </div>
+          <RadioButton selectedStyle={selectedStyle} key={key} setSelectedStyle={setSelectedStyle} mapStyleKey={key} />
         );
       })}
     </div>

@@ -10,6 +10,7 @@
     "postinstall": "kysely-codegen --env-file ./.env.local --out-file ./src/backend/generated-db.ts"
   },
   "dependencies": {
+    "d3": "^7.8.5",
     "kysely": "^0.27.1",
     "maplibre-gl": "^3.6.2",
     "mysql2": "^3.6.5",
@@ -18,6 +19,7 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

@@ -23,7 +23,7 @@ const RadioButton = ({ mapStyleKey, selectedStyle, setSelectedStyle }: RadioButt
           </svg>
         </span>
       </label>
-      <label className="mt-px font-light text-danube-700 cursor-pointer select-none" htmlFor={"radio-" + mapStyleKey}>
+      <label className="mt-px text-danube-700 cursor-pointer select-none" htmlFor={"radio-" + mapStyleKey}>
         {MapStyles[mapStyleKey]}
       </label>
     </div>

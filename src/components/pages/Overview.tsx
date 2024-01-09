@@ -5,7 +5,7 @@ import CardWraper from "../wrapper/CardWrapper";
 const Overview = () => {
   return (
     <CardWraper text={"Position of Deployments (Startposition)"} hasMap={true}>
-      <OceanMap type={MapType.route} />
+      <OceanMap type={MapType.point} />
     </CardWraper>
   );
 };

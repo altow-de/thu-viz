@@ -27,6 +27,7 @@ const config: Config = {
       transparent: "transparent",
       red: "#963748",
       black: "#000000",
+      gray: "#8c9192",
     },
   },
   plugins: [],

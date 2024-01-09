@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as d3 from "d3";
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
@@ -163,18 +163,8 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
             <stop offset="100%" stopColor="white" />
           </linearGradient>
         </defs>
-        <g
-          width={boundsWidth}
-          height={boundsHeight}
-          transform={`translate(${[MARGIN.left, MARGIN.top].join(",")})`}
-        >
-          <path
-            d={areaPath}
-            opacity={1}
-            stroke="none"
-            fill="url(#area-gradient)"
-            strokeWidth={2}
-          />
+        <g width={boundsWidth} height={boundsHeight} transform={`translate(${[MARGIN.left, MARGIN.top].join(",")})`}>
+          <path d={areaPath} opacity={1} stroke="none" fill="url(#area-gradient)" strokeWidth={2} />
           <path d={linePath} stroke="steelblue" fill="none" strokeWidth={2} />
         </g>
         <g

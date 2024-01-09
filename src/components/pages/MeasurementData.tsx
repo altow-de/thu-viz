@@ -8,7 +8,7 @@ const MeasurementData = () => {
         <Chart
           width={300}
           height={300}
-          tickValue={4}
+          tickValue={100}
           x={"time"}
           y={"pressure"}
           title={"Pressure(mbar)"}
@@ -16,7 +16,7 @@ const MeasurementData = () => {
         <Chart
           width={300}
           height={300}
-          tickValue={10}
+          tickValue={40}
           x={"time"}
           y={"temperature"}
           title={"Temperature(C)"}
@@ -24,7 +24,7 @@ const MeasurementData = () => {
         <Chart
           width={300}
           height={300}
-          tickValue={14}
+          tickValue={20}
           x={"time"}
           y={"conductivity"}
           title={"Conductivity(ms/cm)"}

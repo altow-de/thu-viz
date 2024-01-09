@@ -17,8 +17,8 @@ const data: {
   { time: 6, pressure: 1409, temperature: 14.4, conductivity: 22 },
   { time: 7, pressure: 1023, temperature: 12.9, conductivity: 21 },
   { time: 8, pressure: 1234, temperature: 10.1, conductivity: 20 },
-  { time: 9, pressure: 1304, temperature: 11.4, conductivity: 24 },
-  { time: 10, pressure: 1498, temperature: 12.0, conductivity: 22 },
+  { time: 9, pressure: 1304, temperature: 11.4, conductivity: 14 },
+  { time: 10, pressure: 1498, temperature: 12.0, conductivity: 10 },
 ];
 
 type DataPoint = Record<string, number>;
@@ -58,7 +58,7 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
 
   useEffect(() => {
     const svgElement = d3.select(axesRef.current);
-    // remove everything from previous data rendering
+    // remove everything from previous rendering
     svgElement.selectAll("*").remove();
     // x axis generator
     const xAxisGenerator = d3.axisBottom(xScale);
@@ -70,7 +70,7 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
       .call((g) => g.selectAll(".tick line").attr("stroke-opacity", 0));
 
     // y axis generator
-    const yAxisGenerator = d3.axisLeft(yScale).ticks(tickValue);
+    const yAxisGenerator = d3.axisLeft(yScale).ticks(width / tickValue); //ticks
     svgElement
       .append("g")
       .call(yAxisGenerator)
@@ -84,7 +84,7 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
           .attr("stroke-opacity", 0.2)
           .attr("stroke-dasharray", 2)
       );
-    // axis names
+    //text anchors
     svgElement
       .append("text")
       .attr("text-anchor", "start")
@@ -116,6 +116,7 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
       .attr("x", 0)
       .attr("y", 0);
 
+    // brush
     const brush = d3
       .brushX()
       .extent([

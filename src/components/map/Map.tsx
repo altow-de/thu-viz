@@ -3,12 +3,13 @@ import { GeoJSONFeature, Map, MapGeoJSONFeature, MapMouseEvent, NavigationContro
 import "maplibre-gl/dist/maplibre-gl.css";
 import MapStyle from "./MapStyle";
 import { LayerZoom, MapStyles } from "@/frontend/constants";
+import { MapType } from "@/frontend/enum";
 
 interface OceanMapProps {
-  type: string;
+  type: MapType;
 }
 
-const OceanMap = ({ type = "route" }: OceanMapProps) => {
+const OceanMap = ({ type }: OceanMapProps) => {
   const mapContainer = useRef(null);
   const map = useRef<Map | null>(null);
   const [mapStyle, setMapStyle] = useState(Object.keys(MapStyles)[0]);
@@ -85,9 +86,16 @@ const OceanMap = ({ type = "route" }: OceanMapProps) => {
     if (!map.current?.getImage("circle")) {
       map.current?.loadImage("circle.png", (error, image) => {
         if (error || !image) throw error;
-
         if (!map.current?.getImage("circle")) {
           map.current?.addImage("circle", image);
+        }
+      });
+    }
+    if (!map.current?.getImage("location")) {
+      map.current?.loadImage("location-small.png", (error, image) => {
+        if (error || !image) throw error;
+        if (!map.current?.getImage("location")) {
+          map.current?.addImage("location", image);
         }
       });
     }
@@ -105,8 +113,16 @@ const OceanMap = ({ type = "route" }: OceanMapProps) => {
         tileSize: 256,
       });
     }
-    if (type === "route") {
+    if (type === MapType.route) {
       addRouteSource([
+        [12.08402, 54.1767],
+        [12.05402, 54.1867],
+        [11.00402, 54.2],
+        [11.50017, 54.77662],
+      ]);
+    }
+    if (type === MapType.point) {
+      addPointSource([
         [12.08402, 54.1767],
         [12.05402, 54.1867],
         [11.00402, 54.2],
@@ -115,20 +131,7 @@ const OceanMap = ({ type = "route" }: OceanMapProps) => {
     }
   };
 
-  const addRouteSource = (coordinates: number[][]) => {
-    if (!map?.current?.getSource("route-source")) {
-      map.current?.addSource("route-source", {
-        type: "geojson",
-        data: {
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "LineString",
-            coordinates: coordinates,
-          },
-        },
-      });
-    }
+  const addPointSource = (coordinates: number[][]) => {
     if (!map?.current?.getSource("route-point-source")) {
       const features = coordinates.map((coord) => {
         return {
@@ -149,6 +152,23 @@ const OceanMap = ({ type = "route" }: OceanMapProps) => {
     }
   };
 
+  const addRouteSource = (coordinates: number[][]) => {
+    if (!map?.current?.getSource("route-source")) {
+      map.current?.addSource("route-source", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "LineString",
+            coordinates: coordinates,
+          },
+        },
+      });
+    }
+    addPointSource(coordinates);
+  };
+
   const addRouteLayer = () => {
     //Route Layer
     if (!map.current?.getLayer("route") && map.current?.getSource("route-source")) {
@@ -167,6 +187,9 @@ const OceanMap = ({ type = "route" }: OceanMapProps) => {
         },
       });
     }
+    addPointLayer("circle");
+  };
+  const addPointLayer = (image: string) => {
     //Point Layer
     if (!map.current?.getLayer("route-point") && map.current?.getSource("route-point-source")) {
       map.current?.addLayer({
@@ -174,7 +197,7 @@ const OceanMap = ({ type = "route" }: OceanMapProps) => {
         type: "symbol",
         source: "route-point-source",
         layout: {
-          "icon-image": "circle",
+          "icon-image": image,
         },
       });
     }
@@ -195,10 +218,11 @@ const OceanMap = ({ type = "route" }: OceanMapProps) => {
           "raster-opacity": 0.8,
         },
       });
-    if (type === "route") {
+    if (type === MapType.route) {
       addRouteLayer();
     }
-    if (type === "marker") {
+    if (type === MapType.point) {
+      addPointLayer("location");
     }
   };
 

@@ -1,49 +1,58 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
-const data = [
-  { x: 0, y: 80 },
-  { x: 1, y: 90 },
-  { x: 2, y: 12 },
-  { x: 3, y: 34 },
-  { x: 4, y: 53 },
-  { x: 5, y: 52 },
-  { x: 6, y: 9 },
-  { x: 7, y: 18 },
-  { x: 8, y: 78 },
-  { x: 9, y: 28 },
-  { x: 10, y: 34 },
+const data: {
+  pressure: number;
+  time: number;
+  temperature: number;
+  conductivity: number;
+}[] = [
+  { time: 0, pressure: 1000, temperature: 10.4, conductivity: 20 },
+  { time: 1, pressure: 1200, temperature: 12.7, conductivity: 24 },
+  { time: 2, pressure: 1400, temperature: 13.2, conductivity: 26 },
+  { time: 3, pressure: 1324, temperature: 10.9, conductivity: 29 },
+  { time: 4, pressure: 1125, temperature: 11.3, conductivity: 30 },
+  { time: 5, pressure: 1627, temperature: 15.2, conductivity: 23 },
+  { time: 6, pressure: 1409, temperature: 14.4, conductivity: 22 },
+  { time: 7, pressure: 1023, temperature: 12.9, conductivity: 21 },
+  { time: 8, pressure: 1234, temperature: 10.1, conductivity: 20 },
+  { time: 9, pressure: 1304, temperature: 11.4, conductivity: 24 },
+  { time: 10, pressure: 1498, temperature: 12.0, conductivity: 22 },
 ];
 
-type DataPoint = { x: number; y: number };
-type LineChartProps = {
+type DataPoint = Record<string, number>;
+type ChartProps = {
   width: number;
   height: number;
   title: string;
+  tickValue: number;
+  x: string; // x and y props to define the key used from the data
+  y: string;
 };
 
-const Chart = ({ width, height, title }: LineChartProps) => {
-  // bounds = area inside the graph axis = calculated by substracting the margins
+const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
   const axesRef = useRef(null);
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   const boundsHeight = height - MARGIN.top - MARGIN.bottom;
 
   // Y axis
-  const [min, max] = d3.extent(data, (d) => d.y);
+  const [min, max] = d3.extent(data, (d: DataPoint) => d[y]);
   const yScale = useMemo(() => {
     return d3
       .scaleLinear()
       .domain([0, max || 0])
+      .nice()
       .range([boundsHeight, 0]);
   }, [data, height]);
 
   // X axis
-  const [xMin, xMax] = d3.extent(data, (d) => d.x);
+  const [xMin, xMax] = d3.extent(data, (d: DataPoint) => d[x]);
   const xScale = useMemo(() => {
     return d3
-      .scaleLinear()
+      .scaleLinear() // change to time scale when working with actual time data
       .domain([0, xMax || 0])
+      .nice()
       .range([0, boundsWidth]);
   }, [data, width]);
 
@@ -53,7 +62,7 @@ const Chart = ({ width, height, title }: LineChartProps) => {
     svgElement.selectAll("*").remove();
     // x axis generator
     const xAxisGenerator = d3.axisBottom(xScale);
-    const xAxis = svgElement
+    svgElement
       .append("g")
       .attr("transform", "translate(0," + boundsHeight + ")")
       .call(xAxisGenerator)
@@ -61,8 +70,8 @@ const Chart = ({ width, height, title }: LineChartProps) => {
       .call((g) => g.selectAll(".tick line").attr("stroke-opacity", 0));
 
     // y axis generator
-    const yAxisGenerator = d3.axisLeft(yScale);
-    const yAxis = svgElement
+    const yAxisGenerator = d3.axisLeft(yScale).ticks(tickValue);
+    svgElement
       .append("g")
       .call(yAxisGenerator)
       .call((g) => g.select(".domain").remove())
@@ -78,21 +87,20 @@ const Chart = ({ width, height, title }: LineChartProps) => {
     // axis names
     svgElement
       .append("text")
-      .attr("text-anchor", "end")
+      .attr("text-anchor", "start")
       .attr("y", -10)
-      .attr("x", -20)
-      .text("mbar") //name of the y axis
+      .attr("x", -22)
+      .text(y) //name of the y axis
       .attr("font-size", 10)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
 
-    // axis names
     svgElement
       .append("text")
       .attr("text-anchor", "start")
       .attr("y", boundsHeight)
       .attr("x", boundsWidth + 5)
-      .text("time") //name of the y axis
+      .text(x) //name of the x axis
       .attr("font-size", 10)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
@@ -115,22 +123,8 @@ const Chart = ({ width, height, title }: LineChartProps) => {
         [boundsWidth, boundsHeight],
       ])
       .on("end", (event) => {
-        if (!event.selection) return; // Ignore empty selections.
-
-        // Get the selected range.
-        const [x0, x1] = event.selection.map(xScale.invert);
-
-        // Update the scales with the new domain.
-        xScale.domain([x0, x1]);
-
-        // Redraw the graph with the updated scales.
-        svgElement.select(".area").attr(
-          "d",
-          areaBuilder.x((d) => xScale(d.x))
-        );
-
-        // Clear the brush selection.
-        svgElement.select<SVGGElement>(".brush").call(brush.move, null);
+        if (!event.selection) return; // ignore empty selections.
+        //code for zoom behavior
       });
 
     svgElement.append("g").call(brush);
@@ -139,9 +133,10 @@ const Chart = ({ width, height, title }: LineChartProps) => {
   // building area
   let areaBuilder = d3
     .area<DataPoint>()
-    .x((d) => xScale(d.x))
+    .x((d) => xScale(d[x]))
     .y0(yScale(0))
-    .y1((d) => yScale(d.y));
+    .y1((d) => yScale(d[y]))
+    .curve(d3.curveBasis);
   const areaPath = areaBuilder(data);
   if (!areaPath) {
     return null;
@@ -149,15 +144,16 @@ const Chart = ({ width, height, title }: LineChartProps) => {
   // building line
   const lineBuilder = d3
     .line<DataPoint>()
-    .x((d) => xScale(d.x))
-    .y((d) => yScale(d.y));
+    .x((d) => xScale(d[x]))
+    .y((d) => yScale(d[y]))
+    .curve(d3.curveBasis);
   const linePath = lineBuilder(data);
   if (!linePath) {
     return null;
   }
 
   return (
-    <div>
+    <div className="inline-block">
       <div className="pl-7 text-sm text-danube-600 font-semibold">{title}</div>
       <svg width={width} height={height}>
         <defs>

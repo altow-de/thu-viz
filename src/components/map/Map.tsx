@@ -2,16 +2,28 @@ import { useEffect, useRef, useState } from "react";
 import { Map, NavigationControl } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import MapStyle from "./MapStyle";
+import { MapStyles } from "@/frontend/constants";
 
 const OceanMap = () => {
   const mapContainer = useRef(null);
   const map = useRef<Map | null>(null);
-  const [mapStyle, setMapStyle] = useState("basic-v2");
+  const [mapStyle, setMapStyle] = useState(Object.keys(MapStyles)[0]);
 
   const initialState = {
     lat: 54.1767,
     lng: 12.08402,
     zoom: 11,
+  };
+
+  const onMapStyleChange = (mapStyle: string) => {
+    const mapUrl =
+      "https://api.maptiler.com/maps/" + mapStyle + "/style.json?key=" + process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN;
+    map.current?.setStyle(`${mapUrl}`);
+    map.current?.on("styledata", function () {
+      handleSource();
+      handleLayer();
+    });
+    setMapStyle(mapStyle);
   };
 
   /**
@@ -61,11 +73,11 @@ const OceanMap = () => {
       handleLayer();
     });
     map.current.addControl(new NavigationControl(), "bottom-right");
-  }, []);
+  }, [mapStyle]);
 
   return (
     <div className="relative">
-      <MapStyle />
+      <MapStyle selectedStyle={mapStyle} setSelectedStyle={onMapStyleChange} />
       <div className="h-[580px]" ref={mapContainer} />
     </div>
   );

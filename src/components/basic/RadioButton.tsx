@@ -6,8 +6,6 @@ interface RadioButtonProps {
 }
 
 const RadioButton = ({ mapStyleKey, selectedStyle, setSelectedStyle }: RadioButtonProps & MapStyleProps) => {
-  console.log(mapStyleKey);
-
   return (
     <div className="inline-flex items-center" onClick={() => setSelectedStyle(mapStyleKey)}>
       <label className="relative flex items-center p-1 rounded-full cursor-pointer" htmlFor={"radio-" + mapStyleKey}>

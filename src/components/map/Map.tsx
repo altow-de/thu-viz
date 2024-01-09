@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Map, NavigationControl, Popup } from "maplibre-gl";
+import { GeoJSONFeature, Map, MapGeoJSONFeature, MapMouseEvent, NavigationControl, Popup, LngLat } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import MapStyle from "./MapStyle";
 import { LayerZoom, MapStyles } from "@/frontend/constants";
@@ -20,13 +20,13 @@ const OceanMap = ({ type = "route" }: OceanMapProps) => {
   };
 
   const onMapStyleChange = (mapStyle: string) => {
-    console.log(mapStyle);
-
     const mapUrl =
       "https://api.maptiler.com/maps/" + mapStyle + "/style.json?key=" + process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN;
 
-    map.current?.setStyle(`${mapUrl}`);
+    map.current?.setStyle(`${mapUrl}`, { diff: false });
+
     map.current?.on("styledata", function () {
+      handleImages();
       handleSource();
       handleLayer();
       handlePopUps();
@@ -42,29 +42,55 @@ const OceanMap = ({ type = "route" }: OceanMapProps) => {
     });
 
     if (!map.current) return;
-    map.current.on("mouseenter", "route-point", (e) => {
-      // Change the cursor style as a UI indicator.
-      if (!map.current) return;
-      map.current.getCanvas().style.cursor = "pointer";
-      const coordinates = e?.features?.[0].geometry?.coordinates?.slice();
-      const html = `  <div>Hover info</div>  `;
-      // Ensure that if the map is zoomed out such that multiple
-      // copies of the feature are visible, the popup appears
-      // over the copy being pointed to.
-      while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-      }
+    map.current.on(
+      "mouseenter",
+      "route-point",
+      (
+        e: MapMouseEvent & {
+          features?: MapGeoJSONFeature[];
+        }
+      ) => {
+        // Change the cursor style as a UI indicator.
+        if (!map.current) return;
+        map.current.getCanvas().style.cursor = "pointer";
+        const feature: GeoJSONFeature = e?.features?.[0] as GeoJSONFeature;
+        const geometry: GeoJSON.Geometry = feature.geometry as GeoJSON.Point;
 
-      // Populate the popup and set its coordinates
-      // based on the feature found.
-      popup.setLngLat(coordinates).setHTML(html).addTo(map.current);
-    });
+        const coordinates = geometry.coordinates?.slice();
+        const html = `  <div>Hover info</div>  `;
+        // Ensure that if the map is zoomed out such that multiple
+        // copies of the feature are visible, the popup appears
+        // over the copy being pointed to.
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        // Populate the popup and set its coordinates
+        // based on the feature found.
+        popup
+          .setLngLat(coordinates as unknown as LngLat)
+          .setHTML(html)
+          .addTo(map.current);
+      }
+    );
 
     map.current.on("mouseleave", "route-point", () => {
       if (!map.current) return;
       map.current.getCanvas().style.cursor = "";
       popup.remove();
     });
+  };
+
+  const handleImages = () => {
+    if (!map.current?.getImage("circle")) {
+      map.current?.loadImage("circle.png", (error, image) => {
+        if (error || !image) throw error;
+
+        if (!map.current?.getImage("circle")) {
+          map.current?.addImage("circle", image);
+        }
+      });
+    }
   };
 
   /**
@@ -187,11 +213,9 @@ const OceanMap = ({ type = "route" }: OceanMapProps) => {
       center: [initialState.lng, initialState.lat],
       zoom: initialState.zoom,
     });
-    map.current?.loadImage("circle.png", (error, image) => {
-      if (error || !image) throw error;
-      map.current?.addImage("circle", image);
-    });
+
     map.current.on("load", async function () {
+      handleImages();
       handleSource();
       handleLayer();
       handlePopUps();

@@ -1,7 +1,9 @@
 import type { Config } from "tailwindcss";
-
+const colors = require("tailwindcss/colors");
 const config: Config = {
-  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  relative: true,
+  darkMode: "class",
+  content: ["./node_modules/react-tailwindcss-datepicker/dist/index.esm.js", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       backgroundImage: {
@@ -9,7 +11,9 @@ const config: Config = {
         "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
     },
+
     colors: {
+      ...colors,
       danube: {
         50: "#f2f7fc",
         100: "#e1eef8",
@@ -23,13 +27,14 @@ const config: Config = {
         900: "#314d77",
         950: "#223149",
       },
-      white: "#ffffff",
-      transparent: "transparent",
-      red: "#963748",
-      black: "#000000",
-      gray: "#8c9192",
+      "red-custom": "#963748",
+      "gray-custom": "#8c9192",
     },
   },
-  plugins: [],
+  plugins: [
+    require("@tailwindcss/forms")({
+      strategy: "class", // only generate classes
+    }),
+  ],
 };
 export default config;

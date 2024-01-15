@@ -7,9 +7,12 @@ interface TableHeaderProps {
 const TableHeader = ({ titles }: TableHeaderProps) => {
   return (
     <div className="flex flex-row flex-auto w-full gap-0.5">
-      {titles.map((title) => {
+      {titles.map((title, index) => {
         return (
-          <div className="bg-danube-200 flex flex-auto text-center py-2 px-4 items-center justify-center text-danube-900 shrink-0	">
+          <div
+            key={index}
+            className="bg-danube-200 flex flex-auto text-center py-2 px-4 font-semibold items-center justify-center text-danube-900 shrink-0	"
+          >
             {title}
           </div>
         );

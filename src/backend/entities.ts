@@ -5,7 +5,7 @@ import { DB } from "./generated-db";
 
 // export type Logger = Selectable<DB["Logger"]>;
 // export type Sensor = Selectable<DB["Sensor"]>;
-// export type Platform = Selectable<DB["Platform"]>;
+export type Platform = Selectable<DB["Platform"]>;
 // export type PlatformContainsLogger = Selectable<DB["PlatformContainsLogger"]>;
 // export type DeckUnit = Selectable<DB["DeckUnit"]>;
 // export type PlatformContainsDeckUnit = Selectable<DB["PlatformContainsDeckUnit"]>;

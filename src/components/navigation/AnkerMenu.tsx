@@ -1,6 +1,6 @@
 import { Anker } from "@/frontend/types";
 import { useClickAway } from "@uidotdev/usehooks";
-import React, { LegacyRef, use, useEffect, useState } from "react";
+import React, { LegacyRef, useState } from "react";
 import MenuIcon from "../icons/MenuIcon";
 
 interface AnkerMenuProps {
@@ -27,21 +27,25 @@ const AnkerMenu = ({ ankers }: AnkerMenuProps) => {
   return (
     <div
       ref={ref}
-      className="fixed right-4 top-8 bg-white rounded-lg shadow-md p-2 text-xs z-50 text-danube-900 block md:hidden cursor-pointer"
+      className="fixed right-4 top-8 bg-white rounded-lg shadow-md p-2 text-xs z-50 text-danube-900 block md:hidden sm:right-8 cursor-pointer"
     >
       {!open && (
         <div className="w-auto h-auto rounded-full" onClick={() => setOpen(true)}>
           <MenuIcon />
         </div>
       )}
-      {open &&
-        ankers.map((anker: Anker) => {
-          return (
-            <div key={anker.id} onClick={() => scrollToId(anker.id)}>
-              {anker.title}
-            </div>
-          );
-        })}
+      {open && (
+        <div className="">
+          <div className="font-semibold mb-1">Scroll To:</div>
+          {ankers.map((anker: Anker) => {
+            return (
+              <div key={anker.id} onClick={() => scrollToId(anker.id)} className="max-w-20">
+                {anker.title}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

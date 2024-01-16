@@ -7,7 +7,7 @@ import CardWraper from "../wrapper/CardWrapper";
 
 const MeasurementData = () => {
   return (
-    <div>
+    <div className="">
       <CardWraper text="Parameter over time" hasMap={false}>
         <Chart width={300} height={300} tickValue={100} x={"time"} y={"pressure"} title={"Pressure(mbar)"} />
         <Chart width={300} height={300} tickValue={40} x={"time"} y={"temperature"} title={"Temperature(C)"} />

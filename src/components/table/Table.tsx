@@ -8,13 +8,84 @@ interface TableProps {
 
 const Table = ({ data }: TableProps) => {
   const colSize = data.length + 1;
+  const [tableData, setTableData] = useState<any[]>(data);
+  const [sorted, setSorted] = useState<boolean>(false);
+  /**
+   * Sorts the table data based on the specified direction and column key.
+   * @param {string} direction - The sorting direction ('up' or 'down').
+   * @param {string} column_key - The key of the column to be sorted.
+   */
+  const sort = (direction: string, column_key: string) => {
+    const type = typeof data.find((item) => item[column_key as keyof any] !== null)?.[column_key as keyof any];
+    let sortedData: any[] = [];
+    if (type === "number" && direction === "down") {
+      sortedData = data.sort((a, b) => {
+        const numA: number = Number(Object(a)[column_key]);
+        const numB: number = Number(Object(b)[column_key]);
+
+        if (numA === null || numA === undefined || isNaN(numA)) {
+          return 1;
+        }
+        if (numB === null || numB === undefined || isNaN(numB)) {
+          return -1;
+        }
+
+        return numB - numA;
+      });
+    }
+    if (type === "number" && direction === "up")
+      sortedData = data.sort((a, b) => {
+        const numA: number = Number(Object(a)[column_key]);
+        const numB: number = Number(Object(b)[column_key]);
+
+        if (numA === null || numA === undefined || isNaN(numA)) {
+          return 1;
+        }
+        if (numB === null || numB === undefined || isNaN(numB)) {
+          return -1;
+        }
+
+        return numA - numB;
+      });
+
+    if (type !== "number" && direction === "up") {
+      sortedData = data.sort((a, b) => {
+        const strA: string = String(Object(a)[column_key]);
+        const strB: string = String(Object(b)[column_key]);
+        if (strA === null || strA === undefined) {
+          return strB === null || strB === undefined ? 0 : -1;
+        }
+        if (strB === null || strB === undefined) {
+          return 1;
+        }
+        return strB.localeCompare(strA);
+      });
+    }
+    if (type !== "number" && direction === "down") {
+      sortedData = data.sort((a, b) => {
+        const strA: string = String(Object(a)[column_key]);
+        const strB: string = String(Object(b)[column_key]);
+
+        if (strA === null || strA === undefined) {
+          return strB === null || strB === undefined ? 0 : -1;
+        }
+
+        if (strB === null || strB === undefined) {
+          return 1;
+        }
+        return strA.localeCompare(strB);
+      });
+    }
+    setTableData(sortedData);
+    setSorted(!sorted);
+  };
 
   return (
     <div className="overflow-x-scroll  rounded-t-lg shadow-md ">
       <div className="grid grid-rows-1 bg-white gap-1 min-w-[550px]">
-        <TableHeader titles={data} colSize={colSize} />
+        <TableHeader titles={data} colSize={colSize} sort={sort} />
         <div className="bg-white  max-h-96">
-          {data.map((row, index) => (
+          {tableData.map((row, index) => (
             <div
               key={index}
               className={`text-center text-danube-900 grid ${"grid-rows-" + (colSize - 1)} ${

@@ -71,8 +71,9 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = () => {
 
         <Headline text={"Choose region"} />
         <DropwDown options={regions} option_key={"name"} />
-
-        <Button text="Apply" />
+        <div className="flex justify-center">
+          <Button text="Apply" />
+        </div>
       </CardWrapper>
     </div>
   );

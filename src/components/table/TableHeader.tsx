@@ -2,21 +2,28 @@ import React from "react";
 
 interface TableHeaderProps {
   titles: string[];
+  colSize: number;
 }
 
-const TableHeader = ({ titles }: TableHeaderProps) => {
+const TableHeader = ({ titles, colSize }: TableHeaderProps) => {
   return (
-    <div className="flex flex-row flex-auto w-full gap-0.5">
+    <div className={`grid ${"grid-cols-" + colSize} gap-0.5`}>
       {titles.map((title, index) => {
         return (
           <div
             key={index}
-            className="bg-danube-200 flex flex-auto text-center py-2 px-4 font-semibold items-center justify-center text-danube-900 shrink-0	"
+            className={`bg-danube-200 text-center font-semibold items-center justify-center text-danube-900 py-2 px-4 `}
           >
             {title}
           </div>
         );
       })}
+      <div
+        key="show_in_map"
+        className="bg-danube-200 text-center font-semibold items-center justify-center text-danube-900 py-2 px-4 "
+      >
+        Show in Map
+      </div>
     </div>
   );
 };

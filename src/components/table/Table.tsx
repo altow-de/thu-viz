@@ -1,33 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import TableHeader from "./TableHeader";
+import Switch from "./Switch";
 
 interface TableProps {
   data: any[];
 }
 
 const Table = ({ data }: TableProps) => {
+  const colSize = data.length + 1;
+
   return (
-    <div className="rounded-t-lg shadow-md w-auto h-full bg-white flex flex-col gap-px flex-auto overflow-x-auto">
-      <TableHeader titles={data} />
-      <div className="flex flex-auto flex-col gap-px flex-auto ">
-        {data.map((dataItem, index) => {
-          return (
-            <div className="flex-auto flex flex-row bg-white gap-0.5 " key={index}>
-              {data.map((item, i) => {
-                return (
-                  <div
-                    key={i}
-                    className={`${
-                      index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"
-                    } flex flex-auto text-center py-2 px-4 items-center justify-center text-danube-900 shrink-0	`}
-                  >
-                    {item}
+    <div className="overflow-x-scroll">
+      <div className="grid grid-rows-1 rounded-t-lg shadow-md bg-white gap-1 min-w-[550px] ">
+        <TableHeader titles={data} colSize={colSize} />
+        <div className="bg-white">
+          {data.map((row, index) => (
+            <div key={index} className={`text-center text-danube-900 gap-0.5 ${"grid-rows-" + (colSize - 1)}`}>
+              <div className={`grid grid-cols-${colSize} gap-0.5`}>
+                {data.map((col, i) => (
+                  <div key={"col-" + i} className={` ${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-2 px-4`}>
+                    {col}
                   </div>
-                );
-              })}
+                ))}
+                <Switch style={`${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-2 px-4 text-danube-900`} />
+              </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
     </div>
   );

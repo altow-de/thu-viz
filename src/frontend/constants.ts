@@ -11,3 +11,11 @@ export const OverviewAnkers: Anker[] = [
   { id: "overview-deployments", title: "Deployments" },
   { id: "position-of-deployments", title: "Map" },
 ];
+
+export const MeasurementAnkers: Anker[] = [
+  { id: "selection-single-deployment", title: "Selection" },
+  { id: "metadata", title: "Metadata" },
+  { id: "parameter-over-time", title: "Diagrams time" },
+  { id: "parameter-over-depth", title: "Diagrams depths" },
+  { id: "track", title: "Track" },
+];

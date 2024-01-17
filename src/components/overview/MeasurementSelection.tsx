@@ -50,7 +50,7 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = () => {
   });
   return (
     <div className="basis-full md:basis-1/3">
-      <CardWrapper text={"Selection of measurement data"} hasMap={false}>
+      <CardWrapper text={"Selection of measurement data"} hasMap={false} id={"measurement-selection"}>
         <Headline text={"Choose time range"} />
         <div className="flex flex-col md:flex-row gap-1 z-40">
           <DatePicker

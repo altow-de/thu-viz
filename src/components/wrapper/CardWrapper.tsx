@@ -27,7 +27,7 @@ const CardWrapper = ({ children, text, hasMap, id }: CardWrapperTypes) => {
   }, []);
   return (
     <div
-      className={`flex-1 flex-col bg-danube-500 rounded-lg shadow-md mb-8 w-full  ${!hasMap ? "z-40" : ""} ${
+      className={`flex-1 flex-col bg-danube-500 rounded-lg shadow-md mb-8 w-full  ${!hasMap ? "z-30" : ""} ${
         hinged ? "cursor-pointer " : ""
       }`}
       id={id}

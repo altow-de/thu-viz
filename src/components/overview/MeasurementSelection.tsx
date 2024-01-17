@@ -52,7 +52,7 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = () => {
     <div className="basis-full md:basis-1/3">
       <CardWrapper text={"Selection of measurement data"} hasMap={false} id={"measurement-selection"}>
         <Headline text={"Choose time range"} />
-        <div className="flex flex-col md:flex-row gap-1 z-40">
+        <div className="flex flex-col md:flex-row gap-1 z-30">
           <DatePicker
             placeholder={"Date from"}
             startDate={startDate}
@@ -72,7 +72,7 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = () => {
         <Headline text={"Choose region"} />
         <DropwDown options={regions} option_key={"name"} />
         <div className="flex justify-center">
-          <Button text="Apply" />
+          <Button text="Apply" onClick={() => {}} />
         </div>
       </CardWrapper>
     </div>

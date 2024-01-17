@@ -33,6 +33,7 @@ const TableHeader = ({ titles, colSize, sort }: TableHeaderProps) => {
           </div>
         );
       })}
+
       <div key="show_in_map" className="bg-danube-200 text-center font-semibold items-center text-danube-900 px-4 py-2">
         Show in Map
       </div>

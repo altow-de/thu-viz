@@ -5,17 +5,17 @@ import MeasurementSelection from "../overview/MeasurementSelection";
 import TableWrapper from "../table/TableWrapper";
 import CardWrapper from "../wrapper/CardWrapper";
 import AnkerMenu from "../navigation/AnkerMenu";
-import { OverviewAnkers } from "@/frontend/constants";
+import { OverviewAnkers, testData } from "@/frontend/constants";
 import PopUpWrapper from "../wrapper/PopUpWrapper";
+import Table from "../table/Table";
 
 const Overview = () => {
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
-
   return (
     <div>
       {popUpVisible && (
         <PopUpWrapper title={"sefef"} onClick={() => setPopUpVisible(false)}>
-          <div>aaaa</div>
+          <Table data={testData} showSwitch={false} />
         </PopUpWrapper>
       )}
       <div className="flex flex-col">
@@ -27,7 +27,7 @@ const Overview = () => {
         <CardWrapper text={"Position of Deployments (Startposition)"} hasMap={true} id={"position-of-deployments"}>
           <OceanMap type={MapType.point} />
         </CardWrapper>
-      </div>{" "}
+      </div>
     </div>
   );
 };

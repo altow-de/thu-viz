@@ -12,7 +12,7 @@ const TableWrapper = ({ setPopUpVisible }: TableWrapperProps) => {
   return (
     <div className="basis-full overflow-x-auto sm:basis-2/3 ">
       <CardWrapper text={"Overview Deployment"} hasMap={false} id={"overview-deployments"}>
-        <Table data={testData} showSwitch={true} />
+        <Table data={testData} />
         <div className="mt-4 flex justify-center">
           <Button
             text={"Show all"}

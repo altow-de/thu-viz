@@ -15,7 +15,7 @@ const Overview = () => {
     <div>
       {popUpVisible && (
         <PopUpWrapper title={"sefef"} onClick={() => setPopUpVisible(false)}>
-          <Table data={testData} showSwitch={false} />
+          <Table data={testData} />
         </PopUpWrapper>
       )}
       <div className="flex flex-col">

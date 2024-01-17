@@ -14,7 +14,7 @@ const Overview = () => {
   return (
     <div>
       {popUpVisible && (
-        <PopUpWrapper title={"sefef"} onClick={() => setPopUpVisible(false)}>
+        <PopUpWrapper title={"Overview Deployment"} onClick={() => setPopUpVisible(false)}>
           <Table data={testData} />
         </PopUpWrapper>
       )}

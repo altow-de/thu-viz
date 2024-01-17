@@ -1,18 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import Button from "../basic/Button";
 import CardWrapper from "../wrapper/CardWrapper";
 import Table from "./Table";
+import { testData } from "@/frontend/constants";
 
-interface TableWrapperProps {}
-const data = ["title 1", "title 2", "title 3", "title 4", "title 5"];
+interface TableWrapperProps {
+  setPopUpVisible: (visible: boolean) => void;
+}
 
-const TableWrapper = ({}: TableWrapperProps) => {
+const TableWrapper = ({ setPopUpVisible }: TableWrapperProps) => {
   return (
-    <div className="basis-full overflow-x-scroll sm:basis-2/3 ">
+    <div className="basis-full overflow-x-auto sm:basis-2/3 ">
       <CardWrapper text={"Overview Deployment"} hasMap={false} id={"overview-deployments"}>
-        <Table data={data} />
+        <Table data={testData} />
         <div className="mt-4 flex justify-center">
-          <Button text={"Show all"} />
+          <Button
+            text={"Show all"}
+            onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
+              setPopUpVisible(true);
+            }}
+          />
         </div>
       </CardWrapper>
     </div>

@@ -19,3 +19,5 @@ export const MeasurementAnkers: Anker[] = [
   { id: "parameter-over-depth", title: "Diagrams depths" },
   { id: "track", title: "Track" },
 ];
+
+export const testData = ["title 1", "title 2", "title 3", "title 4", "title 5"];

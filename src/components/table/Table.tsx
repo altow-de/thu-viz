@@ -8,6 +8,7 @@ interface TableProps {
 
 const Table = ({ data }: TableProps) => {
   const colSize = data.length + 1;
+
   const [tableData, setTableData] = useState<any[]>(data);
   const [sorted, setSorted] = useState<boolean>(false);
   /**
@@ -81,7 +82,7 @@ const Table = ({ data }: TableProps) => {
   };
 
   return (
-    <div className="overflow-x-scroll rounded-t-lg shadow-md ">
+    <div className="overflow-x-auto rounded-t-lg shadow-md ">
       <div className="grid grid-rows-1 bg-white gap-1 min-w-[550px]">
         <TableHeader titles={data} colSize={colSize} sort={sort} />
         <div className="bg-white">

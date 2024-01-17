@@ -20,7 +20,7 @@ const MapStyle = ({ selectedStyle, setSelectedStyle }: MapStyleProps) => {
   const handleResize = () => {
     const width = window.innerWidth;
     setWindowWidth(width);
-    setVisible(width > 640);
+    setVisible(width >= 640);
   };
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const MapStyle = ({ selectedStyle, setSelectedStyle }: MapStyleProps) => {
         <div
           className="sm:hidden w-4 h-4 cursor-pointer"
           onClick={() => {
-            if (windowWidth <= 640) setVisible(true);
+            if (windowWidth < 640) setVisible(true);
           }}
         >
           <InfoIcon />

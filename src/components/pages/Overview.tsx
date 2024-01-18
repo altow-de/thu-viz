@@ -1,11 +1,11 @@
-import { MapType } from "@/frontend/enum";
+import { MapType, OverviewAnkers } from "@/frontend/enum";
 import React, { useState } from "react";
 import OceanMap from "../map/Map";
 import MeasurementSelection from "../overview/MeasurementSelection";
 import TableWrapper from "../table/TableWrapper";
 import CardWrapper from "../wrapper/CardWrapper";
 import AnkerMenu from "../navigation/AnkerMenu";
-import { OverviewAnkers, testData } from "@/frontend/constants";
+import { OverviewAnkerTitles, testData } from "@/frontend/constants";
 import PopUpWrapper from "../wrapper/PopUpWrapper";
 import Table from "../table/Table";
 
@@ -19,12 +19,16 @@ const Overview = () => {
         </PopUpWrapper>
       )}
       <div className="flex flex-col">
-        <AnkerMenu ankers={OverviewAnkers} />
+        <AnkerMenu ankers={OverviewAnkerTitles} />
         <div className="flex flex-col md:flex-row gap-0 md:gap-4">
           <MeasurementSelection />
           <TableWrapper setPopUpVisible={setPopUpVisible} />
         </div>
-        <CardWrapper text={"Position of Deployments (Startposition)"} hasMap={true} id={"position-of-deployments"}>
+        <CardWrapper
+          text={"Position of Deployments (Startposition)"}
+          hasMap={true}
+          id={OverviewAnkers.PositionOfDeployments}
+        >
           <OceanMap type={MapType.point} />
         </CardWrapper>
       </div>

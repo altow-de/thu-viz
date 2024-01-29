@@ -9,12 +9,25 @@ import CardWrapper from "../wrapper/CardWrapper";
 import { PlatformsCombinedWithVessels } from "@/backend/services/PlatformService";
 import { PlatformService } from "@/frontend/services/PlatformService";
 import { Region } from "@/frontend/types";
+import { OverviewAnkers } from "@/frontend/enum";
 
 interface MeasurementSelectionProps {}
 
 const MeasurementSelection: React.FC<MeasurementSelectionProps> = () => {
   const platformService: PlatformService = new PlatformService();
   const [platforms, setPlatforms] = useState<PlatformsCombinedWithVessels[]>([]);
+  const [selectedPlatform, setSelectedPlatform] = useState<number>(-1);
+  const [selectedRegion, setSelectedRegion] = useState<number>(-1);
+
+  const selectRegion = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = Number(e.target.value);
+    setSelectedRegion(selected);
+  };
+
+  const selectPlatform = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = Number(e.target.value);
+    setSelectedPlatform(selected);
+  };
 
   // { east: [54, 30]
   const regions: Region[] = [
@@ -50,7 +63,7 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = () => {
   });
   return (
     <div className="basis-full md:basis-1/3">
-      <CardWrapper text={"Selection of measurement data"} hasMap={false} id={"measurement-selection"}>
+      <CardWrapper text={"Selection of measurement data"} hasMap={false} id={OverviewAnkers.MeasurementSelection}>
         <Headline text={"Choose time range"} />
         <div className="flex flex-col md:flex-row gap-1 z-30">
           <DatePicker
@@ -67,10 +80,10 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = () => {
           />
         </div>
         <Headline text={"Choose platform"} />
-        <DropwDown options={platforms} option_key={"name"} />
+        <DropwDown options={platforms} option_keys={["name"]} setSelection={selectPlatform} />
 
         <Headline text={"Choose region"} />
-        <DropwDown options={regions} option_key={"name"} />
+        <DropwDown options={regions} option_keys={["name"]} setSelection={selectRegion} />
         <div className="flex justify-center">
           <Button text="Apply" onClick={() => {}} />
         </div>

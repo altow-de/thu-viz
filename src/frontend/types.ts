@@ -1,6 +1,7 @@
+import { Deployment, Logger } from "@/backend/entities";
 import { PlatformsCombinedWithVessels } from "@/backend/services/PlatformService";
 
-export type Option = PlatformsCombinedWithVessels | Region;
+export type Option = PlatformsCombinedWithVessels | Region | Logger | Deployment;
 
 export type Region = {
   name: string;

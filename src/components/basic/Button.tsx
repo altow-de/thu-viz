@@ -7,8 +7,6 @@ interface ButtonProps {
 }
 
 const Button = ({ text, onClick, disabled }: ButtonProps) => {
-  console.log(disabled);
-
   return (
     <button
       className={`bg-danube-600 text-sm font-semibold text-white py-2 px-6 rounded-full ${

@@ -10,10 +10,7 @@ interface DatePickerProps {
 
 const DatePicker = ({ placeholder, startDate, selectedDate, setSelectedDate }: DatePickerProps) => {
   const handleChange = (selectedDate: DateValueType, e?: HTMLInputElement | null | undefined) => {
-    console.log();
-
     setSelectedDate(selectedDate);
-    console.log(selectedDate);
   };
 
   return (

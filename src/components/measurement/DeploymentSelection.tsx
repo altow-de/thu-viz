@@ -9,15 +9,21 @@ import { Deployment, Logger } from "@/backend/entities";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { MeasurementAnkers } from "@/frontend/enum";
 
-interface DeploymentSelectionProps {}
+interface DeploymentSelectionProps {
+  setAppliedData: (deployment: number, logger: number) => void;
+}
 
-const DeploymentSelection: React.FC<DeploymentSelectionProps> = () => {
+const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedData }) => {
   const loggerService: LoggerService = new LoggerService();
   const deploymentService: DeploymentService = new DeploymentService();
   const [loggers, setLoggers] = useState<Logger[]>([]);
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [selectedLogger, setSelectedLogger] = useState<number>(-1);
   const [selectedDeployment, setSelectedDeployment] = useState<number>(-1);
+
+  const onApplyClick = () => {
+    setAppliedData(selectedDeployment, selectedLogger);
+  };
 
   const resetDeployments = () => {
     setDeployments([]);
@@ -74,7 +80,7 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = () => {
           setSelection={selectDeployment}
         />
         <div className="flex justify-center">
-          <Button text="Apply" onClick={() => {}} disabled={!(selectedLogger > -1 && selectedDeployment > -1)} />
+          <Button text="Apply" onClick={onApplyClick} disabled={!(selectedLogger > -1 && selectedDeployment > -1)} />
         </div>
       </CardWrapper>
     </div>

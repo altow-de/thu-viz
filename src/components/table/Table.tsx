@@ -82,18 +82,16 @@ const Table = ({ data }: TableProps) => {
   };
 
   return (
-    <div className="overflow-x-auto rounded-t-lg shadow-md ">
+    <div className="overflow-x-auto rounded-t-lg shadow-md">
       <div className="grid grid-rows-1 bg-white gap-1 min-w-[550px]">
-        <TableHeader titles={data} colSize={colSize} sort={sort} />
+        <TableHeader titles={data} sort={sort} />
         <div className="bg-white">
           {tableData.map((row, index) => (
             <div
               key={index}
-              className={`text-center text-danube-900 grid ${"grid-rows-" + (colSize - 1)} ${
-                index !== data.length - 1 ? "border-white border-b-2" : ""
-              }`}
+              className={`text-center text-danube-900  ${index !== data.length - 1 ? "border-white border-b-2" : ""}`}
             >
-              <div className={`grid ${"grid-cols-" + colSize} gap-0.5 bg-white`}>
+              <div className={`grid grid-cols-6 gap-0.5 bg-white`}>
                 {data.map((col, i) => (
                   <div
                     key={"col-" + i}

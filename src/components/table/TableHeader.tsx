@@ -3,11 +3,10 @@ import Sort from "./Sort";
 
 interface TableHeaderProps {
   titles: string[];
-  colSize: number;
   sort: (direction: string, column_key: string) => void;
 }
 
-const TableHeader = ({ titles, colSize, sort }: TableHeaderProps) => {
+const TableHeader = ({ titles, sort }: TableHeaderProps) => {
   const [selected, setSelected] = useState<string>(titles[0] + "_up");
 
   const onArrowUp = (column_key: string) => {
@@ -19,7 +18,7 @@ const TableHeader = ({ titles, colSize, sort }: TableHeaderProps) => {
     if (sort) sort("down", column_key);
   };
   return (
-    <div className={`grid ${"grid-cols-" + colSize} gap-0.5 items-center justify-center`}>
+    <div className={`grid grid-cols-6 gap-0.5 items-center justify-center`}>
       {titles.map((title, index) => {
         return (
           <div

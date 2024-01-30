@@ -22,3 +22,19 @@ export const MeasurementAnkerTitles: Anker[] = [
 ];
 
 export const testData = ["title 1", "title 2", "title 3", "title 4", "title 5"];
+
+export const TableDataKeys = {
+  time_start: "Time begin",
+  time_end: "Time end",
+  name: "Vessel",
+  position_start: "Position start: lat, long",
+  position_end: "Position end: lat, long",
+};
+
+export const DateTimeLocaleOptions: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+};

@@ -8,8 +8,6 @@ export interface SmallTableProps {
 
 const SmallTable = ({ tableData }: SmallTableProps) => {
   const formatValue = (value: string | Date | Point, dataKey: string) => {
-    console.log(dataKey);
-
     if (dataKey === "time_start" || dataKey === "time_end")
       return new Date(value.toString()).toLocaleString("de-DE", DateTimeLocaleOptions);
 

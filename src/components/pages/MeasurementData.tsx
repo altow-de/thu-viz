@@ -24,7 +24,10 @@ const MeasurementData = () => {
   };
 
   const getDeploymentById = useCallback(async () => {
-    if (!deployment || deployment === -1) return;
+    if (!deployment || deployment === -1) {
+      setTableData(undefined);
+      return;
+    }
     const data = await deploymentService.getDeploymentById(deployment, logger);
     setTableData(data);
   }, [deployment]);

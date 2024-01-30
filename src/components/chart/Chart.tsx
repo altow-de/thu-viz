@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
@@ -32,6 +32,8 @@ type ChartProps = {
 };
 
 const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
+  const [brushEnd, setBrushEnd] = useState(0);
+  const [brushStart, setBrushStart] = useState(0);
   const axesRef = useRef(null);
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   const boundsHeight = height - MARGIN.top - MARGIN.bottom;
@@ -51,10 +53,10 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
   const xScale = useMemo(() => {
     return d3
       .scaleLinear() // change to time scale when working with actual time data
-      .domain([0, xMax || 0])
+      .domain(brushStart === 0 ? [0, xMax || 0] : [brushStart, brushEnd])
       .nice()
       .range([0, boundsWidth]);
-  }, [data, width]);
+  }, [data, width, brushStart, brushEnd]);
 
   useEffect(() => {
     const svgElement = d3.select(axesRef.current);
@@ -65,8 +67,10 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
     svgElement
       .append("g")
       .attr("transform", "translate(0," + boundsHeight + ")")
+      .transition()
+      .duration(1000)
       .call(xAxisGenerator)
-      .call((g) => g.select(".domain").remove())
+      .call((g) => g.select(".domain").attr("stroke-opacity", 0))
       .call((g) => g.selectAll(".tick line").attr("stroke-opacity", 0));
 
     // y axis generator
@@ -116,7 +120,6 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
       .attr("x", 0)
       .attr("y", 0);
 
-    // brush
     const brush = d3
       .brushX()
       .extent([
@@ -125,16 +128,24 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
       ])
       .on("end", (event) => {
         if (!event.selection) return; // ignore empty selections.
-        //code for zoom behavior
+        //code for zoom behavior#
+        const [x0, x1] = event.selection;
+        setBrushStart(xScale.invert(x0));
+        setBrushEnd(xScale.invert(x1));
       });
 
+    svgElement.on("dblclick", (event) => {
+      const [resetMin, resetMax] = d3.extent(data, (d: DataPoint) => d[x]);
+      setBrushStart(resetMin || 0);
+      setBrushEnd(resetMax || 0);
+    });
+    console.log(brushStart, brushEnd);
     svgElement.append("g").call(brush);
-  }, [xScale, yScale, boundsHeight, boundsWidth, data]);
+  }, [width, data, brushEnd, brushStart]);
 
   // building area
   let areaBuilder = d3
     .area<DataPoint>()
-    .x((d) => xScale(d[x]))
     .y0(yScale(0))
     .y1((d) => yScale(d[y]))
     .curve(d3.curveBasis);
@@ -154,7 +165,7 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
   }
 
   return (
-    <div className="inline-block">
+    <div className="inline-block flex-auto">
       <div className="pl-7 text-sm text-danube-600 font-semibold">{title}</div>
       <svg width={width} height={height}>
         <defs>
@@ -163,8 +174,18 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
             <stop offset="100%" stopColor="white" />
           </linearGradient>
         </defs>
-        <g width={boundsWidth} height={boundsHeight} transform={`translate(${[MARGIN.left, MARGIN.top].join(",")})`}>
-          <path d={areaPath} opacity={1} stroke="none" fill="url(#area-gradient)" strokeWidth={2} />
+        <g
+          width={boundsWidth}
+          height={boundsHeight}
+          transform={`translate(${[MARGIN.left, MARGIN.top].join(",")})`}
+        >
+          <path
+            d={areaPath}
+            opacity={1}
+            stroke="none"
+            fill="url(#area-gradient)"
+            strokeWidth={2}
+          />
           <path d={linePath} stroke="steelblue" fill="none" strokeWidth={2} />
         </g>
         <g

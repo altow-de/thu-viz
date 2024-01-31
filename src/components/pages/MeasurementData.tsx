@@ -60,15 +60,49 @@ const MeasurementData = () => {
         <Metadata tableData={tableData} />
       </div>
 
-      <CardWraper text="Parameter over time" hasMap={false} id={MeasurementAnkers.ParameterOverTime}>
-        <div>
-          <Chart width={300} height={300} tickValue={100} x={"time"} y={"pressure"} title={"Pressure(mbar)"} />
-          <Chart width={300} height={300} tickValue={40} x={"time"} y={"temperature"} title={"Temperature(C)"} />
-          <Chart width={300} height={300} tickValue={20} x={"time"} y={"conductivity"} title={"Conductivity(ms/cm)"} />
-        </div>
+      <CardWraper
+        text="Parameter over time"
+        hasMap={false}
+        id={MeasurementAnkers.ParameterOverTime}
+      >
+        <Chart
+          width={300}
+          height={300}
+          tickValue={100}
+          x={"time"}
+          y={"pressure"}
+          title={"Pressure(mbar)"}
+        />
+        <Chart
+          width={300}
+          height={300}
+          tickValue={40}
+          x={"time"}
+          y={"temperature"}
+          title={"Temperature(C)"}
+        />
+        <Chart
+          width={300}
+          height={300}
+          tickValue={20}
+          x={"time"}
+          y={"conductivity"}
+          title={"Conductivity(ms/cm)"}
+        />
       </CardWraper>
-      <CardWraper text="Parameter over depths" hasMap={false} id={MeasurementAnkers.ParameterOverDepth}>
-        <Chart width={300} height={300} tickValue={100} x={"time"} y={"pressure"} title={"Pressure(mbar)"} />
+      <CardWraper
+        text="Parameter over depths"
+        hasMap={false}
+        id={MeasurementAnkers.ParameterOverDepth}
+      >
+        <Chart
+          width={300}
+          height={300}
+          tickValue={100}
+          x={"time"}
+          y={"pressure"}
+          title={"Pressure(mbar)"}
+        />
       </CardWraper>
       <CardWraper text={"Tracks"} hasMap={true} id={MeasurementAnkers.Track}>
         <OceanMap type={MapType.route} />

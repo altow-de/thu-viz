@@ -18,6 +18,8 @@ export class ProcessedValueService extends BackendDbService {
             logger_id: logger_id,
           })
         )
+        .leftJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
+        .leftJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
         .selectAll()
         .execute();
 
@@ -29,6 +31,16 @@ export class ProcessedValueService extends BackendDbService {
             "in",
             rawValues.map((obj) => obj.processed_value_id)
           )
+          .where("ProcessedValue.valid", "=", 1)
+          .leftJoin(
+            "ProcessedValueHasRawValue",
+            "ProcessedValue.processed_value_id",
+            "ProcessedValueHasRawValue.processed_value_id"
+          )
+          .leftJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
+          .leftJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
+          .leftJoin("Unit", "Unit.unit_id", "SensorType.unit_id")
+          .orderBy("Sensor.sensor_id")
           .selectAll()
           .execute();
         return result;

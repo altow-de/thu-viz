@@ -8,7 +8,7 @@ export class DataStore {
     makeAutoObservable(this);
   }
 
-  setError(error: DatabaseError) {
+  setError(error: DatabaseError | null) {
     this.error = error;
   }
 }

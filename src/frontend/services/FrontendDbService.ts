@@ -1,6 +1,4 @@
-import { DatabaseError } from "@/backend/services/DatabaseError";
 import { DataStore } from "../store/dataStore";
-import { toJS } from "mobx";
 
 export abstract class FrontendDbService {
   protected apiPath: string;

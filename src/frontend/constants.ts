@@ -1,3 +1,4 @@
+import { DatabaseError } from "@/backend/services/DatabaseError";
 import { MeasurementAnkers, OverviewAnkers } from "./enum";
 import { Anker } from "./types";
 
@@ -38,3 +39,5 @@ export const DateTimeLocaleOptions: Intl.DateTimeFormatOptions = {
   hour: "numeric",
   minute: "numeric",
 };
+
+export const EmptyDatabaseResult = new DatabaseError(406, "Database error occurred. Result is empty.", []);

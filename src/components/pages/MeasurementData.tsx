@@ -10,18 +10,29 @@ import DeploymentSelection from "../measurement/DeploymentSelection";
 import Metadata from "../measurement/Metadata";
 import { DeploymentTableData } from "@/frontend/types";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
+import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
+import { useStore } from "@/frontend/store";
 
 const MeasurementData = () => {
   const [deployment, setDeployment] = useState<number>(-1);
   const [logger, setLogger] = useState<number>(-1);
   const [tableData, setTableData] = useState<DeploymentTableData | undefined>();
+  const { data: dataStore } = useStore();
 
-  const deploymentService: DeploymentService = new DeploymentService();
+  const deploymentService: DeploymentService = new DeploymentService(dataStore);
+  const processedValueService: ProcessedValueService = new ProcessedValueService(dataStore);
 
-  const setAppliedData = (deployment: number, logger: number) => {
-    setDeployment(deployment);
-    setLogger(logger);
-  };
+  const setAppliedData = useCallback(
+    async (deployment: number, logger: number) => {
+      setDeployment(deployment);
+      setLogger(logger);
+
+      if (deployment > -1 && logger > -1) {
+        const result = await processedValueService.getProcessedValuesByDeploymentAndLogger(deployment, logger);
+      }
+    },
+    [setDeployment, setLogger]
+  );
 
   const getDeploymentById = useCallback(async () => {
     if (!deployment || deployment === -1) {

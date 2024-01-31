@@ -1,4 +1,3 @@
-import { selectAll } from "d3-selection";
 import { db } from "../db";
 import { BackendDbService } from "./BackendDbService";
 

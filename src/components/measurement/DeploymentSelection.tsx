@@ -8,21 +8,23 @@ import { LoggerService } from "@/frontend/services/LoggerService";
 import { Deployment, Logger } from "@/backend/entities";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { MeasurementAnkers } from "@/frontend/enum";
+import { useStore } from "@/frontend/store";
 
 interface DeploymentSelectionProps {
   setAppliedData: (deployment: number, logger: number) => void;
 }
 
 const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedData }) => {
-  const loggerService: LoggerService = new LoggerService();
-  const deploymentService: DeploymentService = new DeploymentService();
+  const { data: dataStore } = useStore();
+  const loggerService: LoggerService = new LoggerService(dataStore);
+  const deploymentService: DeploymentService = new DeploymentService(dataStore);
   const [loggers, setLoggers] = useState<Logger[]>([]);
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [selectedLogger, setSelectedLogger] = useState<number>(-1);
   const [selectedDeployment, setSelectedDeployment] = useState<number>(-1);
 
-  const onApplyClick = () => {
-    setAppliedData(selectedDeployment, selectedLogger);
+  const onApplyClick = async () => {
+    await setAppliedData(selectedDeployment, selectedLogger);
   };
 
   const onResetClick = () => {

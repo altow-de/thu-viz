@@ -37,11 +37,23 @@ export class ProcessedValueService extends BackendDbService {
             "ProcessedValue.processed_value_id",
             "ProcessedValueHasRawValue.processed_value_id"
           )
+          .leftJoin("Deployment", "Deployment.deployment_id", "ProcessedValueHasRawValue.deployment_id")
           .leftJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
           .leftJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
           .leftJoin("Unit", "Unit.unit_id", "SensorType.unit_id")
-          .orderBy("Sensor.sensor_id")
-          .selectAll()
+          .select([
+            "ProcessedValue.processed_value_id",
+            "Deployment.deployment_id",
+            "ProcessedValueHasRawValue.logger_id",
+            "SensorType.parameter",
+            "ProcessedValue.depth",
+            "ProcessedValue.value",
+            "ProcessedValue.position",
+            "Unit.unit",
+            "Deployment.time_start",
+            "Deployment.time_end",
+          ])
+          .groupBy("ProcessedValue.processed_value_id")
           .execute();
         return result;
       } else {
@@ -52,3 +64,6 @@ export class ProcessedValueService extends BackendDbService {
     }
   }
 }
+export type ProcessedValuesForDiagrams = Awaited<
+  ReturnType<ProcessedValueService["getProcessedValuesByDeploymentAndLogger"]>
+>[number];

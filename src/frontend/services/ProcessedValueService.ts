@@ -2,6 +2,7 @@ import { ProcessedValue } from "@/backend/entities";
 import { FrontendDbService } from "./FrontendDbService";
 import { DataStore } from "../store/dataStore";
 import { DatabaseError } from "@/backend/services/DatabaseError";
+import { ProcessedValuesForDiagrams } from "@/backend/services/ProcessedValueService";
 
 export class ProcessedValueService extends FrontendDbService {
   constructor(dataStore: DataStore) {
@@ -15,7 +16,7 @@ export class ProcessedValueService extends FrontendDbService {
   getProcessedValuesByDeploymentAndLogger(
     deployment_id: number,
     logger_id: number
-  ): Promise<ProcessedValue[] | DatabaseError> {
+  ): Promise<ProcessedValuesForDiagrams[] | DatabaseError> {
     return this.fetchData(
       `getProcessedValuesByDeploymentAndLogger?deployment_id=${deployment_id}&logger_id=${logger_id}`
     );

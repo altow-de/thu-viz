@@ -12,11 +12,16 @@ import { DeploymentTableData } from "@/frontend/types";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 import { useStore } from "@/frontend/store";
+import { ProcessedValuesForDiagrams } from "@/backend/services/ProcessedValueService";
 
 const MeasurementData = () => {
   const [deployment, setDeployment] = useState<number>(-1);
   const [logger, setLogger] = useState<number>(-1);
   const [tableData, setTableData] = useState<DeploymentTableData | undefined>();
+
+  const [processedValuesByLoggerAndDeployment, setProcessedValuesByLoggerAndDeployment] = useState<
+    ProcessedValuesForDiagrams | undefined
+  >(undefined);
   const { data: dataStore } = useStore();
 
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
@@ -29,6 +34,7 @@ const MeasurementData = () => {
 
       if (deployment > -1 && logger > -1) {
         const result = await processedValueService.getProcessedValuesByDeploymentAndLogger(deployment, logger);
+        setProcessedValuesByLoggerAndDeployment(result);
       }
     },
     [setDeployment, setLogger]

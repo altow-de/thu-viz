@@ -15,3 +15,9 @@ export type Anker = {
 };
 
 export type DeploymentTableData = Deployment & Platform & Vessel;
+
+export interface DatabaseErrorType {
+  _error: number;
+  _message: string;
+  _dbResponse: any;
+}

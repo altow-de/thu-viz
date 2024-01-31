@@ -9,7 +9,7 @@ export interface SmallTableProps {
 const SmallTable = ({ tableData }: SmallTableProps) => {
   const formatValue = (value: string | Date | Point, dataKey: string) => {
     if (dataKey === "time_start" || dataKey === "time_end")
-      return new Date(value.toString()).toLocaleString("de-DE", DateTimeLocaleOptions);
+      return value ? new Date(value.toString()).toLocaleString("de-DE", DateTimeLocaleOptions) : "no data";
 
     if (dataKey === "position_start" || dataKey === "position_end")
       return (value as Point).x + ", " + (value as Point).y;

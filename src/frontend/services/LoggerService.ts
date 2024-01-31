@@ -1,9 +1,10 @@
 import { Logger } from "@/backend/entities";
 import { FrontendDbService } from "./FrontendDbService";
+import { DataStore } from "../store/dataStore";
 
 export class LoggerService extends FrontendDbService {
-  constructor() {
-    super("/api/logger/");
+  constructor(dataStore: DataStore) {
+    super("/api/logger/", dataStore);
   }
 
   getAllData(): Promise<Logger[]> {

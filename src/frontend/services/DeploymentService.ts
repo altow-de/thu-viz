@@ -1,10 +1,11 @@
 import { Deployment } from "@/backend/entities";
 import { FrontendDbService } from "./FrontendDbService";
 import { DeploymentTableData } from "../types";
+import { DataStore } from "../store/dataStore";
 
 export class DeploymentService extends FrontendDbService {
-  constructor() {
-    super("/api/deployment/");
+  constructor(dataStore: DataStore) {
+    super("/api/deployment/", dataStore);
   }
 
   getAllData(): Promise<Deployment[]> {

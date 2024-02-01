@@ -49,6 +49,7 @@ export class ProcessedValueService extends BackendDbService {
             "SensorType.sensor_type_id",
             "Unit.unit",
             "Deployment.time_end",
+            "Deployment.time_start",
             fn.max("ProcessedValue.value").as("value"),
           ])
           .having(({ fn, eb, ref }) => eb(ref("value"), "=", fn.max("ProcessedValue.value")))

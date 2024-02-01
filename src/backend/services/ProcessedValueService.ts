@@ -53,6 +53,8 @@ export class ProcessedValueService extends BackendDbService {
           "ProcessedValue.processing_time",
           "ProcessedValue.processed_value_id",
         ])
+        .groupBy("ProcessedValue.processed_value_id")
+        .orderBy("ProcessedValue.processed_value_id")
         .execute();
 
       return result;

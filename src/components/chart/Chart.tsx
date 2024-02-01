@@ -200,7 +200,6 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
       ])
       .filter((event) => event.button === 0) // Only trigger on left mouse button
       .on("end", (event) => {
-        svgElement.selectAll(".overlay").style("cursor", "grab");
         if (!event.selection) return; // ignore empty selections.
         const [x0, x1] = event.selection;
         setXBrushStart(xScale.invert(x0));
@@ -221,19 +220,6 @@ const Chart = ({ width, height, title, x, y, tickValue }: ChartProps) => {
         setYBrushEnd(yScale.invert(y0));
       });
 
-    const touchBrush = d3
-      .brush()
-      .extent([
-        [0, 0],
-        [boundsWidth, boundsHeight],
-      ])
-      .filter((event) => event.button === 2) // Only trigger on right mouse button
-      .on("end", (event) => {
-        if (!event.selection) return; // ignore empty selections.
-        const [y0, y1] = event.selection;
-        setYBrushStart(yScale.invert(y1));
-        setYBrushEnd(yScale.invert(y0));
-      });
     svgElement.on("contextmenu", (event) => {
       event.preventDefault();
     });

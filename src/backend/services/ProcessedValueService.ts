@@ -47,7 +47,6 @@ export class ProcessedValueService extends BackendDbService {
         .leftJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
         .leftJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
         .where("SensorType.parameter", "=", parameter)
-        .groupBy("SensorType.parameter")
         .select(({ fn }) => [
           "SensorType.parameter",
           "Deployment.time_end",
@@ -108,4 +107,8 @@ export class ProcessedValueService extends BackendDbService {
 
 export type ParameterDataForDeployment = Awaited<
   ReturnType<ProcessedValueService["getParameterDataForDeployment"]>
+>[number];
+
+export type DiagramDataForParameterAndDeployment = Awaited<
+  ReturnType<ProcessedValueService["getDiagramDataForParameterAndDeployment"]>
 >[number];

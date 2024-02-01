@@ -35,6 +35,14 @@ const MeasurementData = () => {
       if (deployment > -1 && logger > -1) {
         const result = await processedValueService.getParameterDataForDeployment(deployment, logger);
         setParameterDataForDeployment(result as unknown as ParameterDataForDeployment);
+
+        result.map(async (obj) => {
+          const res = await processedValueService.getDiagramDataForParameterAndDeployment(
+            deployment,
+            logger,
+            obj.parameter
+          );
+        });
       }
     },
     [setDeployment, setLogger]

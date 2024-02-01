@@ -8,6 +8,61 @@ export class ProcessedValueService extends BackendDbService {
     super("ProcessedValue");
   }
 
+  async getParameterDataForDeployment(logger_id: number, deployment_id: number) {
+    try {
+      const rawValues = await db
+        .selectFrom("ProcessedValueHasRawValue")
+        .where((eb) =>
+          eb.and({
+            deployment_id: deployment_id,
+            logger_id: logger_id,
+          })
+        )
+        .leftJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
+        .leftJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
+        .selectAll()
+        .execute();
+
+      if (rawValues?.length > 0) {
+        const result = await db
+          .selectFrom("ProcessedValue")
+          .where(
+            "ProcessedValue.processed_value_id",
+            "in",
+            rawValues.map((obj) => obj.processed_value_id)
+          )
+          .where("ProcessedValue.valid", "=", 1)
+          .leftJoin(
+            "ProcessedValueHasRawValue",
+            "ProcessedValue.processed_value_id",
+            "ProcessedValueHasRawValue.processed_value_id"
+          )
+          .leftJoin("Deployment", "Deployment.deployment_id", "ProcessedValueHasRawValue.deployment_id")
+          .leftJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
+          .leftJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
+          .leftJoin("Unit", "Unit.unit_id", "SensorType.unit_id")
+          .groupBy("SensorType.parameter")
+          .select(({ fn }) => [
+            "Deployment.deployment_id",
+            "ProcessedValueHasRawValue.processed_value_id",
+            "SensorType.parameter",
+            "SensorType.sensor_type_id",
+            "Unit.unit",
+            "Deployment.time_end",
+            fn.max("ProcessedValue.value").as("value"),
+          ])
+          .having(({ fn, eb, ref }) => eb(ref("value"), "=", fn.max("ProcessedValue.value")))
+          .execute();
+
+        return result;
+      } else {
+        throw EmptyDatabaseResult;
+      }
+    } catch (error) {
+      throw error === EmptyDatabaseResult ? error : new DatabaseError(405, "Database error occurred.", error);
+    }
+  }
+
   async getProcessedValuesByDeploymentAndLogger(logger_id: number, deployment_id: number) {
     try {
       const rawValues = await db
@@ -46,9 +101,7 @@ export class ProcessedValueService extends BackendDbService {
             "Deployment.deployment_id",
             "ProcessedValueHasRawValue.logger_id",
             "SensorType.parameter",
-            "ProcessedValue.depth",
             "ProcessedValue.value",
-            "ProcessedValue.position",
             "Unit.unit",
             "Deployment.time_start",
             "Deployment.time_end",
@@ -66,4 +119,8 @@ export class ProcessedValueService extends BackendDbService {
 }
 export type ProcessedValuesForDiagrams = Awaited<
   ReturnType<ProcessedValueService["getProcessedValuesByDeploymentAndLogger"]>
+>[number];
+
+export type ParameterDataForDeployment = Awaited<
+  ReturnType<ProcessedValueService["getParameterDataForDeployment"]>
 >[number];

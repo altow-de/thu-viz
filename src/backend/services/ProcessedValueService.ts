@@ -47,11 +47,11 @@ export class ProcessedValueService extends BackendDbService {
         .leftJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
         .leftJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
         .where("SensorType.parameter", "=", parameter)
-        .select(({ fn }) => [
+        .select([
           "SensorType.parameter",
-          "Deployment.time_end",
-          "Deployment.time_start",
           "ProcessedValue.value",
+          "ProcessedValue.processing_time",
+          "ProcessedValue.processed_value_id",
         ])
         .execute();
 

@@ -1,4 +1,4 @@
-import Chart from "./Chart2";
+import Chart from "./Chart";
 import React, { useState, useEffect } from "react";
 
 type ChartLayoutProps = {

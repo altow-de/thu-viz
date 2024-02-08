@@ -37,6 +37,8 @@ const Chart = ({
 }: ChartProps) => {
   const [xBrushEnd, setXBrushEnd] = useState(brushValue.x1);
   const [xBrushStart, setXBrushStart] = useState(brushValue.x0);
+  const [activeBrush, setActiveBrush] = useState(false);
+  const [yBrushEnd, setYBrushEnd] = useState<number[]>([]);
   const axesRef = useRef(null);
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   const boundsHeight = height - MARGIN.top - MARGIN.bottom;
@@ -54,7 +56,9 @@ const Chart = ({
     const [min, max] = d3.extent(data, (d: DataPoint) => d[y]);
     const yScale = d3
       .scaleLinear()
-      .domain([0, max || 0])
+      .domain(
+        yBrushEnd.length === 0 ? [0, max || 0] : [yBrushEnd[0], yBrushEnd[1]]
+      )
       .nice()
       .range([boundsHeight, 0]);
 
@@ -90,6 +94,7 @@ const Chart = ({
     svgElement
       .append("g")
       .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`)
+      .attr("id", "yAxis" + y)
       .call(yAxisGenerator)
       .attr("opacity", 0.6)
       .call((g) => g.select(".domain").remove())
@@ -102,6 +107,37 @@ const Chart = ({
           .attr("stroke-opacity", 0.2)
           .attr("stroke-dasharray", 2)
       );
+
+    let active = false;
+    //add axis zoom selectors
+    svgElement
+      .append("rect")
+      .attr("x", -9)
+      .attr("y", MARGIN.top)
+      .attr("width", MARGIN.left)
+      .attr("height", boundsHeight)
+      .attr("fill", "transparent")
+      .attr("title", "press to enable y-Axis zoom")
+      .on("mouseover", (event) => {
+        d3.select("#yAnchor" + y)
+          .attr("text-decoration", "underline")
+          .attr("font-weight", 800);
+      })
+      .on("click", (event) => {
+        d3.select("#yAnchor" + y).attr("font-weight", 600);
+        setActiveBrush(!activeBrush);
+        active = !active;
+        yBrushGroup.call(yBrush);
+      })
+      .on("mouseout", (event) => {
+        if (active === false && activeBrush === false) {
+          d3.select("#yAnchor" + y)
+            .attr("text-decoration", "none")
+            .attr("font-weight", 600);
+        } else {
+          d3.select("#yAnchor" + y).attr("font-weight", 600);
+        }
+      });
 
     // grouped graphs and translated
     const graphGroup = svgElement
@@ -183,6 +219,7 @@ const Chart = ({
     //text anchors
     svgElement
       .append("text")
+      .attr("id", "yAnchor" + y)
       .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`)
       .attr("text-anchor", "start")
       .attr("y", -10)
@@ -191,8 +228,10 @@ const Chart = ({
       .attr("font-size", 10)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
+
     svgElement
       .append("text")
+      .attr("id", "xAnchor" + x)
       .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`)
       .attr("text-anchor", "start")
       .attr("y", boundsHeight)
@@ -208,11 +247,24 @@ const Chart = ({
         [0, 0],
         [boundsWidth, boundsHeight],
       ])
-      .filter((event) => event.button === 0) // Only trigger on left mouse button
+      // Only trigger on left mouse button
       .on("end", (event) => {
         if (!event.selection) return; // ignore empty selections.
         const [x0, x1] = event.selection;
         onBrushEnd(xScale.invert(x0), xScale.invert(x1));
+      });
+
+    const yBrush = d3
+      .brushY()
+      .extent([
+        [0, 0],
+        [boundsWidth, boundsHeight],
+      ])
+      // Only trigger on left mouse button
+      .on("end", (event) => {
+        if (!event.selection) return; // ignore empty selections.
+        const [y0, y1] = event.selection;
+        setYBrushEnd([yScale.invert(y1), yScale.invert(y0)]);
       });
 
     svgElement.on("contextmenu", (event) => {
@@ -221,12 +273,23 @@ const Chart = ({
 
     svgElement.on("dblclick", (event) => {
       onBrushEnd(0, 0);
+      setYBrushEnd([]);
+      setActiveBrush(false);
     });
 
     const xBrushGroup = graphGroup.append("g");
+    const yBrushGroup = graphGroup.append("g");
+
+    // check if the brush is active for consecutive zooms
+    if (activeBrush) {
+      d3.select("#yAnchor" + y)
+        .attr("text-decoration", "underline")
+        .attr("font-weight", 600);
+      yBrushGroup.call(yBrush);
+    }
 
     xBrushGroup.call(xBrush);
-  }, [width, data, xBrushEnd, xBrushStart]);
+  }, [width, data, xBrushEnd, xBrushStart, yBrushEnd]);
 
   return (
     <div id="chartContainer" className="flex-auto inline-block">

@@ -11,7 +11,10 @@ import { DeploymentTableData } from "@/frontend/types";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 import { useStore } from "@/frontend/store";
-import { ParameterDataForDeployment } from "@/backend/services/ProcessedValueService";
+import {
+  DiagramDataForParameterAndDeployment,
+  ParameterDataForDeployment,
+} from "@/backend/services/ProcessedValueService";
 import ChartLayout from "../chart/ChartLayout";
 
 const MeasurementData = () => {
@@ -26,6 +29,9 @@ const MeasurementData = () => {
   const [parameterDataForDeployment, setParameterDataForDeployment] = useState<
     ParameterDataForDeployment | undefined
   >(undefined);
+  const [chartData, setChartData] = useState<{
+    [key: string]: DiagramDataForParameterAndDeployment;
+  }>({});
   const { data: dataStore } = useStore();
 
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
@@ -43,11 +49,12 @@ const MeasurementData = () => {
           deployment,
           logger
         );
+
         setParameterDataForDeployment(
           (result as unknown) as ParameterDataForDeployment
         );
 
-        result.map(async (obj) => {
+        result.map(async (obj: { parameter: string }) => {
           const res = await processedValueService.getDiagramDataForParameterAndDeployment(
             deployment,
             logger,

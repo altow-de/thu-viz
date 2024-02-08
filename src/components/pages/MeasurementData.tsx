@@ -11,7 +11,7 @@ import { DeploymentTableData } from "@/frontend/types";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 import { useStore } from "@/frontend/store";
-import { ProcessedValuesForDiagrams } from "@/backend/services/ProcessedValueService";
+import { ParameterDataForDeployment } from "@/backend/services/ProcessedValueService";
 import ChartLayout from "../chart/ChartLayout";
 
 const MeasurementData = () => {
@@ -22,10 +22,10 @@ const MeasurementData = () => {
     x0: number;
     x1: number;
   }>({ x0: 0, x1: 0 });
-  const [
-    processedValuesByLoggerAndDeployment,
-    setProcessedValuesByLoggerAndDeployment,
-  ] = useState<ProcessedValuesForDiagrams | undefined>(undefined);
+
+  const [parameterDataForDeployment, setParameterDataForDeployment] = useState<
+    ParameterDataForDeployment | undefined
+  >(undefined);
   const { data: dataStore } = useStore();
 
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
@@ -39,11 +39,21 @@ const MeasurementData = () => {
       setLogger(logger);
 
       if (deployment > -1 && logger > -1) {
-        const result = await processedValueService.getProcessedValuesByDeploymentAndLogger(
+        const result = await processedValueService.getParameterDataForDeployment(
           deployment,
           logger
         );
-        setProcessedValuesByLoggerAndDeployment(result);
+        setParameterDataForDeployment(
+          (result as unknown) as ParameterDataForDeployment
+        );
+
+        result.map(async (obj) => {
+          const res = await processedValueService.getDiagramDataForParameterAndDeployment(
+            deployment,
+            logger,
+            obj.parameter
+          );
+        });
       }
     },
     [setDeployment, setLogger]

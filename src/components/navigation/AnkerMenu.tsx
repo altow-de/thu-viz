@@ -2,6 +2,7 @@ import { Anker } from "@/frontend/types";
 import { useClickAway } from "@uidotdev/usehooks";
 import React, { LegacyRef, useState } from "react";
 import MenuIcon from "../icons/MenuIcon";
+import Close from "../basic/Close";
 import ScrollTopIcon from "../icons/ScrollTopIcon";
 
 interface AnkerMenuProps {
@@ -30,33 +31,35 @@ const AnkerMenu = ({ ankers }: AnkerMenuProps) => {
       <div
         key={id}
         onClick={() => scrollToId(id)}
-        className="hover:bg-danube-50 text-center p-1 bg-white flex-1 items-center flex items-center justify-center font-semibold border-l border-gray-custom last:rounded-br-lg "
+        className="hover:text-danube-200 py-4 flex-1 items-center flex font-semibold border-b last:border-b-0 border-danube-500"
       >
-        <div className="">{title}</div>
+        <div className="text-sm">{title}</div>
       </div>
     );
   };
 
   return (
-    <div
-      ref={ref}
-      className={`fixed bg-white shadow-md text-xs z-50 text-danube-600 block md:hidden cursor-pointer right-0 rounded-lg ${
-        open ? "right-0 top-0 w-full" : " top-6"
-      }`}
-    >
+    <div ref={ref} className={`fixed text-xs z-50 text-white block md:hidden cursor-pointer top-40 right-0`}>
       {!open && (
-        <div className="w-auto h-auto rounded-full border-danube-400 border-1 p-2 flex " onClick={() => setOpen(true)}>
+        <div className="w-auto h-auto  p-2 flex shadow-md bg-danube-600 rounded-l-full" onClick={() => setOpen(true)}>
           <MenuIcon />
         </div>
       )}
       {open && (
-        <div className="w-full flex flex-col rounded-lg">
-          <div className="flex flex-1 justify-center items-stretch flex-wrap w-auto flex-row  rounded-lg">
+        <div className="w-full max-w-78 flex flex-row ">
+          <div className="color-white rounded-l-full p-3 bg-danube-600 w-12 h-12 shadow-md">
+            <Close onClick={() => setOpen(false)} style="hover:text-danube-200" />
+          </div>
+
+          <div className="flex flex-1 flex-col flex-row bg-danube-600 rounded-bl-lg px-4 bg-danube-600">
             <div
               onClick={() => scrollToId("header")}
-              className="hover:text-danube-900 text-center p-1 bg-white flex-1 items-center flex items-center justify-center font-semibold max-w-10 hover:bg-danube-50 rounded-bl-lg"
+              className="hover:text-danube-200 flex-1 items-center flex text-right py-3 border-danube-500 border-b w-full flex-row"
             >
-              <ScrollTopIcon />
+              <div className="hover:text-danube-200 text-sm font-semibold flex-1 text-left">Scroll to top</div>
+              <div className="self-end flex-0">
+                <ScrollTopIcon />
+              </div>
             </div>
             {ankers.map((anker: Anker) => {
               return menuEntry(anker.id, anker.title);

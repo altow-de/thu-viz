@@ -15,7 +15,11 @@ const PopUpWrapper = ({ children, title, onClick }: PopUpWrapperProps) => {
         <div className="relative left-1/2 text-center top-6 -translate-x-1/2 bg-white font-bold text-2xl text-danube-800 inline-block">
           {title}
         </div>
-        <Close onClick={onClick} />
+        <Close
+          onClick={onClick}
+          style="w-1/3 relative left-full -translate-x-[15%] -translate-y-1/2 cursor-pointer"
+          strokeHover={true}
+        />
         <div className="relative w-full my-6">{children}</div>
       </div>
     </div>

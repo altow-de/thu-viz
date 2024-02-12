@@ -6,14 +6,14 @@ const ScrollTopIcon = () => {
       <g id="SVGRepo_iconCarrier">
         <path
           d="M5 19L11.2929 12.7071C11.6834 12.3166 12.3166 12.3166 12.7071 12.7071L19 19"
-          stroke="#4883c8"
+          stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
         ></path>
         <path
           d="M5 11L11.2929 4.70711C11.6834 4.31658 12.3166 4.31658 12.7071 4.70711L19 11"
-          stroke="#4883c8"
+          stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"

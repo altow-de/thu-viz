@@ -27,18 +27,15 @@ const MeasurementData = () => {
   }>({ x0: 0, x1: 0 });
 
   const [parameterDataForDeployment, setParameterDataForDeployment] = useState<
-    ParameterDataForDeployment | undefined
+    ParameterDataForDeployment[] | undefined
   >(undefined);
-  const [chartData, setChartData] = useState<{
-    [key: string]: DiagramDataForParameterAndDeployment;
-  }>({});
+
   const { data: dataStore } = useStore();
 
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
   const processedValueService: ProcessedValueService = new ProcessedValueService(
     dataStore
   );
-
   const setAppliedData = useCallback(
     async (deployment: number, logger: number) => {
       setDeployment(deployment);
@@ -51,16 +48,16 @@ const MeasurementData = () => {
         );
 
         setParameterDataForDeployment(
-          (result as unknown) as ParameterDataForDeployment
+          (result as unknown) as ParameterDataForDeployment[]
         );
 
-        result.map(async (obj: { parameter: string }) => {
-          const res = await processedValueService.getDiagramDataForParameterAndDeployment(
-            deployment,
-            logger,
-            obj.parameter
-          );
-        });
+        // result.map(async (obj: { parameter: string }) => {
+        //   const res = await processedValueService.getDiagramDataForParameterAndDeployment(
+        //     deployment,
+        //     logger,
+        //     obj.parameter
+        //   );
+        // });
       }
     },
     [setDeployment, setLogger]
@@ -95,15 +92,23 @@ const MeasurementData = () => {
         hasMap={false}
         id={MeasurementAnkers.ParameterOverTime}
       >
-        <ChartLayout brush={brush} onBrushEnd={handleBrushEnd}></ChartLayout>
+        <ChartLayout
+          brush={brush}
+          onBrushEnd={handleBrushEnd}
+          parameterData={
+            parameterDataForDeployment as ParameterDataForDeployment[]
+          }
+          logger={logger}
+          deployment={deployment}
+        ></ChartLayout>
       </CardWraper>
-      <CardWraper
+      {/* <CardWraper
         text="Parameter over depths"
         hasMap={false}
         id={MeasurementAnkers.ParameterOverDepth}
       >
-        <ChartLayout brush={brush} onBrushEnd={handleBrushEnd}></ChartLayout>
-      </CardWraper>
+       
+      </CardWraper> */}
       <CardWraper text={"Tracks"} hasMap={true} id={MeasurementAnkers.Track}>
         <OceanMap type={MapType.route} />
       </CardWraper>

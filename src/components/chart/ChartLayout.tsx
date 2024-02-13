@@ -1,10 +1,19 @@
+import {
+  DiagramDataForParameterAndDeployment,
+  ParameterDataForDeployment,
+} from "@/backend/services/ProcessedValueService";
 import Chart from "./Chart";
 import React, { useState, useEffect } from "react";
+import { useStore } from "@/frontend/store";
+import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 
-type ChartLayoutProps = {
+interface ChartLayoutProps {
   onBrushEnd: any;
   brush: any;
-};
+  parameterData: ParameterDataForDeployment[];
+  logger: number;
+  deployment: number;
+}
 
 const data: {
   pressure: number;
@@ -25,10 +34,63 @@ const data: {
   { time: 10, pressure: 1498, temperature: 12.0, conductivity: 10 },
 ];
 
-const ChartLayout = ({ brush, onBrushEnd }: ChartLayoutProps) => {
+const ChartLayout = ({
+  brush,
+  onBrushEnd,
+  parameterData,
+  logger,
+  deployment,
+}: ChartLayoutProps) => {
   const [width, setWidth] = useState(
     window.innerWidth > 370 ? 300 : window.innerWidth - 50
   );
+  const [diagramData, setDiagramData] = useState<{
+    [key: string]: DiagramDataForParameterAndDeployment[];
+  }>([]);
+  const [dataLoading, setDataLoading] = useState(false);
+
+  const { data: dataStore } = useStore();
+  const processedValueService: ProcessedValueService = new ProcessedValueService(
+    dataStore
+  );
+
+  useEffect(() => {
+    setDataLoading(true);
+    if (!parameterData) return;
+
+    Promise.all(
+      parameterData.map(async (obj: ParameterDataForDeployment) => {
+        const data = await processedValueService.getDiagramDataForParameterAndDeployment(
+          deployment,
+          logger,
+          obj.parameter
+        );
+
+        return data.map((d) => ({
+          ...d,
+          processing_time: new Date(d.processing_time),
+          value: parseFloat(d.value),
+        }));
+      })
+    )
+      .then((results) => {
+        const newData = Object.fromEntries(
+          parameterData.map((obj, index) => [obj.parameter, results[index]])
+        );
+        setDiagramData((prevDiagramData) => ({
+          ...prevDiagramData,
+          ...newData,
+        }));
+        setDataLoading(false);
+      })
+      .catch((error) => {
+        // Handle error
+        console.error("Error fetching data:", error);
+        setDataLoading(false);
+      });
+  }, [parameterData]);
+
+  console.log(diagramData);
 
   useEffect(() => {
     const handleResize = () => {
@@ -44,45 +106,33 @@ const ChartLayout = ({ brush, onBrushEnd }: ChartLayoutProps) => {
 
   return (
     <div className="flex flex-wrap">
-      <div className=" flex-grow flex justify-center ">
-        <Chart
-          data={data}
-          onBrushEnd={onBrushEnd}
-          brushValue={brush}
-          width={width}
-          height={300}
-          tickValue={100}
-          x={"time"}
-          y={"pressure"}
-          title={"Pressure(mbar)"}
-        />
-      </div>
-      <div className=" flex-grow flex justify-center ">
-        <Chart
-          data={data}
-          onBrushEnd={onBrushEnd}
-          brushValue={brush}
-          width={width}
-          height={300}
-          tickValue={40}
-          x={"time"}
-          y={"temperature"}
-          title={"Temperature(C)"}
-        />
-      </div>
-      <div className=" flex-grow flex justify-center ">
-        <Chart
-          data={data}
-          onBrushEnd={onBrushEnd}
-          brushValue={brush}
-          width={width}
-          height={300}
-          tickValue={20}
-          x={"time"}
-          y={"conductivity"}
-          title={"Conductivity(ms/cm)"}
-        />
-      </div>
+      {parameterData?.map((obj: ParameterDataForDeployment, i) => {
+        return (
+          <div key={obj.parameter} className=" flex-grow flex justify-center ">
+            {dataLoading ? (
+              <img className="z-0" src="pulse.svg" />
+            ) : (
+              <Chart
+                data={diagramData[obj.parameter]}
+                dataObj={obj}
+                onBrushEnd={onBrushEnd}
+                brushValue={brush}
+                width={width}
+                height={300}
+                tickValue={20}
+                x={"time"}
+                y={obj.parameter}
+                title={
+                  obj.parameter
+                    ? obj.parameter?.charAt(0).toUpperCase() +
+                      obj.parameter.slice(1)
+                    : ""
+                }
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

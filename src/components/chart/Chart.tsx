@@ -1,28 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
+import {
+  DiagramDataForParameterAndDeployment,
+  ParameterDataForDeployment,
+} from "@/backend/services/ProcessedValueService";
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
 
 type DataPoint = Record<string, number>;
-type ChartProps = {
+interface ChartProps {
   onBrushEnd: (x0: number, x1: number) => void;
   brushValue: {
     x0: number;
     x1: number;
   };
-  data: {
-    pressure: number;
-    time: number;
-    temperature: number;
-    conductivity: number;
-  }[];
+  data: DiagramDataForParameterAndDeployment[];
   width: number;
   height: number;
   title: string;
   tickValue: number;
   x: string; // x and y props to define the key used from the data
-  y: string;
-};
+  y: string | null;
+  dataObj: ParameterDataForDeployment;
+}
 
 const Chart = ({
   data,
@@ -34,6 +34,7 @@ const Chart = ({
   tickValue,
   onBrushEnd,
   brushValue,
+  dataObj,
 }: ChartProps) => {
   const [xBrushEnd, setXBrushEnd] = useState(brushValue.x1);
   const [xBrushStart, setXBrushStart] = useState(brushValue.x0);
@@ -43,17 +44,21 @@ const Chart = ({
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   const boundsHeight = height - MARGIN.top - MARGIN.bottom;
 
+  console.log(data);
+  // data.map((d, i) => console.log(d.processing_time, d.value));
+
   useEffect(() => {
     setXBrushStart(brushValue.x0);
     setXBrushEnd(brushValue.x1);
   }, [brushValue.x0, brushValue.x1]);
 
   useEffect(() => {
-    const svgElement = d3.select(axesRef.current);
+    const svgElement = d3.select(axesRef.current).attr("class", "chart" + y);
     svgElement.selectAll("*").remove();
 
     // Y axis
-    const [min, max] = d3.extent(data, (d: DataPoint) => d[y]);
+    const [min, max] = d3.extent(data, (d) => d.value);
+    console.log(min, max);
     const yScale = d3
       .scaleLinear()
       .domain(
@@ -63,9 +68,10 @@ const Chart = ({
       .range([boundsHeight, 0]);
 
     // X axis
-    const [xMin, xMax] = d3.extent(data, (d: DataPoint) => d[x]);
+    const [xMin, xMax] = d3.extent(data, (d) => d.processing_time);
+    console.log(new Date(xMin), xMax);
     const xScale = d3
-      .scaleLinear() // change to time scale when working with actual time data
+      .scaleTime() // change to time scale when working with actual time data
       .domain(
         xBrushStart === 0 && xBrushEnd === 0
           ? [0, xMax || 0]
@@ -74,8 +80,12 @@ const Chart = ({
       .nice()
       .range([0, boundsWidth]);
 
+    xScale.ticks(d3.timeMinute.every(2));
+
     // x axis generator
-    const xAxisGenerator = d3.axisBottom(xScale);
+    const xAxisGenerator = d3
+      .axisBottom(xScale)
+      .tickFormat(d3.timeFormat("%H:%M"));
     svgElement
       .append("g")
       .attr(
@@ -144,24 +154,15 @@ const Chart = ({
       .append("g")
       .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
     // Add a clipPath: everything out of this area won't be drawn.
-    const clip = svgElement
-      .append("defs")
-      .append("clipPath")
-      .attr("id", "clip")
-      .append("rect")
-      .attr("width", boundsWidth)
-      .attr("height", boundsHeight)
-      .attr("x", 0)
-      .attr("y", 0);
 
     // Apply the clip path to the group
     graphGroup.attr("clip-path", "url(#clip)");
 
     // building line
     const lineBuilder = d3
-      .line<DataPoint>()
-      .x((d) => xScale(d[x]))
-      .y((d) => yScale(d[y]))
+      .line()
+      .x((d) => xScale(d.processing_time))
+      .y((d) => yScale(d.value))
       .curve(d3.curveBasis);
 
     //line
@@ -195,10 +196,10 @@ const Chart = ({
 
     // building area
     const areaBuilder = d3
-      .area<DataPoint>()
-      .x((d) => xScale(d[x]))
+      .area()
+      .x((d) => xScale(d.processing_time))
       .y0(yScale(1))
-      .y1((d) => yScale(d[y]))
+      .y1((d) => yScale(d.value))
       .curve(d3.curveBasis);
 
     const areaPath = graphGroup
@@ -216,6 +217,15 @@ const Chart = ({
 
     areaPath.transition().duration(1000).attr("d", areaBuilder(data));
 
+    const clip = svgElement
+      .append("defs")
+      .append("clipPath")
+      .attr("id", "clip")
+      .append("rect")
+      .attr("width", boundsWidth)
+      .attr("height", boundsHeight)
+      .attr("x", 0)
+      .attr("y", 0);
     //text anchors
     svgElement
       .append("text")
@@ -231,7 +241,7 @@ const Chart = ({
 
     svgElement
       .append("text")
-      .attr("id", "xAnchor" + x)
+      .attr("id", "xAnchor" + y)
       .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`)
       .attr("text-anchor", "start")
       .attr("y", boundsHeight)
@@ -271,6 +281,15 @@ const Chart = ({
       event.preventDefault();
     });
 
+    // d3.select(".chart" + y).on("mousemove", (event) => {
+    //   const coordinates = d3.pointer(event);
+    //   console.log(
+    //     `x: ${xScale.invert(coordinates[0] - MARGIN.left)}, y: ${yScale.invert(
+    //       coordinates[1] - MARGIN.top
+    //     )}`
+    //   );
+    // });
+
     svgElement.on("dblclick", (event) => {
       onBrushEnd(0, 0);
       setYBrushEnd([]);
@@ -279,14 +298,6 @@ const Chart = ({
 
     const xBrushGroup = graphGroup.append("g");
     const yBrushGroup = graphGroup.append("g");
-
-    // check if the brush is active for consecutive zooms
-    if (activeBrush) {
-      d3.select("#yAnchor" + y)
-        .attr("text-decoration", "underline")
-        .attr("font-weight", 600);
-      yBrushGroup.call(yBrush);
-    }
 
     xBrushGroup.call(xBrush);
   }, [width, data, xBrushEnd, xBrushStart, yBrushEnd]);

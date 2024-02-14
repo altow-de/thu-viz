@@ -22,7 +22,14 @@ export const MeasurementAnkerTitles: Anker[] = [
   { id: MeasurementAnkers.Track, title: "Track" },
 ];
 
-export const testData = ["title 1", "title 2", "title 3", "title 4", "title 5"];
+export const TableTitle = {
+  deployment_id: "Deployment",
+  logger_id: "Logger",
+  platform_id: "Platform",
+  date: "Date",
+  depth: "max. Depth",
+  duration: "Duration",
+};
 
 export const TableDataKeys = {
   time_start: "Time begin",

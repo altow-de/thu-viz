@@ -81,7 +81,6 @@ const Chart = ({
           ? [xMin, xMax]
           : [xBrushStart, xBrushEnd]
       )
-      .nice()
       .range([0, boundsWidth]);
 
     // x axis generator
@@ -177,20 +176,20 @@ const Chart = ({
         lineBuilder(data.map((item) => ({ ...item, [y]: yScale.domain()[0] })))
       );
 
-    const linePathTrack = graphGroup
-      .append("g")
-      .selectAll(".line")
-      .data([data])
-      .join("path")
-      .attr("fill", "none")
-      .attr("stroke", "blue")
-      .attr("stroke-width", 10)
-      .attr("d", (d) =>
-        lineBuilder(data.map((item) => ({ ...item, [y]: yScale.domain()[0] })))
-      ).on("mouseover", (event) =>{
-        const coordinates = d3.pointer(event);
-        if(coordinates[1] === )
-      });
+    // const linePathTrack = graphGroup
+    //   .append("g")
+    //   .selectAll(".line")
+    //   .data([data])
+    //   .join("path")
+    //   .attr("fill", "none")
+    //   .attr("stroke", "blue")
+    //   .attr("stroke-width", 10)
+    //   .attr("d", (d) =>
+    //     lineBuilder(data.map((item) => ({ ...item, [y]: yScale.domain()[0] })))
+    //   ).on("mouseover", (event) =>{
+    //     const coordinates = d3.pointer(event);
+    //     if(coordinates[1] === )
+    //   });
 
     linePath.transition().duration(1000).attr("d", lineBuilder(data));
 

@@ -9,6 +9,7 @@ export type Platform = Selectable<DB["Platform"]>;
 export type Vessel = Selectable<DB["Vessel"]>;
 export type ProcessedValue = Selectable<DB["ProcessedValue"]>;
 export type RawValue = Selectable<DB["RawValue"]>;
+export type ProcessedValueHasRawValue = Selectable<DB["ProcessedValueHasRawValue"]>;
 // export type PlatformContainsLogger = Selectable<DB["PlatformContainsLogger"]>;
 // export type DeckUnit = Selectable<DB["DeckUnit"]>;
 // export type PlatformContainsDeckUnit = Selectable<DB["PlatformContainsDeckUnit"]>;

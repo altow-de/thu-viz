@@ -9,16 +9,16 @@ export const MapStyles: { [key: string]: string } = { "basic-v2": "Street Map", 
 export const LayerZoom = { minzoom: 0, maxzoom: 22 };
 
 export const OverviewAnkerTitles: Anker[] = [
-  { id: OverviewAnkers.MeasurementSelection, title: "Selection" },
-  { id: OverviewAnkers.OverviewDeployments, title: "Deployments" },
-  { id: OverviewAnkers.PositionOfDeployments, title: "Map" },
+  { id: OverviewAnkers.MeasurementSelection, title: "Selection of measurement data" },
+  { id: OverviewAnkers.OverviewDeployments, title: "Overview Deployment" },
+  { id: OverviewAnkers.PositionOfDeployments, title: "Position of Deployments (Startposition)" },
 ];
 
 export const MeasurementAnkerTitles: Anker[] = [
-  { id: MeasurementAnkers.SelectionSingleDeployment, title: "Selection" },
+  { id: MeasurementAnkers.SelectionSingleDeployment, title: "Selection of single deployment" },
   { id: MeasurementAnkers.Metadata, title: "Metadata" },
-  { id: MeasurementAnkers.ParameterOverTime, title: "Diagrams time" },
-  { id: MeasurementAnkers.ParameterOverDepth, title: "Diagrams depths" },
+  { id: MeasurementAnkers.ParameterOverTime, title: "Parameter over time" },
+  { id: MeasurementAnkers.ParameterOverDepth, title: "Parameter over depths" },
   { id: MeasurementAnkers.Track, title: "Track" },
 ];
 

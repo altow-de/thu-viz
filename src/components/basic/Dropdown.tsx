@@ -25,7 +25,7 @@ const DropwDown: React.FC<DropwDownProps> = ({
       <option className="text-danube-900" key={-1} value={-1}>
         All
       </option>
-      {options.map((option: any, index: number) => (
+      {options?.map((option: any, index: number) => (
         <option
           className="text-danube-900"
           key={index}

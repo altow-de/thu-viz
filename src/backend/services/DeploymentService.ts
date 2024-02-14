@@ -14,7 +14,7 @@ export class DeploymentService extends BackendDbService {
         exists(
           selectFrom("ProcessedValueHasRawValue")
             .select("ProcessedValueHasRawValue.logger_id")
-            .whereRef("ProcessedValueHasRawValue.logger_id", "=", "Deployment.logger_id")
+            .whereRef("ProcessedValueHasRawValue.deployment_id", "=", "Deployment.deployment_id")
         )
       )
       .selectAll()

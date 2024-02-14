@@ -2,6 +2,7 @@ import { Deployment } from "@/backend/entities";
 import { FrontendDbService } from "./FrontendDbService";
 import { DeploymentTableData } from "../types";
 import { DataStore } from "../store/dataStore";
+import { OverviewDeploymentData } from "@/backend/services/DeploymentService";
 
 export class DeploymentService extends FrontendDbService {
   constructor(dataStore: DataStore) {
@@ -18,5 +19,9 @@ export class DeploymentService extends FrontendDbService {
 
   getDeploymentById(deployment_id: number, logger_id: number): Promise<DeploymentTableData> {
     return this.fetchData(`getDeploymentById?deployment_id=${deployment_id}&logger_id=${logger_id}`);
+  }
+
+  getOverviewDeploymentData(): Promise<OverviewDeploymentData[]> {
+    return this.fetchData("getOverviewDeploymentData");
   }
 }

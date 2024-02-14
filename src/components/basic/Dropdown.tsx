@@ -20,7 +20,7 @@ const DropwDown: React.FC<DropwDownProps> = ({ options, option_keys, setSelectio
       <option className="text-danube-900" key={-1} value={-1}>
         All
       </option>
-      {options.map((option: any, index: number) => (
+      {options?.map((option: any, index: number) => (
         <option className="text-danube-900" key={index} value={Object(option)[option_keys[0]]}>
           {option_keys.map((option_key) => {
             const val = Object(option)[option_key] + "\u00A0";

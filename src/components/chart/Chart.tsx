@@ -14,7 +14,12 @@ interface ChartProps {
     x0: number;
     x1: number;
   };
-  data: DiagramDataForParameterAndDeployment[];
+  data: {
+    processed_value_id: number;
+    processing_time: Date;
+    value: number;
+    parameter: string | null;
+  }[];
   width: number;
   height: number;
   title: string;
@@ -69,23 +74,18 @@ const Chart = ({
 
     // X axis
     const [xMin, xMax] = d3.extent(data, (d) => d.processing_time);
-    console.log(new Date(xMin), xMax);
     const xScale = d3
       .scaleTime() // change to time scale when working with actual time data
       .domain(
         xBrushStart === 0 && xBrushEnd === 0
-          ? [0, xMax || 0]
+          ? [xMin, xMax]
           : [xBrushStart, xBrushEnd]
       )
       .nice()
       .range([0, boundsWidth]);
 
-    xScale.ticks(d3.timeMinute.every(2));
-
     // x axis generator
-    const xAxisGenerator = d3
-      .axisBottom(xScale)
-      .tickFormat(d3.timeFormat("%H:%M"));
+    const xAxisGenerator = d3.axisBottom(xScale).ticks(5);
     svgElement
       .append("g")
       .attr(
@@ -127,7 +127,6 @@ const Chart = ({
       .attr("width", MARGIN.left)
       .attr("height", boundsHeight)
       .attr("fill", "transparent")
-      .attr("title", "press to enable y-Axis zoom")
       .on("mouseover", (event) => {
         d3.select("#yAnchor" + y)
           .attr("text-decoration", "underline")
@@ -136,7 +135,7 @@ const Chart = ({
       .on("click", (event) => {
         d3.select("#yAnchor" + y).attr("font-weight", 600);
         setActiveBrush(!activeBrush);
-        active = !active;
+        active = true;
         yBrushGroup.call(yBrush);
       })
       .on("mouseout", (event) => {
@@ -177,6 +176,21 @@ const Chart = ({
       .attr("d", (d) =>
         lineBuilder(data.map((item) => ({ ...item, [y]: yScale.domain()[0] })))
       );
+
+    const linePathTrack = graphGroup
+      .append("g")
+      .selectAll(".line")
+      .data([data])
+      .join("path")
+      .attr("fill", "none")
+      .attr("stroke", "blue")
+      .attr("stroke-width", 10)
+      .attr("d", (d) =>
+        lineBuilder(data.map((item) => ({ ...item, [y]: yScale.domain()[0] })))
+      ).on("mouseover", (event) =>{
+        const coordinates = d3.pointer(event);
+        if(coordinates[1] === )
+      });
 
     linePath.transition().duration(1000).attr("d", lineBuilder(data));
 
@@ -277,17 +291,18 @@ const Chart = ({
         setYBrushEnd([yScale.invert(y1), yScale.invert(y0)]);
       });
 
-    svgElement.on("contextmenu", (event) => {
-      event.preventDefault();
-    });
-
-    // d3.select(".chart" + y).on("mousemove", (event) => {
+    // d3.select("#trackingRect" + y).on("mousemove", (event) => {
     //   const coordinates = d3.pointer(event);
     //   console.log(
-    //     `x: ${xScale.invert(coordinates[0] - MARGIN.left)}, y: ${yScale.invert(
-    //       coordinates[1] - MARGIN.top
+    //     `x: ${xScale.invert(coordinates[0])}, y: ${yScale.invert(
+    //       coordinates[1]
     //     )}`
     //   );
+    //   // data.map((d, i) => {
+    //   //   if (d.processing_time === xScale.invert(coordinates[0])) {
+    //   //     console.log("foobar");
+    //   //   }
+    //   // });
     // });
 
     svgElement.on("dblclick", (event) => {
@@ -300,7 +315,7 @@ const Chart = ({
     const yBrushGroup = graphGroup.append("g");
 
     xBrushGroup.call(xBrush);
-  }, [width, data, xBrushEnd, xBrushStart, yBrushEnd]);
+  }, [xBrushEnd, xBrushStart, yBrushEnd]);
 
   return (
     <div id="chartContainer" className="flex-auto inline-block">

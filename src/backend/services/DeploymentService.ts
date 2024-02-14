@@ -48,15 +48,16 @@ export class DeploymentService extends BackendDbService {
   async getDeploymentsByLogger(logger_id: number) {
     const result = await db
       .selectFrom("Deployment")
-      .where("Deployment.logger_id", "=", logger_id)
       .where(({ exists, selectFrom }) =>
         exists(
           selectFrom("ProcessedValueHasRawValue")
             .select("ProcessedValueHasRawValue.deployment_id")
             .whereRef("ProcessedValueHasRawValue.deployment_id", "=", "Deployment.deployment_id")
+            .where("ProcessedValueHasRawValue.logger_id", "=", logger_id)
         )
       )
       .selectAll()
+      .groupBy(["Deployment.deployment_id"])
       .execute();
     return result;
   }

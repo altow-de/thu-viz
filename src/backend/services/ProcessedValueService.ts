@@ -26,6 +26,8 @@ export class ProcessedValueService extends BackendDbService {
   private async getValidRawValues(rawValues: ProcessedValueHasRawValue[]): Promise<any> {
     const rawValueIds = rawValues.map((obj) => obj.raw_value_id);
 
+    if (rawValueIds.length === 0) return undefined;
+
     //Define the subquery to determine the latest processing_time for each raw_value_id
     const latestProcessingTimesSubquery = db
       .selectFrom("ProcessedValueHasRawValue")
@@ -67,10 +69,11 @@ export class ProcessedValueService extends BackendDbService {
   async getDiagramDataForParameterAndDeployment(logger_id: number, deployment_id: number, parameter: string) {
     try {
       const rawValues = await this.getRawValues(logger_id, deployment_id);
-      if (!rawValues) {
+      const validRawValues = await this.getValidRawValues(rawValues);
+
+      if (!rawValues || !validRawValues) {
         throw EmptyDatabaseResult;
       }
-      const validRawValues = await this.getValidRawValues(rawValues);
       const validRawValueIDs = validRawValues.map((rawValue: any) => rawValue.processed_value_id);
 
       const result = await db
@@ -91,6 +94,7 @@ export class ProcessedValueService extends BackendDbService {
           "ProcessedValue.processing_time",
           "ProcessedValue.processed_value_id",
         ])
+        .groupBy("ProcessedValue.processed_value_id")
         .execute();
 
       return result;

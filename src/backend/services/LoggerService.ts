@@ -11,9 +11,21 @@ export class LoggerService extends BackendDbService {
   async getLoggersWithDeployments() {
     try {
       const result = await db
-        .selectFrom("Deployment")
-        .leftJoin("Logger", "Logger.logger_id", "Deployment.logger_id")
-        .groupBy("Logger.logger_id")
+        .selectFrom("Logger")
+        .where(({ and, exists, selectFrom }) =>
+          and([
+            exists(
+              selectFrom("Deployment")
+                .select("Deployment.logger_id")
+                .whereRef("Deployment.logger_id", "=", "Logger.logger_id")
+            ),
+            exists(
+              selectFrom("ProcessedValueHasRawValue")
+                .select("ProcessedValueHasRawValue.logger_id")
+                .whereRef("ProcessedValueHasRawValue.logger_id", "=", "Logger.logger_id")
+            ),
+          ])
+        )
         .selectAll()
         .execute();
       if (result?.length > 0) {

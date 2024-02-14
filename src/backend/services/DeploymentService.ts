@@ -10,6 +10,13 @@ export class DeploymentService extends BackendDbService {
     const result = await db
       .selectFrom("Deployment")
       .where("Deployment.logger_id", "=", logger_id)
+      .where(({ exists, selectFrom }) =>
+        exists(
+          selectFrom("ProcessedValueHasRawValue")
+            .select("ProcessedValueHasRawValue.logger_id")
+            .whereRef("ProcessedValueHasRawValue.logger_id", "=", "Deployment.logger_id")
+        )
+      )
       .selectAll()
       .execute();
     return result;

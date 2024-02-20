@@ -5,6 +5,7 @@ import { DatabaseError } from "@/backend/services/DatabaseError";
 import {
   DiagramDataForParameterAndDeployment,
   ParameterDataForDeployment,
+  TrackData,
 } from "@/backend/services/ProcessedValueService";
 
 export class ProcessedValueService extends FrontendDbService {
@@ -30,5 +31,9 @@ export class ProcessedValueService extends FrontendDbService {
     logger_id: number
   ): Promise<ParameterDataForDeployment[] | DatabaseError> {
     return this.fetchData(`getParameterDataForDeployment?deployment_id=${deployment_id}&logger_id=${logger_id}`);
+  }
+
+  getTrackDataByLoggerAndDeployment(deployment_id: number, logger_id: number): Promise<TrackData[] | DatabaseError> {
+    return this.fetchData(`getTrackDataByLoggerAndDeployment?deployment_id=${deployment_id}&logger_id=${logger_id}`);
   }
 }

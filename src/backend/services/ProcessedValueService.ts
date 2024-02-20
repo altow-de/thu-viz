@@ -24,8 +24,7 @@ export class ProcessedValueService extends BackendDbService {
   }
 
   private async getValidRawValues(rawValues: ProcessedValueHasRawValue[]): Promise<any> {
-    const rawValueIds = rawValues.map((obj) => obj.raw_value_id);
-
+    const rawValueIds = rawValues.map((obj) => obj.processed_value_id);
     if (rawValueIds.length === 0) return undefined;
 
     //Define the subquery to determine the latest processing_time for each raw_value_id
@@ -34,7 +33,7 @@ export class ProcessedValueService extends BackendDbService {
       .innerJoin("ProcessedValue", "ProcessedValue.processed_value_id", "ProcessedValueHasRawValue.processed_value_id")
       .select("ProcessedValueHasRawValue.raw_value_id")
       .select(sql`MAX(ProcessedValue.processing_time)`.as("latest_processing_time"))
-      .where("ProcessedValueHasRawValue.raw_value_id", "in", rawValueIds)
+      .where("ProcessedValueHasRawValue.processed_value_id", "in", rawValueIds)
       .where("ProcessedValue.valid", "=", 1)
       .groupBy("ProcessedValueHasRawValue.raw_value_id")
       .as("lpt");
@@ -91,7 +90,7 @@ export class ProcessedValueService extends BackendDbService {
         .select([
           "SensorType.parameter",
           "ProcessedValue.value",
-          "ProcessedValue.processing_time",
+          "ProcessedValue.measuring_time",
           "ProcessedValue.processed_value_id",
         ])
         .groupBy("ProcessedValue.processed_value_id")
@@ -106,26 +105,23 @@ export class ProcessedValueService extends BackendDbService {
   async getParameterDataForDeployment(logger_id: number, deployment_id: number) {
     try {
       const rawValues = await this.getRawValues(logger_id, deployment_id);
-      if (!rawValues) {
+      const validRawValues = await this.getValidRawValues(rawValues);
+
+      if (!rawValues || !validRawValues) {
         throw EmptyDatabaseResult;
       }
+      const validRawValueIDs = validRawValues.map((rawValue: any) => rawValue.processed_value_id);
 
       const result = await db
-        .selectFrom("ProcessedValue")
-        .where(
-          "ProcessedValue.processed_value_id",
-          "in",
-          rawValues.map((obj) => obj.processed_value_id)
-        )
-        .select(({ fn }) => [fn.max("ProcessedValue.processing_time").as("processing_time")])
-        .where("ProcessedValue.valid", "=", 1)
-        .having(({ fn, eb, ref }) => eb(ref("processing_time"), "=", fn.max("ProcessedValue.processing_time")))
-        .leftJoin(
-          "ProcessedValueHasRawValue",
+        .selectFrom("ProcessedValueHasRawValue")
+        .where("ProcessedValueHasRawValue.processed_value_id", "in", validRawValueIDs)
+        .innerJoin(
+          "ProcessedValue",
           "ProcessedValue.processed_value_id",
           "ProcessedValueHasRawValue.processed_value_id"
         )
         .innerJoin("Deployment", "Deployment.deployment_id", "ProcessedValueHasRawValue.deployment_id")
+        .where("Deployment.deployment_id", "=", deployment_id)
         .innerJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
         .innerJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
         .innerJoin("Unit", "Unit.unit_id", "SensorType.unit_id")
@@ -148,6 +144,35 @@ export class ProcessedValueService extends BackendDbService {
       throw error === EmptyDatabaseResult ? error : new DatabaseError(405, "Database error occurred.", error);
     }
   }
+
+  async getTrackDataByLoggerAndDeployment(logger_id: number, deployment_id: number) {
+    try {
+      const rawValues = await this.getRawValues(logger_id, deployment_id);
+      const validRawValues = await this.getValidRawValues(rawValues);
+
+      if (!rawValues || !validRawValues) {
+        throw EmptyDatabaseResult;
+      }
+      const validRawValueIDs = validRawValues.map((rawValue: any) => rawValue.processed_value_id);
+
+      const res = db
+        .selectFrom("ProcessedValueHasRawValue")
+        .where("ProcessedValueHasRawValue.processed_value_id", "in", validRawValueIDs)
+        .innerJoin(
+          "ProcessedValue",
+          "ProcessedValue.processed_value_id",
+          "ProcessedValueHasRawValue.processed_value_id"
+        )
+        .where(sql`ST_AsText(ProcessedValue.position)`, "!=", "POINT(-999 -999)")
+        .selectAll()
+        .orderBy("ProcessedValue.processing_time", "desc")
+        .groupBy("ProcessedValue.position")
+        .execute();
+      return res;
+    } catch (error) {
+      throw error === EmptyDatabaseResult ? error : new DatabaseError(405, "Database error occurred.", error);
+    }
+  }
 }
 
 export type ParameterDataForDeployment = Awaited<
@@ -157,3 +182,5 @@ export type ParameterDataForDeployment = Awaited<
 export type DiagramDataForParameterAndDeployment = Awaited<
   ReturnType<ProcessedValueService["getDiagramDataForParameterAndDeployment"]>
 >[number];
+
+export type TrackData = Awaited<ReturnType<ProcessedValueService["getTrackDataByLoggerAndDeployment"]>>[number];

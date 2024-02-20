@@ -11,11 +11,11 @@ import { DeploymentTableData } from "@/frontend/types";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 import { useStore } from "@/frontend/store";
-import {
-  DiagramDataForParameterAndDeployment,
-  ParameterDataForDeployment,
-} from "@/backend/services/ProcessedValueService";
 import ChartLayout from "../chart/ChartLayout";
+import {
+  ParameterDataForDeployment,
+  TrackData,
+} from "@/backend/services/ProcessedValueService";
 
 const MeasurementData = () => {
   const [deployment, setDeployment] = useState<number>(-1);
@@ -29,6 +29,7 @@ const MeasurementData = () => {
   const [parameterDataForDeployment, setParameterDataForDeployment] = useState<
     ParameterDataForDeployment[] | undefined
   >(undefined);
+  const [trackData, setTrackData] = useState<TrackData[]>();
 
   const { data: dataStore } = useStore();
 
@@ -50,14 +51,6 @@ const MeasurementData = () => {
         setParameterDataForDeployment(
           (result as unknown) as ParameterDataForDeployment[]
         );
-
-        // result.map(async (obj: { parameter: string }) => {
-        //   const res = await processedValueService.getDiagramDataForParameterAndDeployment(
-        //     deployment,
-        //     logger,
-        //     obj.parameter
-        //   );
-        // });
       }
     },
     [setDeployment, setLogger]
@@ -69,6 +62,11 @@ const MeasurementData = () => {
       return;
     }
     const data = await deploymentService.getDeploymentById(deployment, logger);
+    const res = await processedValueService.getTrackDataByLoggerAndDeployment(
+      deployment,
+      logger
+    );
+    setTrackData(res as TrackData[]);
     setTableData(data);
   }, [deployment]);
 
@@ -110,7 +108,7 @@ const MeasurementData = () => {
        
       </CardWraper> */}
       <CardWraper text={"Tracks"} hasMap={true} id={MeasurementAnkers.Track}>
-        <OceanMap type={MapType.route} />
+        <OceanMap type={MapType.route} data={trackData} />
       </CardWraper>
       <div className="flex justify-center">
         <Button text={"Export plots"} onClick={() => {}} />

@@ -71,8 +71,6 @@ const ChartLayout = ({
       });
   }, [parameterData]);
 
-  console.log(diagramData);
-
   useEffect(() => {
     const handleResize = () => {
       setWidth(window.innerWidth > 370 ? 300 : window.innerWidth - 50);
@@ -105,7 +103,7 @@ const ChartLayout = ({
                 brushValue={brush}
                 width={width}
                 height={300}
-                tickValue={20}
+                tickValue={40}
                 x={"time"}
                 y={obj.parameter}
                 title={

@@ -1,18 +1,30 @@
 import { useEffect, useRef, useState } from "react";
-import { GeoJSONFeature, Map, MapGeoJSONFeature, MapMouseEvent, NavigationControl, Popup, LngLat } from "maplibre-gl";
+import {
+  GeoJSONFeature,
+  Map,
+  MapGeoJSONFeature,
+  MapMouseEvent,
+  NavigationControl,
+  Popup,
+  LngLat,
+  GeoJSONSource,
+} from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import MapStyle from "./MapStyle";
 import { LayerZoom, MapStyles } from "@/frontend/constants";
 import { MapType } from "@/frontend/enum";
+import { TrackData } from "@/backend/services/ProcessedValueService";
 
 interface OceanMapProps {
   type: MapType;
+  data?: TrackData[];
 }
 
-const OceanMap = ({ type }: OceanMapProps) => {
+const OceanMap = ({ type, data }: OceanMapProps) => {
   const mapContainer = useRef(null);
   const map = useRef<Map | null>(null);
   const [mapStyle, setMapStyle] = useState(Object.keys(MapStyles)[0]);
+  const trackData = data?.map((trackObj: TrackData) => [trackObj.position.x, trackObj.position.y]);
 
   const initialState = {
     lat: 54.1767,
@@ -113,13 +125,8 @@ const OceanMap = ({ type }: OceanMapProps) => {
         tileSize: 256,
       });
     }
-    if (type === MapType.route) {
-      addRouteSource([
-        [12.08402, 54.1767],
-        [12.05402, 54.1867],
-        [11.00402, 54.2],
-        [11.50017, 54.77662],
-      ]);
+    if (type === MapType.route && trackData) {
+      addRouteSource(trackData);
     }
     if (type === MapType.point) {
       addPointSource([
@@ -132,16 +139,18 @@ const OceanMap = ({ type }: OceanMapProps) => {
   };
 
   const addPointSource = (coordinates: number[][]) => {
+    const features = coordinates?.map((coord) => {
+      return {
+        geometry: {
+          type: "Point",
+          coordinates: coord,
+        },
+        type: "Feature",
+        properties: {},
+      };
+    });
+
     if (!map?.current?.getSource("route-point-source")) {
-      const features = coordinates.map((coord) => {
-        return {
-          geometry: {
-            type: "Point",
-            coordinates: coord,
-          },
-          type: "Feature",
-        };
-      });
       map.current?.addSource("route-point-source", {
         type: "geojson",
         data: {
@@ -149,22 +158,31 @@ const OceanMap = ({ type }: OceanMapProps) => {
           features: features,
         },
       });
+    } else {
+      (map?.current?.getSource("route-point-source") as GeoJSONSource)?.setData({
+        type: "FeatureCollection",
+        features: features,
+      });
     }
   };
 
   const addRouteSource = (coordinates: number[][]) => {
+    const data = {
+      type: "Feature",
+      properties: {},
+      geometry: {
+        type: "LineString",
+        coordinates: coordinates,
+      },
+    };
+
     if (!map?.current?.getSource("route-source")) {
       map.current?.addSource("route-source", {
         type: "geojson",
-        data: {
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "LineString",
-            coordinates: coordinates,
-          },
-        },
+        data: data,
       });
+    } else {
+      (map?.current?.getSource("route-source") as GeoJSONSource)?.setData(data);
     }
     addPointSource(coordinates);
   };
@@ -228,24 +246,35 @@ const OceanMap = ({ type }: OceanMapProps) => {
 
   // Effect to initialize the map
   useEffect(() => {
-    if (!mapContainer?.current || map.current) return;
-    map.current = new Map({
-      container: mapContainer.current,
-      style: `${
-        "https://api.maptiler.com/maps/" + mapStyle + "/style.json?key=" + process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN
-      }`,
-      center: [initialState.lng, initialState.lat],
-      zoom: initialState.zoom,
-    });
-
-    map.current.on("load", async function () {
+    if (!mapContainer?.current) return;
+    if (map.current) {
+      map.current.setCenter([data?.[0].position.x || initialState.lng, data?.[0].position.y || initialState.lat]);
+      map.current.setZoom(15);
       handleImages();
       handleSource();
       handleLayer();
       handlePopUps();
-    });
-    map.current.addControl(new NavigationControl(), "bottom-right");
-  }, [mapStyle]);
+    } else {
+      map.current = new Map({
+        container: mapContainer.current,
+        style: `${
+          "https://api.maptiler.com/maps/" +
+          mapStyle +
+          "/style.json?key=" +
+          process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN
+        }`,
+        center: [initialState.lng, initialState.lat],
+        zoom: initialState.zoom,
+      });
+      map.current.on("load", async function () {
+        handleImages();
+        handleSource();
+        handleLayer();
+        handlePopUps();
+      });
+      map.current.addControl(new NavigationControl(), "bottom-right");
+    }
+  }, [mapStyle, data]);
 
   return (
     <div className="relative">

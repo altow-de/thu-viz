@@ -23,7 +23,7 @@ const Sort = ({ selected, onArrowDown, onArrowUp, column_key }: SortProps) => {
           (selected === column_key + "_up"
             ? "border-b-danube-900 border-t-danube-600 hover:border-b-danube-900 hover:border-t-danube-600 "
             : "border-t-danube-600 border-b-danube-600 hover:border-t-danube-300 hover:border-b-danube-300 ") +
-          "cursor-pointer w-0 h-0 border-l-[5px] border-l-transparent border-b-[6px] border-r-[5px] border-r-transparent right-0 bottom-[13px] mb-[3px] hover:border-t-danube-300 hover:border-b-danube-300"
+          "cursor-pointer w-0 h-0 border-l-[5px] border-l-transparent border-b-[6px] border-r-[5px] border-r-transparent right-0 bottom-[13px] mb-[2px] hover:border-t-danube-300 hover:border-b-danube-300"
         }
       ></div>
       <div
@@ -32,7 +32,7 @@ const Sort = ({ selected, onArrowDown, onArrowUp, column_key }: SortProps) => {
           (selected === column_key + "_down"
             ? "border-t-danube-900 border-b-danube-950 hover:border-t-danube-900 hover:border-b-danube-950 "
             : "border-t-danube-950 border-b-danube-950 hover:border-t-danube-300 hover:border-b-danube-300 ") +
-          "cursor-pointer w-0 h-0 border-l-[5px] border-l-transparent border-t-[6px] border-r-[5px] border-r-transparent right-0 bottom-[2px] mt-[2px]"
+          "cursor-pointer w-0 h-0 border-l-[5px] border-l-transparent border-t-[6px] border-r-[5px] border-r-transparent right-0 bottom-[2px] mt-[1px]"
         }
       ></div>
     </div>

@@ -12,12 +12,13 @@ import { DeploymentTableData } from "@/frontend/types";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 import { useStore } from "@/frontend/store";
-import { ParameterDataForDeployment } from "@/backend/services/ProcessedValueService";
+import { ParameterDataForDeployment, TrackData } from "@/backend/services/ProcessedValueService";
 
 const MeasurementData = () => {
   const [deployment, setDeployment] = useState<number>(-1);
   const [logger, setLogger] = useState<number>(-1);
   const [tableData, setTableData] = useState<DeploymentTableData | undefined>();
+  const [trackData, setTrackData] = useState<TrackData[]>();
 
   const [parameterDataForDeployment, setParameterDataForDeployment] = useState<ParameterDataForDeployment | undefined>(
     undefined
@@ -54,6 +55,8 @@ const MeasurementData = () => {
       return;
     }
     const data = await deploymentService.getDeploymentById(deployment, logger);
+    const res = await processedValueService.getTrackDataByLoggerAndDeployment(deployment, logger);
+    setTrackData(res as TrackData[]);
     setTableData(data);
   }, [deployment]);
 
@@ -79,7 +82,7 @@ const MeasurementData = () => {
         <Chart width={300} height={300} tickValue={100} x={"time"} y={"pressure"} title={"Pressure(mbar)"} />
       </CardWraper>
       <CardWraper text={"Tracks"} hasMap={true} id={MeasurementAnkers.Track}>
-        <OceanMap type={MapType.route} />
+        <OceanMap type={MapType.route} data={trackData} />
       </CardWraper>
       <div className="flex justify-center">
         <Button text={"Export plots"} onClick={() => {}} />

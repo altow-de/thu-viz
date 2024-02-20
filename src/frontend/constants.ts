@@ -25,10 +25,10 @@ export const MeasurementAnkerTitles: Anker[] = [
 export const TableTitle = {
   deployment_id: "Deployment",
   logger_id: "Logger",
-  platform_id: "Platform",
-  date: "Date",
-  depth: "max. Depth",
-  duration: "Duration",
+  name: "Platform",
+  time_start: "Date",
+  deepest: "max. Depth",
+  time_end: "Duration",
 };
 
 export const TableDataKeys = {

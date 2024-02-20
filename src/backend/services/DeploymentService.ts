@@ -1,11 +1,19 @@
 import { sql } from "kysely";
 import { db } from "../db";
 import { BackendDbService } from "./BackendDbService";
+import { Region } from "@/frontend/types";
 
 export class DeploymentService extends BackendDbService {
   constructor() {
     super("Deployment");
   }
+
+  async getOverviewDeploymentDataByTimePlatformAndRegion(
+    time_start: Date,
+    time_end: Date,
+    platform_id: number,
+    region: Region
+  ) {}
 
   async getOverviewDeploymentData() {
     const deepestSubquery = db
@@ -41,6 +49,7 @@ export class DeploymentService extends BackendDbService {
         "dpst.deepest",
         "Deployment.time_end",
       ])
+      .limit(2000)
       .execute();
     return result;
   }
@@ -65,11 +74,18 @@ export class DeploymentService extends BackendDbService {
   async getDeploymentById(logger_id: number, deployment_id: number) {
     const result = await db
       .selectFrom("Deployment")
-      .where("Deployment.logger_id", "=", logger_id)
-      .where("Deployment.deployment_id", "=", deployment_id)
-      .rightJoin("PlatformContainsLogger", "PlatformContainsLogger.logger_id", "Deployment.logger_id")
-      .rightJoin("Vessel", "Vessel.platform_id", "PlatformContainsLogger.platform_id")
-      .selectAll()
+      .where(({ eb, and }) =>
+        and([eb("Deployment.logger_id", "=", logger_id), eb("Deployment.deployment_id", "=", deployment_id)])
+      )
+      .innerJoin("PlatformContainsLogger", "PlatformContainsLogger.logger_id", "Deployment.logger_id")
+      .innerJoin("Vessel", "Vessel.platform_id", "PlatformContainsLogger.platform_id")
+      .select([
+        "Deployment.time_start",
+        "Deployment.time_end",
+        "Deployment.position_start",
+        "Deployment.position_end",
+        "Vessel.name",
+      ])
       .executeTakeFirst();
     return result;
   }

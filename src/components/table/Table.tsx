@@ -3,13 +3,16 @@ import TableHeader from "./TableHeader";
 import Switch from "./Switch";
 import { OverviewDeploymentData } from "@/backend/services/DeploymentService";
 import { DateTimeLocaleOptions, TableTitle } from "@/frontend/constants";
+import convert from "convert";
+import { getTimeObjectForSort } from "@/frontend/utils";
 
 interface TableProps {
   data: OverviewDeploymentData[];
   maxHeight?: string;
+  textSize?: string;
 }
 
-const Table = ({ data, maxHeight }: TableProps) => {
+const Table = ({ data, maxHeight, textSize }: TableProps) => {
   const [tableData, setTableData] = useState<OverviewDeploymentData[]>(data);
   const [sorted, setSorted] = useState<boolean>(false);
 
@@ -19,14 +22,19 @@ const Table = ({ data, maxHeight }: TableProps) => {
 
   const formatColVal = (colObj: OverviewDeploymentData, colKey: string) => {
     const value = Object(colObj)[colKey];
+
     switch (colKey) {
       case "time_start":
         return value ? new Date(value.toString()).toLocaleString("de-DE", DateTimeLocaleOptions) : "no data";
       case "time_end":
-        return (
-          ((new Date(value).getTime() - new Date(Object(colObj)["time_start"]).getTime()) / (60 * 1000)).toFixed(2) +
-          " min"
-        );
+        const converted = convert(
+          new Date(value).getTime() - new Date(Object(colObj)["time_start"]).getTime(),
+          "ms"
+        ).to("best");
+        return converted.quantity.toFixed(0) + converted.unit;
+      case "deepest":
+        const num = (Number(value) * -1).toFixed(1);
+        return num + "m";
       default:
         return value;
     }
@@ -41,6 +49,7 @@ const Table = ({ data, maxHeight }: TableProps) => {
     const type = typeof data.find((item) => item[column_key as keyof OverviewDeploymentData] !== null)?.[
       column_key as keyof OverviewDeploymentData
     ];
+
     let sortedData: OverviewDeploymentData[] = [];
     if (type === "number" && direction === "down") {
       sortedData = data.sort((a, b) => {
@@ -72,10 +81,41 @@ const Table = ({ data, maxHeight }: TableProps) => {
         return numA - numB;
       });
 
-    if (type !== "number" && direction === "up") {
+    if (column_key === "time_end" && direction === "down") {
+      sortedData = data.sort((a, b) => {
+        const numA: number = getTimeObjectForSort(formatColVal(a, column_key));
+        const numB: number = getTimeObjectForSort(formatColVal(b, column_key));
+
+        if (numA === null || numA === undefined || isNaN(numA)) {
+          return 1;
+        }
+        if (numB === null || numB === undefined || isNaN(numB)) {
+          return -1;
+        }
+
+        return numB - numA;
+      });
+    }
+    if (column_key === "time_end" && direction === "up")
+      sortedData = data.sort((a, b) => {
+        const numA: number = getTimeObjectForSort(formatColVal(a, column_key));
+        const numB: number = getTimeObjectForSort(formatColVal(b, column_key));
+
+        if (numA === null || numA === undefined || isNaN(numA)) {
+          return 1;
+        }
+        if (numB === null || numB === undefined || isNaN(numB)) {
+          return -1;
+        }
+
+        return numA - numB;
+      });
+
+    if (type !== "number" && direction === "up" && column_key !== "time_end") {
       sortedData = data.sort((a, b) => {
         const strA: string = String(Object(a)[column_key]);
         const strB: string = String(Object(b)[column_key]);
+
         if (strA === null || strA === undefined) {
           return strB === null || strB === undefined ? 0 : -1;
         }
@@ -85,11 +125,10 @@ const Table = ({ data, maxHeight }: TableProps) => {
         return strB.localeCompare(strA);
       });
     }
-    if (type !== "number" && direction === "down") {
+    if (type !== "number" && direction === "down" && column_key !== "time_end") {
       sortedData = data.sort((a, b) => {
         const strA: string = String(Object(a)[column_key]);
         const strB: string = String(Object(b)[column_key]);
-
         if (strA === null || strA === undefined) {
           return strB === null || strB === undefined ? 0 : -1;
         }
@@ -106,8 +145,8 @@ const Table = ({ data, maxHeight }: TableProps) => {
 
   return (
     <div className="overflow-x-auto rounded-t-lg shadow-md">
-      <div className={`grid grid-rows-1 bg-white gap-1 min-w-[550px] text-sm`}>
-        <TableHeader titles={TableTitle} sort={sort} />
+      <div className={`grid grid-rows-1 bg-white gap-1 min-w-[800px] ${textSize === "small" ? "text-xs" : "text-sm"}`}>
+        <TableHeader titles={TableTitle} sort={sort} textSize={textSize} />
         <div className={`bg-white ${maxHeight}`}>
           {tableData?.map((row, index) => (
             <div
@@ -118,12 +157,12 @@ const Table = ({ data, maxHeight }: TableProps) => {
                 {Object.values(row).map((col, i) => (
                   <div
                     key={"col-" + i}
-                    className={` ${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-3 px-4 self-center h-full`}
+                    className={` ${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-3 px-2 self-center h-full`}
                   >
                     {formatColVal(row as OverviewDeploymentData, Object.keys(row)[i])}
                   </div>
                 ))}
-                <Switch style={`${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-3 px-4 text-danube-900`} />
+                <Switch style={`${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-3 px-2 text-danube-900`} />
               </div>
             </div>
           ))}

@@ -145,12 +145,18 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
 
   return (
     <div className="overflow-x-auto rounded-t-lg shadow-md">
-      <div className={`grid grid-rows-1 bg-white gap-1 min-w-[800px] ${textSize === "small" ? "text-xs" : "text-sm"}`}>
-        <TableHeader titles={TableTitle} sort={sort} textSize={textSize} />
-        <div className={`bg-white ${maxHeight}`}>
-          {tableData &&
-            tableData?.length > 0 &&
-            tableData?.map((row, index) => (
+      {(!tableData || tableData?.length === 0) && (
+        <div className="px-6 py-24 text-danube-900 text-sm text-center bg-danube-50">
+          No data is available for the entered filter criteria.
+        </div>
+      )}
+      {tableData && tableData?.length > 0 && (
+        <div
+          className={`grid grid-rows-1 bg-white gap-1 min-w-[800px] ${textSize === "small" ? "text-xs" : "text-sm"}`}
+        >
+          <TableHeader titles={TableTitle} sort={sort} textSize={textSize} />
+          <div className={`bg-white ${maxHeight}`}>
+            {tableData?.map((row, index) => (
               <div
                 key={index}
                 className={`text-center text-danube-900  ${index !== data.length - 1 ? "border-white border-b-2" : ""}`}
@@ -172,8 +178,9 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
                 </div>
               </div>
             ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

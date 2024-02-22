@@ -43,12 +43,12 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
 
   const selectLogger = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = Number(e.target.value);
-    setSelectedLogger(selected);
+    setSelectedLogger(loggers[selected].logger_id);
   };
 
   const selectDeployment = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = Number(e.target.value);
-    setSelectedDeployment(selected);
+    setSelectedDeployment(deployments[selected].deployment_id);
   };
 
   const getLoggersWithDeployments = useCallback(async () => {

@@ -14,23 +14,50 @@ import MapStyle from "./MapStyle";
 import { LayerZoom, MapStyles } from "@/frontend/constants";
 import { MapType } from "@/frontend/enum";
 import { TrackData } from "@/backend/services/ProcessedValueService";
+import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 
 interface OceanMapProps {
   type: MapType;
-  data?: TrackData[];
+  data?: TrackData[] | OverviewDeploymentTrackData[];
 }
 
 const OceanMap = ({ type, data }: OceanMapProps) => {
   const mapContainer = useRef(null);
   const map = useRef<Map | null>(null);
   const [mapStyle, setMapStyle] = useState(Object.keys(MapStyles)[0]);
-  const trackData = data?.map((trackObj: TrackData) => [trackObj.position.x, trackObj.position.y]);
 
   const initialState = {
     lat: 54.1767,
     lng: 12.08402,
     zoom: 11,
   };
+  const extractCoordinates = (obj: TrackData | OverviewDeploymentTrackData) => {
+    // Versuch, die Koordinaten aus dem ersten Datenelement zu extrahieren
+    const firstDataItem = obj;
+    let lng = initialState.lng; // Standardwert für Längengrad
+    let lat = initialState.lat; // Standardwert für Breitengrad
+
+    if (firstDataItem) {
+      // Versuch, Längen- und Breitengrad aus den verschiedenen Datenstrukturen zu extrahieren
+      lng =
+        (firstDataItem as TrackData)?.position?.x ||
+        (firstDataItem as OverviewDeploymentTrackData).position_start?.x ||
+        lng;
+      lat =
+        (firstDataItem as TrackData)?.position?.y ||
+        (firstDataItem as OverviewDeploymentTrackData).position_start?.y ||
+        lat;
+    }
+
+    return { lng, lat };
+  };
+  const trackData =
+    data && data.length > 0
+      ? data?.map((trackObj: TrackData | OverviewDeploymentTrackData) => {
+          const { lng, lat } = extractCoordinates(trackObj);
+          return [lng, lat];
+        })
+      : [];
 
   const onMapStyleChange = (mapStyle: string) => {
     const mapUrl =
@@ -125,16 +152,12 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
         tileSize: 256,
       });
     }
+
     if (type === MapType.route && trackData) {
       addRouteSource(trackData);
     }
-    if (type === MapType.point) {
-      addPointSource([
-        [12.08402, 54.1767],
-        [12.05402, 54.1867],
-        [11.00402, 54.2],
-        [11.50017, 54.77662],
-      ]);
+    if (type === MapType.point && trackData) {
+      addPointSource(trackData);
     }
   };
 
@@ -236,10 +259,10 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
           "raster-opacity": 0.8,
         },
       });
-    if (type === MapType.route) {
+    if (type === MapType.route && trackData) {
       addRouteLayer();
     }
-    if (type === MapType.point) {
+    if (type === MapType.point && trackData) {
       addPointLayer("location");
     }
   };
@@ -248,7 +271,10 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
   useEffect(() => {
     if (!mapContainer?.current) return;
     if (map.current) {
-      map.current.setCenter([data?.[0].position.x || initialState.lng, data?.[0].position.y || initialState.lat]);
+      if (data?.[0]) {
+        const { lng, lat } = extractCoordinates(data[0]);
+        map.current.setCenter([lng, lat]);
+      }
       map.current.setZoom(15);
       handleImages();
       handleSource();

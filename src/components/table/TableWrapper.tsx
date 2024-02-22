@@ -3,11 +3,11 @@ import Button from "../basic/Button";
 import CardWrapper from "../wrapper/CardWrapper";
 import Table from "./Table";
 import { OverviewAnkers } from "@/frontend/enum";
-import { OverviewDeploymentData } from "@/backend/services/DeploymentService";
+import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 
 interface TableWrapperProps {
   setPopUpVisible: (visible: boolean) => void;
-  tableData: OverviewDeploymentData[];
+  tableData: OverviewDeploymentTrackData[];
 }
 
 const TableWrapper = ({ setPopUpVisible, tableData }: TableWrapperProps) => {

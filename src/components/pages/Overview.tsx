@@ -8,44 +8,63 @@ import AnkerMenu from "../navigation/AnkerMenu";
 import { OverviewAnkerTitles } from "@/frontend/constants";
 import PopUpWrapper from "../wrapper/PopUpWrapper";
 import Table from "../table/Table";
-import { OverviewDeploymentData } from "@/backend/services/DeploymentService";
+import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { useStore } from "@/frontend/store";
+import { Region } from "@/frontend/types";
 
 const Overview = () => {
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
-  const [overviewDeploymentData, setOverviewDeploymentData] = useState<OverviewDeploymentData[]>([]);
+  const [overviewDeploymentTrackData, setOverviewDeploymentTrackData] = useState<OverviewDeploymentTrackData[]>([]);
   const { data: dataStore } = useStore();
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
+  const [region, setRegion] = useState<Region>();
+  const [platform, setPlatform] = useState<number>(-1);
+  const [applyClicked, setApplyClicked] = useState<boolean>(false);
 
-  const getOverviewDeploymentData = useCallback(async () => {
-    const res = await deploymentService.getOverviewDeploymentData();
-    setOverviewDeploymentData(res);
-  }, []);
+  const getOverviewDeploymentDataByTimePlatformAndRegion = useCallback(async () => {
+    const res = await deploymentService.getOverviewDeploymentDataByTimePlatformAndRegion(
+      region || undefined,
+      platform || undefined,
+      startDate || undefined,
+      endDate || undefined
+    );
+
+    setOverviewDeploymentTrackData(res);
+  }, [applyClicked]);
 
   useEffect(() => {
-    getOverviewDeploymentData();
-  }, [getOverviewDeploymentData]);
+    getOverviewDeploymentDataByTimePlatformAndRegion();
+  }, [getOverviewDeploymentDataByTimePlatformAndRegion]);
 
   return (
     <div>
       {popUpVisible && (
         <PopUpWrapper title={"Overview Deployment"} onClick={() => setPopUpVisible(false)}>
-          <Table data={overviewDeploymentData} maxHeight={"max-h-96"} />
+          <Table data={overviewDeploymentTrackData} maxHeight={"max-h-96"} />
         </PopUpWrapper>
       )}
       <div className="flex flex-col">
         <AnkerMenu ankers={OverviewAnkerTitles} />
         <div className="flex flex-col md:flex-row gap-0 md:gap-4">
-          <MeasurementSelection />
-          <TableWrapper setPopUpVisible={setPopUpVisible} tableData={overviewDeploymentData} />
+          <MeasurementSelection
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+            setRegion={setRegion}
+            setPlatform={setPlatform}
+            applyClicked={applyClicked}
+            setApplyClicked={setApplyClicked}
+          />
+          <TableWrapper setPopUpVisible={setPopUpVisible} tableData={overviewDeploymentTrackData} />
         </div>
         <CardWrapper
           text={"Position of Deployments (Startposition)"}
           hasMap={true}
           id={OverviewAnkers.PositionOfDeployments}
         >
-          <OceanMap type={MapType.point} />
+          <OceanMap type={MapType.point} data={overviewDeploymentTrackData} />
         </CardWrapper>
       </div>
     </div>

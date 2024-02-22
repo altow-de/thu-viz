@@ -1,8 +1,8 @@
 import { Deployment } from "@/backend/entities";
 import { FrontendDbService } from "./FrontendDbService";
-import { DeploymentTableData } from "../types";
+import { DeploymentTableData, Region } from "../types";
 import { DataStore } from "../store/dataStore";
-import { OverviewDeploymentData } from "@/backend/services/DeploymentService";
+import { OverviewDeploymentData, OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 
 export class DeploymentService extends FrontendDbService {
   constructor(dataStore: DataStore) {
@@ -21,7 +21,16 @@ export class DeploymentService extends FrontendDbService {
     return this.fetchData(`getDeploymentById?deployment_id=${deployment_id}&logger_id=${logger_id}`);
   }
 
-  getOverviewDeploymentData(): Promise<OverviewDeploymentData[]> {
-    return this.fetchData("getOverviewDeploymentData");
+  getOverviewDeploymentDataByTimePlatformAndRegion(
+    region?: Region,
+    platform_id?: number,
+    time_start?: Date,
+    time_end?: Date
+  ): Promise<OverviewDeploymentTrackData[]> {
+    return this.fetchData(
+      `getOverviewDeploymentDataByTimePlatformAndRegion?region=${JSON.stringify(
+        region
+      )}&platform_id=${platform_id}&time_start=${time_start}&time_end=${time_end}`
+    );
   }
 }

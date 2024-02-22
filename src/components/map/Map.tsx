@@ -249,7 +249,9 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
    * @function
    */
   const handleLayer = () => {
-    if (!map.current?.getLayer("openseamap"))
+    if (!map.current?.getLayer("openseamap")) {
+      console.log(map.current);
+
       map.current?.addLayer({
         id: "openseamap",
         type: "raster",
@@ -259,6 +261,7 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
           "raster-opacity": 0.8,
         },
       });
+    }
     if (type === MapType.route && trackData) {
       addRouteLayer();
     }
@@ -276,10 +279,13 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
         map.current.setCenter([lng, lat]);
       }
       map.current.setZoom(15);
-      handleImages();
-      handleSource();
-      handleLayer();
-      handlePopUps();
+      map.current.on("load", async function () {
+        handleImages();
+        handleSource();
+        handleLayer();
+        handlePopUps();
+      });
+      map;
     } else {
       map.current = new Map({
         container: mapContainer.current,

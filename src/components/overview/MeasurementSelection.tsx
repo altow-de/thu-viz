@@ -11,8 +11,6 @@ import { PlatformService } from "@/frontend/services/PlatformService";
 import { Region } from "@/frontend/types";
 import { OverviewAnkers } from "@/frontend/enum";
 import { useStore } from "@/frontend/store";
-import { format } from "date-fns";
-import { select } from "d3-selection";
 
 interface MeasurementSelectionProps {
   setStartDate: (time_start: Date) => void;
@@ -32,7 +30,7 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
   applyClicked,
 }) => {
   const regions: Region[] = [
-    { name: "Baltic Sea", polygon: "POLYGON((10.0 55.0, 30.0 55.0, 30.0 60.0, 10.0 60.0, 10.0 55.0))" },
+    { name: "Baltic Sea", polygon: "POLYGON((10.0 54.0, 30.0 54.0, 30.0 60.0, 10.0 60.0, 10.0 54.0))" },
     {
       name: "North Sea",
       polygon: "POLYGON((10.0 55.0, 30.0 55.0, 30.0 60.0, 10.0 60.0, 10.0 55.0))",
@@ -51,8 +49,6 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
 
   const selectPlatform = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = Number(e.target.value);
-    console.log(selected);
-
     setSelectedPlatform(selected);
   };
 

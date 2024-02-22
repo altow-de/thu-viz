@@ -59,7 +59,6 @@ export class DeploymentService extends BackendDbService {
         }
 
         if (region && String(region) !== "undefined") {
-          const polygon = (JSON.parse(region.toString()) as Region).polygon.toString();
           conditions.push(eb(sql`ST_Contains(ST_GeomFromText(${polygon}), Deployment.position_start)`, "=", true));
         }
         return conditions.length > 0 ? eb.and(conditions) : eb;

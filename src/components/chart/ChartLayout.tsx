@@ -8,28 +8,24 @@ import { useStore } from "@/frontend/store";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 
 interface ChartLayoutProps {
-  onBrushEnd: any;
-  brush: any;
   parameterData: ParameterDataForDeployment[];
   logger: number;
   deployment: number;
 }
 
 const ChartLayout = ({
-  brush,
-  onBrushEnd,
   parameterData,
   logger,
   deployment,
 }: ChartLayoutProps) => {
   const [width, setWidth] = useState(
-    window.innerWidth > 370 ? 300 : window.innerWidth - 50
+    window.innerWidth > 370 ? 300 : window.innerWidth - 70
   );
   const [diagramData, setDiagramData] = useState<{
     [key: string]: DiagramDataForParameterAndDeployment[];
   }>([]);
   const [dataLoading, setDataLoading] = useState(false);
-
+  const [brush, setBrush] = useState<number[]>([0, 0]);
   const { data: dataStore } = useStore();
   const processedValueService: ProcessedValueService = new ProcessedValueService(
     dataStore
@@ -49,7 +45,7 @@ const ChartLayout = ({
 
         return data.map((d) => ({
           ...d,
-          processing_time: new Date(d.processing_time),
+          measuring_time: new Date(d.measuring_time),
           value: parseFloat(d.value),
         }));
       })
@@ -83,6 +79,9 @@ const ChartLayout = ({
     };
   }, []);
 
+  const handleBrushEnd = (x0: number = 0, x1: number = 0) => {
+    setBrush([x0, x1]);
+  };
   return (
     <div className="flex flex-wrap">
       {parameterData?.map((obj: ParameterDataForDeployment, i) => {
@@ -96,23 +95,24 @@ const ChartLayout = ({
                 height={300}
               />
             ) : (
-              <Chart
-                data={diagramData[obj.parameter]}
-                dataObj={obj}
-                onBrushEnd={onBrushEnd}
-                brushValue={brush}
-                width={width}
-                height={300}
-                tickValue={40}
-                x={"time"}
-                y={obj.parameter}
-                title={
-                  obj.parameter
-                    ? obj.parameter?.charAt(0).toUpperCase() +
-                      obj.parameter.slice(1)
-                    : ""
-                }
-              />
+              diagramData[obj.parameter] !== undefined && (
+                <Chart
+                  data={diagramData[obj.parameter]}
+                  dataObj={obj}
+                  onLoggerChange={parameterData}
+                  onXBrushEnd={handleBrushEnd}
+                  brushValue={brush}
+                  width={width}
+                  xAxisTitle={"time"}
+                  yAxisTitle={obj.parameter}
+                  title={
+                    obj.parameter
+                      ? obj.parameter?.charAt(0).toUpperCase() +
+                        obj.parameter.slice(1)
+                      : ""
+                  }
+                />
+              )
             )}
           </div>
         );

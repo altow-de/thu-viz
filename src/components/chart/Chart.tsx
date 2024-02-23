@@ -7,64 +7,74 @@ import {
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
 
-type DataPoint = Record<string, number>;
+type DataType = {
+  processed_value_id: number;
+  measuring_time: Date;
+  value: number;
+  parameter: string | null;
+}[];
+
 interface ChartProps {
-  onBrushEnd: (x0: number, x1: number) => void;
-  brushValue: {
-    x0: number;
-    x1: number;
-  };
-  data: {
-    processed_value_id: number;
-    processing_time: Date;
-    value: number;
-    parameter: string | null;
-  }[];
+  onXBrushEnd: (x0: number, x1: number) => void;
+  onLoggerChange: ParameterDataForDeployment[];
+  brushValue: number[];
+  data: DataType;
   width: number;
-  height: number;
   title: string;
-  tickValue: number;
-  x: string; // x and y props to define the key used from the data
-  y: string | null;
+  xAxisTitle: string; // x and y props to define the key used from the data
+  yAxisTitle: string | null;
   dataObj: ParameterDataForDeployment;
 }
 
 const Chart = ({
   data,
   width,
-  height,
   title,
-  x,
-  y,
-  tickValue,
-  onBrushEnd,
+  xAxisTitle,
+  yAxisTitle,
+  onXBrushEnd,
   brushValue,
   dataObj,
+  onLoggerChange,
 }: ChartProps) => {
-  const [xBrushEnd, setXBrushEnd] = useState(brushValue.x1);
-  const [xBrushStart, setXBrushStart] = useState(brushValue.x0);
-  const [activeBrush, setActiveBrush] = useState(false);
-  const [yBrushEnd, setYBrushEnd] = useState([]);
+  const [xBrushEnd, setXBrushEnd] = useState<number[]>([
+    brushValue[0],
+    brushValue[1],
+  ]);
+  const [yBrushEnd, setYBrushEnd] = useState<number[]>([]);
   const axesRef = useRef(null);
-  const selectionYRef = useRef<MutableRefObject<Object[]>>();
+  let selectionRef = useRef(new Array()); // saves last zoom selection
+
   const boundsWidth = width - MARGIN.right - MARGIN.left;
-  const boundsHeight = height - MARGIN.top - MARGIN.bottom;
-  console.log(selectionYRef);
-  useEffect(() => {
-    setXBrushStart(brushValue.x0);
-    setXBrushEnd(brushValue.x1);
-  }, [brushValue.x0, brushValue.x1]);
+  const boundsHeight = 300 - MARGIN.top - MARGIN.bottom;
 
   useEffect(() => {
-    const svgElement = d3.select(axesRef.current).attr("class", "chart" + y);
+    setXBrushEnd([brushValue[0], brushValue[1]]);
+  }, [brushValue[0], brushValue[1]]);
+
+  useEffect(() => {
+    onXBrushEnd(0, 0);
+    setYBrushEnd([]);
+  }, [onLoggerChange]);
+
+  useEffect(() => {
+    const svgElement = d3
+      .select(axesRef.current)
+      .attr("class", "chart" + yAxisTitle);
     svgElement.selectAll("*").remove();
 
+    const logger = d3.group(
+      data,
+      (d) => d.measuring_time,
+      (d) => d.value
+    );
+
     // Y axis
-    const [min, max] = d3.extent(data, (d) => d.value);
+    const [min, max]: number[] | undefined[] = d3.extent(data, (d) => d.value);
     const yScale = d3
       .scaleLinear()
       .domain(
-        yBrushEnd.length === 0 ? [0, max || 0] : [yBrushEnd[0], yBrushEnd[1]]
+        yBrushEnd.length === 0 ? [min, max || 0] : [yBrushEnd[0], yBrushEnd[1]]
       )
       .nice()
       .range([boundsHeight, 0]);
@@ -74,15 +84,11 @@ const Chart = ({
     const xMax = new Date(dataObj.time_end);
     const xScale = d3
       .scaleTime() // change to time scale when working with actual time data
-      .domain(
-        xBrushStart === 0 && xBrushEnd === 0
-          ? [xMin, xMax]
-          : [xBrushStart, xBrushEnd]
-      )
+      .domain(xBrushEnd[0] === 0 ? [xMin, xMax] : [xBrushEnd[0], xBrushEnd[1]])
       .range([0, boundsWidth]);
 
     // x axis generator
-    const xAxisGenerator = d3.axisBottom(xScale).ticks(4);
+    const xAxisGenerator = d3.axisBottom(xScale).ticks(6);
     svgElement
       .append("g")
       .attr(
@@ -97,11 +103,13 @@ const Chart = ({
       .call((g) => g.selectAll(".tick line").attr("stroke-opacity", 0));
 
     // y axis generator
-    const yAxisGenerator = d3.axisLeft(yScale).ticks(min, 10, max); //ticks
+    const yAxisGenerator = d3.axisLeft(yScale).ticks(min, 10, max);
     const generatedYAxis = svgElement
       .append("g")
       .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`)
-      .attr("id", "yAxis" + y)
+      .attr("id", "yAxis" + yAxisTitle);
+
+    generatedYAxis
       .transition()
       .duration(1000)
       .call(yAxisGenerator)
@@ -109,10 +117,8 @@ const Chart = ({
       .call((g) => g.select(".domain").attr("stroke-opacity", 0))
       .call((g) => g.selectAll(".tick line").attr("stroke-opacity", 0));
 
-    const dashLine = svgElement
+    const dashLine = generatedYAxis
       .append("g")
-      .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`)
-      .attr("id", "yAxis" + y)
       .call(yAxisGenerator)
       .attr("opacity", 0.6)
       .call((g) => g.select(".domain").attr("stroke-opacity", 0))
@@ -124,56 +130,22 @@ const Chart = ({
           .attr("x2", boundsWidth)
           .attr("stroke-opacity", 0.2)
           .attr("stroke-dasharray", 2)
-      );
-    dashLine.selectAll("text").remove();
+      )
+      .selectAll("text")
+      .remove();
 
     // grouped graphs and translated
     const graphGroup = svgElement
       .append("g")
       .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
-    const xbrushGroup = svgElement
-      .append("g")
-      .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
-    const ybrushGroup = svgElement
-      .append("g")
-      .attr("transform", `translate(${12}, ${MARGIN.top})`);
-
-    d3.selectAll(".brush .selection")
-      .style("fill", "#69b3a2")
-      .style("opacity", 0.5);
 
     // Apply the clip path to the group
     graphGroup.attr("clip-path", "url(#clipCharts)");
 
-    // building line
-    const lineBuilder = d3
-      .line()
-      .x((d) => xScale(d.processing_time))
-      .y((d) => yScale(d.value))
-      .curve(d3.curveBasis);
-
-    //line
-    const linePath = graphGroup
-      .append("g")
-      .selectAll(".line")
-      .data([data])
-      .join("path")
-      .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-width", 2)
-      //transition not working
-      .attr("d", (d) =>
-        lineBuilder(
-          data.map((item) => ({ ...item, value: yScale.domain()[0] }))
-        )
-      );
-
-    linePath.transition().duration(1000).attr("d", lineBuilder(data));
-
-    // building area
+    //building area
     const areaBuilder = d3
       .area()
-      .x((d) => xScale(d.processing_time))
+      .x((d) => xScale(d.measuring_time))
       .y0(yScale(1))
       .y1((d) => yScale(d.value))
       .curve(d3.curveBasis);
@@ -185,9 +157,10 @@ const Chart = ({
       .data([data])
       .join("path")
       .attr("fill", "url(#area-gradient)")
-      .attr("stroke", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 2)
       .attr("opacity", 0.8)
-      //transition not working
+      // transition
       .attr("d", (d) =>
         areaBuilder(
           data.map((item) => ({ ...item, value: yScale.domain()[0] }))
@@ -197,7 +170,7 @@ const Chart = ({
     areaPath.transition().duration(1000).attr("d", areaBuilder(data));
 
     // CLIPS
-    const yClip = svgElement
+    const yBrushArea = svgElement
       .append("defs")
       .append("clipPath")
       .attr("id", "yclip")
@@ -205,10 +178,9 @@ const Chart = ({
       .attr("width", boundsWidth / 6)
       .attr("height", boundsHeight)
       .attr("x", 0)
-      .attr("y", 0)
-      .attr("cursor", "ns-resize");
+      .attr("y", 0);
 
-    const clipCharts = svgElement
+    const xBrushArea = svgElement
       .append("defs")
       .append("clipPath")
       .attr("id", "clipCharts")
@@ -216,17 +188,9 @@ const Chart = ({
       .attr("width", boundsWidth)
       .attr("height", boundsHeight)
       .attr("x", 0)
-      .attr("y", 0)
-      .attr("cursor", "ew-resize");
+      .attr("y", 0);
 
     //XBRUSH
-
-    const children = generatedYAxis.selectAll("g").selectAll("*");
-    const lastChild = children.filter((d, i, nodes) => i === nodes.length - 1);
-
-    // Assign an id to the last child
-    lastChild.attr("id", "highestYAnchor");
-
     const xBrush = d3
       .brushX()
       .extent([
@@ -238,16 +202,10 @@ const Chart = ({
         xBrushGroup.select(".overlay").attr("cursor", "none");
       })
       .on("end", (event) => {
-        if (!event.selection) return; // ignore empty selections.
-        const [x0, x1] = event.selection;
-        const found1Data = data
-          .reverse()
-          .find((d) => xScale(d.processing_time) < x1);
-        const found2Data = data
-          .reverse()
-          .find((d) => xScale(d.processing_time) > x0);
-        setYBrushEnd([found2Data.value, found1Data.value]);
-        onBrushEnd(xScale.invert(x0), xScale.invert(x1));
+        if (!event.selection) return;
+        const [x0, x1] = event.selection.map(xScale.invert);
+        onXBrushEnd(x0, x1);
+        selectionRef.current.push([x0, x1]);
       });
 
     // YBRUSH
@@ -257,7 +215,6 @@ const Chart = ({
         [0, 0],
         [boundsWidth, boundsHeight],
       ])
-
       .on("brush", (event) => {
         const [x, y] = d3.pointer(event, xBrushGroup.node());
         yBrushGroup
@@ -265,23 +222,26 @@ const Chart = ({
           .style("fill", "steelblue")
           .style("stroke", "steelblue")
           .style("stroke-width", 0.2);
-
         yBrushGroup.select(".overlay").attr("cursor", "none");
       })
       .on("end", (event) => {
-        if (!event.selection) return; // ignore empty selections.
-        const [y0, y1] = event.selection;
-        setYBrushEnd([yScale.invert(y1), yScale.invert(y0)]);
-        selectionYRef.push([yScale.invert(y1), yScale.invert(y0)]);
+        if (!event.selection) return;
+        const [y0, y1] = event.selection.map(yScale.invert);
+        setYBrushEnd([y1, y0]);
+        selectionRef.current.push([y1, y0]);
       });
 
     yBrush.handleSize(1.5);
 
     // calling brushes
-    const yBrushGroup = ybrushGroup
+    const yBrushGroup = svgElement
+      .append("g")
+      .attr("transform", `translate(${12}, ${MARGIN.top})`)
       .attr("clip-path", "url(#yclip)")
       .append("g");
-    const xBrushGroup = xbrushGroup
+    const xBrushGroup = svgElement
+      .append("g")
+      .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`)
       .attr("clip-path", "url(#clipCharts)")
       .append("g");
 
@@ -290,13 +250,45 @@ const Chart = ({
 
     //reset
     svgElement.on("dblclick", (event) => {
-      onBrushEnd(0, 0);
+      onXBrushEnd(0, 0);
       setYBrushEnd([]);
-      setActiveBrush(false);
+      selectionRef.current = [];
     });
 
-    //lineargrad
-    const lg = svgElement
+    svgElement.on("contextmenu", (event) => {
+      event.preventDefault();
+    });
+
+    //single zoom reset on right click
+    svgElement.on("mousedown", (event) => {
+      console.log(selectionRef.current);
+      if (selectionRef.current.length === 0) return;
+      if (event.button === 2) {
+        const removedZoom = selectionRef.current.pop();
+        if (typeof removedZoom[0] === "number") {
+          const lastYZoom = selectionRef.current.findLast(
+            (item) => typeof item[0] === "number"
+          );
+          if (lastYZoom) {
+            setYBrushEnd([lastYZoom[0], lastYZoom[1]]);
+          } else {
+            setYBrushEnd([]);
+          }
+        } else {
+          const lastXZoom = selectionRef.current.findLast(
+            (item) => typeof item[0] !== "number"
+          );
+          if (lastXZoom) {
+            onXBrushEnd(lastXZoom[0], lastXZoom[1]);
+          } else {
+            onXBrushEnd(0, 0);
+          }
+        }
+      }
+    });
+
+    //lineargradient
+    const linearGradient = svgElement
       .append("defs")
       .append("linearGradient")
       .attr("id", "area-gradient")
@@ -305,33 +297,39 @@ const Chart = ({
       .attr("x2", "0")
       .attr("y2", "1");
 
-    lg.append("stop").attr("offset", "0%").style("stop-color", "steelblue");
+    linearGradient
+      .append("stop")
+      .attr("offset", "0%")
+      .style("stop-color", "steelblue");
 
-    lg.append("stop").attr("offset", "100%").style("stop-color", "white");
+    linearGradient
+      .append("stop")
+      .attr("offset", "100%")
+      .style("stop-color", "white");
 
-    //text anchors
+    //axis text anchors
     svgElement
       .append("text")
-      .attr("id", "yAnchor" + y)
+      .attr("id", "yAnchor" + yAxisTitle)
       .attr("text-anchor", "start")
       .attr("y", -10 + MARGIN.top)
       .attr("x", -22 + MARGIN.left)
-      .text(y) //name of the y axis
+      .text(yAxisTitle) //name of the y axis
       .attr("font-size", 10)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
 
     svgElement
       .append("text")
-      .attr("id", "xAnchor" + y)
+      .attr("id", "xAnchor" + yAxisTitle)
       .attr("text-anchor", "start")
       .attr("y", boundsHeight + MARGIN.top)
       .attr("x", boundsWidth + 5 + MARGIN.left)
-      .text(x) //name of the x axis
+      .text(xAxisTitle) //name of the x axis
       .attr("font-size", 10)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
-  }, [xBrushEnd, xBrushStart, yBrushEnd]);
+  }, [xBrushEnd, yBrushEnd]);
 
   return (
     <div id="chartContainer" className="flex-auto inline-block">
@@ -339,7 +337,7 @@ const Chart = ({
       <svg
         ref={axesRef}
         width={width}
-        height={height}
+        height={300}
         style={{ display: "block", margin: "auto" }}
       ></svg>
     </div>

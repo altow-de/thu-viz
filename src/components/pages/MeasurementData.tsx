@@ -21,10 +21,6 @@ const MeasurementData = () => {
   const [deployment, setDeployment] = useState<number>(-1);
   const [logger, setLogger] = useState<number>(-1);
   const [tableData, setTableData] = useState<DeploymentTableData | undefined>();
-  const [brush, setBrush] = useState<{
-    x0: number;
-    x1: number;
-  }>({ x0: 0, x1: 0 });
 
   const [parameterDataForDeployment, setParameterDataForDeployment] = useState<
     ParameterDataForDeployment[] | undefined
@@ -70,10 +66,6 @@ const MeasurementData = () => {
     setTableData(data);
   }, [deployment]);
 
-  const handleBrushEnd = (x0: number = 0, x1: number = 0) => {
-    setBrush({ x0: x0, x1: x1 });
-  };
-
   useEffect(() => {
     getDeploymentById();
   }, [getDeploymentById]);
@@ -91,8 +83,6 @@ const MeasurementData = () => {
         id={MeasurementAnkers.ParameterOverTime}
       >
         <ChartLayout
-          brush={brush}
-          onBrushEnd={handleBrushEnd}
           parameterData={
             parameterDataForDeployment as ParameterDataForDeployment[]
           }

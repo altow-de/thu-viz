@@ -160,7 +160,7 @@ const Chart = ({
       .attr("stroke", "steelblue")
       .attr("stroke-width", 2)
       .attr("opacity", 0.8)
-      // transition
+      // transition effect
       .attr("d", (d) =>
         areaBuilder(
           data.map((item) => ({ ...item, value: yScale.domain()[0] }))

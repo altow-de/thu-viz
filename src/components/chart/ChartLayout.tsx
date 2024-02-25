@@ -95,7 +95,9 @@ const ChartLayout = ({
                 height={300}
               />
             ) : (
-              diagramData[obj.parameter] !== undefined && (
+              diagramData[obj.parameter] !== undefined &&
+              logger > -1 &&
+              deployment > -1 && (
                 <Chart
                   data={diagramData[obj.parameter]}
                   dataObj={obj}

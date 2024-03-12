@@ -2,6 +2,7 @@ import { sql } from "kysely";
 import { db } from "../db";
 import { BackendDbService } from "./BackendDbService";
 import { Region } from "@/frontend/types";
+import { format } from "date-fns";
 
 export class DeploymentService extends BackendDbService {
   constructor() {
@@ -9,13 +10,24 @@ export class DeploymentService extends BackendDbService {
   }
 
   async getOverviewDeploymentDataByTimePlatformAndRegion(
-    time_start: Date,
-    time_end: Date,
-    platform_id: number,
-    region: Region
-  ) {}
+    time_start?: Date,
+    time_end?: Date,
+    platform_id?: number,
+    region?: Region
+  ) {
+    let logger_ids: number[] = [];
 
-  async getOverviewDeploymentData() {
+    if (platform_id && Number(platform_id) > -1) {
+      const logger = await db
+        .selectFrom("PlatformContainsLogger")
+        .where("PlatformContainsLogger.platform_id", "=", platform_id)
+        .select("PlatformContainsLogger.logger_id")
+        .groupBy("PlatformContainsLogger.logger_id")
+        .execute();
+
+      logger_ids = logger.map((logger) => logger.logger_id);
+    }
+    let query = db.selectFrom("Deployment");
     const deepestSubquery = db
       .selectFrom("ProcessedValueHasRawValue")
       .innerJoin("ProcessedValue", "ProcessedValue.processed_value_id", "ProcessedValueHasRawValue.processed_value_id")
@@ -25,8 +37,36 @@ export class DeploymentService extends BackendDbService {
       .groupBy("ProcessedValueHasRawValue.deployment_id")
       .as("dpst");
 
-    const result = await db
-      .selectFrom("Deployment")
+    if (
+      time_start?.toString() !== "undefined" ||
+      time_end?.toString() !== "undefined" ||
+      logger_ids?.length > 0 ||
+      (region && String(region) !== "undefined")
+    ) {
+      query = query.where((eb: any) => {
+        const conditions = [];
+
+        if (time_start?.toString() !== "undefined") {
+          const formatedStartDate = format(time_start as Date, "yyyy-MM-dd HH:mm:ss");
+          conditions.push(eb("Deployment.time_start", ">=", formatedStartDate as unknown as Date));
+        }
+        if (time_end?.toString() !== "undefined") {
+          const formatedEndDate = format(time_end as Date, "yyyy-MM-dd HH:mm:ss");
+          conditions.push(eb("Deployment.time_end", "<=", formatedEndDate as unknown as Date));
+        }
+        if (logger_ids?.length > 0) {
+          conditions.push(eb("Deployment.logger_id", "in", logger_ids));
+        }
+
+        if (region && String(region) !== "undefined") {
+          const polygon = (JSON.parse(region.toString()) as Region).polygon.toString();
+
+          conditions.push(eb(sql`ST_Contains(ST_GeomFromText(${polygon}), Deployment.position_start)`, "=", true));
+        }
+        return conditions.length > 0 ? eb.and(conditions) : eb;
+      });
+    }
+    query = query
       .where(({ exists, selectFrom }) =>
         exists(
           selectFrom("ProcessedValueHasRawValue")
@@ -34,7 +74,7 @@ export class DeploymentService extends BackendDbService {
             .whereRef("ProcessedValueHasRawValue.deployment_id", "=", "Deployment.deployment_id")
         )
       )
-
+      .where(sql`ST_AsText(Deployment.position_start)`, "!=", "POINT(-999 -999)")
       .innerJoin("PlatformContainsLogger", "Deployment.logger_id", "PlatformContainsLogger.logger_id")
       .innerJoin("Platform", "Platform.platform_id", "PlatformContainsLogger.platform_id")
       .innerJoin("Vessel", "Platform.platform_id", "Vessel.platform_id")
@@ -48,9 +88,11 @@ export class DeploymentService extends BackendDbService {
         "Deployment.time_start",
         "dpst.deepest",
         "Deployment.time_end",
-      ])
-      .limit(2000)
-      .execute();
+        "Deployment.position_start",
+      ]);
+
+    const result = await query.limit(2000).execute();
+
     return result;
   }
 
@@ -91,4 +133,6 @@ export class DeploymentService extends BackendDbService {
   }
 }
 
-export type OverviewDeploymentData = Awaited<ReturnType<DeploymentService["getOverviewDeploymentData"]>>[number];
+export type OverviewDeploymentTrackData = Awaited<
+  ReturnType<DeploymentService["getOverviewDeploymentDataByTimePlatformAndRegion"]>
+>[number];

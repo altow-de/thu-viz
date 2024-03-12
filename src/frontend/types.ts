@@ -6,7 +6,8 @@ export type Option = PlatformsCombinedWithVessels | Region | Logger | Deployment
 
 export type Region = {
   name: string;
-  coords: { north: number[]; south: number[]; west: number[]; east: number[] };
+  polygon: string;
+  coordinates: number[][];
 };
 
 export type Anker = {

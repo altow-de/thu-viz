@@ -10,27 +10,76 @@ import {
   GeoJSONSource,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import MapStyle from "./MapStyle";
 import { LayerZoom, MapStyles } from "@/frontend/constants";
 import { MapType } from "@/frontend/enum";
 import { TrackData } from "@/backend/services/ProcessedValueService";
+import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
+import { Region } from "@/frontend/types";
+import MapStyle from "./MapStyle";
+import { getDepthFromPressure } from "@/frontend/utils";
 
 interface OceanMapProps {
   type: MapType;
-  data?: TrackData[];
+  data?: TrackData[] | OverviewDeploymentTrackData[];
+  region?: Region;
 }
 
-const OceanMap = ({ type, data }: OceanMapProps) => {
+type TrackObj = {
+  coordinates: number[][];
+  info: { depth?: number; deployment_id?: number; logger_id?: number; value?: number; name?: string };
+};
+
+const OceanMap = ({ type, data, region }: OceanMapProps) => {
   const mapContainer = useRef(null);
   const map = useRef<Map | null>(null);
   const [mapStyle, setMapStyle] = useState(Object.keys(MapStyles)[0]);
-  const trackData = data?.map((trackObj: TrackData) => [trackObj.position.x, trackObj.position.y]);
 
   const initialState = {
     lat: 54.1767,
     lng: 12.08402,
     zoom: 11,
   };
+  const extractCoordinates = (obj: TrackData | OverviewDeploymentTrackData) => {
+    // Versuch, die Koordinaten aus dem ersten Datenelement zu extrahieren
+    const firstDataItem = obj;
+    let lng = initialState.lng; // Standardwert für Längengrad
+    let lat = initialState.lat; // Standardwert für Breitengrad
+
+    if (firstDataItem) {
+      // Versuch, Längen- und Breitengrad aus den verschiedenen Datenstrukturen zu extrahieren
+      lng =
+        (firstDataItem as TrackData)?.position?.x ||
+        (firstDataItem as OverviewDeploymentTrackData).position_start?.x ||
+        lng;
+      lat =
+        (firstDataItem as TrackData)?.position?.y ||
+        (firstDataItem as OverviewDeploymentTrackData).position_start?.y ||
+        lat;
+    }
+
+    return { lng, lat };
+  };
+  const getTrackDataObj = (obj: TrackData | OverviewDeploymentTrackData) => {
+    const trackDataObj = obj as TrackData;
+    const deploymentTrackDataObj = obj as OverviewDeploymentTrackData;
+    if (trackDataObj.depth) {
+      return {
+        depth: getDepthFromPressure(Number(trackDataObj.depth)),
+        deployment_id: trackDataObj.deployment_id,
+        logger_id: trackDataObj.logger_id,
+        value: trackDataObj.value,
+      };
+    }
+    return { name: deploymentTrackDataObj.name };
+  };
+  const trackData =
+    data && data.length > 0
+      ? data?.map((trackObj: TrackData | OverviewDeploymentTrackData) => {
+          const { lng, lat } = extractCoordinates(trackObj);
+          const info = getTrackDataObj(trackObj);
+          return { coordinates: [lng, lat], info: info } as unknown as TrackObj;
+        })
+      : [];
 
   const onMapStyleChange = (mapStyle: string) => {
     const mapUrl =
@@ -41,6 +90,7 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
     map.current?.on("styledata", function () {
       handleImages();
       handleSource();
+      handleRegionLayer();
       handleLayer();
       handlePopUps();
     });
@@ -70,7 +120,14 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
         const geometry: GeoJSON.Geometry = feature.geometry as GeoJSON.Point;
 
         const coordinates = geometry.coordinates?.slice();
-        const html = `  <div>Hover info</div>  `;
+        const jsonObj = JSON.parse(feature.properties.info);
+
+        const htmlString = Object.keys(jsonObj).map((jsonKey) => {
+          return `<div>${jsonKey} : ${jsonObj[jsonKey]}</div>`;
+        });
+
+        const html = `<div>Hover info</div><div>${htmlString.join("")}</div>`;
+
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
         // over the copy being pointed to.
@@ -125,28 +182,24 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
         tileSize: 256,
       });
     }
-    if (type === MapType.route && trackData) {
+
+    if (type === MapType.route) {
       addRouteSource(trackData);
     }
     if (type === MapType.point) {
-      addPointSource([
-        [12.08402, 54.1767],
-        [12.05402, 54.1867],
-        [11.00402, 54.2],
-        [11.50017, 54.77662],
-      ]);
+      addPointSource(trackData);
     }
   };
 
-  const addPointSource = (coordinates: number[][]) => {
-    const features = coordinates?.map((coord) => {
+  const addPointSource = (trackData: TrackObj[]) => {
+    const features = trackData.map((track) => {
       return {
         geometry: {
           type: "Point",
-          coordinates: coord,
+          coordinates: track.coordinates,
         },
         type: "Feature",
-        properties: {},
+        properties: { info: track.info },
       };
     });
 
@@ -166,13 +219,13 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
     }
   };
 
-  const addRouteSource = (coordinates: number[][]) => {
+  const addRouteSource = (trackData: TrackObj[]) => {
     const data = {
       type: "Feature",
       properties: {},
       geometry: {
         type: "LineString",
-        coordinates: coordinates,
+        coordinates: trackData.map((track) => track.coordinates),
       },
     };
 
@@ -184,7 +237,7 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
     } else {
       (map?.current?.getSource("route-source") as GeoJSONSource)?.setData(data);
     }
-    addPointSource(coordinates);
+    addPointSource(trackData);
   };
 
   const addRouteLayer = () => {
@@ -216,6 +269,42 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
         source: "route-point-source",
         layout: {
           "icon-image": image,
+          "icon-anchor": "top",
+        },
+      });
+    }
+  };
+
+  const handleRegionLayer = () => {
+    if (!region) return;
+
+    const data = {
+      type: "Feature",
+      properties: {},
+      geometry: {
+        type: "Polygon",
+        coordinates: [region.coordinates],
+      },
+    };
+
+    if (!map.current?.getSource("region-source")) {
+      map.current?.addSource("region-source", {
+        type: "geojson",
+        data: data,
+      });
+    } else {
+      (map?.current?.getSource("region-source") as GeoJSONSource)?.setData(data);
+    }
+
+    if (!map.current?.getLayer("region") && map.current?.getSource("region-source")) {
+      map.current?.addLayer({
+        id: "region",
+        type: "fill",
+        ...LayerZoom,
+        source: "region-source",
+        paint: {
+          "fill-color": "#5b9bd5",
+          "fill-opacity": 0.3,
         },
       });
     }
@@ -226,7 +315,7 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
    * @function
    */
   const handleLayer = () => {
-    if (!map.current?.getLayer("openseamap"))
+    if (!map.current?.getLayer("openseamap")) {
       map.current?.addLayer({
         id: "openseamap",
         type: "raster",
@@ -236,10 +325,11 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
           "raster-opacity": 0.8,
         },
       });
-    if (type === MapType.route) {
+    }
+    if (type === MapType.route && trackData) {
       addRouteLayer();
     }
-    if (type === MapType.point) {
+    if (type === MapType.point && trackData) {
       addPointLayer("location");
     }
   };
@@ -247,14 +337,21 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
   // Effect to initialize the map
   useEffect(() => {
     if (!mapContainer?.current) return;
-    if (map.current) {
-      map.current.setCenter([data?.[0].position.x || initialState.lng, data?.[0].position.y || initialState.lat]);
+    if (map.current && map.current.loaded()) {
+      if (data?.[0]) {
+        const { lng, lat } = extractCoordinates(data[0]);
+        map.current.setCenter([lng, lat]);
+      }
       map.current.setZoom(15);
+
+      //initializing
       handleImages();
+      handleRegionLayer();
       handleSource();
       handleLayer();
       handlePopUps();
     } else {
+      const { lng, lat } = extractCoordinates(data?.[0]) || [initialState.lng, initialState.lat];
       map.current = new Map({
         container: mapContainer.current,
         style: `${
@@ -263,18 +360,19 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
           "/style.json?key=" +
           process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN
         }`,
-        center: [initialState.lng, initialState.lat],
-        zoom: initialState.zoom,
+        center: [lng, lat],
+        zoom: 15,
       });
       map.current.on("load", async function () {
         handleImages();
+        handleRegionLayer();
         handleSource();
         handleLayer();
         handlePopUps();
       });
       map.current.addControl(new NavigationControl(), "bottom-right");
     }
-  }, [mapStyle, data]);
+  }, [mapStyle, data, region]);
 
   return (
     <div className="relative">

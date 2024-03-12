@@ -22,3 +22,7 @@ export const getTimeObjectForSort = (str: string) => {
   const conv = convert(Number(time), unit as unknown as Time).to("megaseconds");
   return conv;
 };
+
+export const getDepthFromPressure = (pressure: number) => {
+  return ((-1 * pressure - 1013) / 100).toFixed(1) + "m";
+};

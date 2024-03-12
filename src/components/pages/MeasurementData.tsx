@@ -12,14 +12,12 @@ import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 import { useStore } from "@/frontend/store";
 import ChartLayout from "../chart/ChartLayout";
-import {
-  ParameterDataForDeployment,
-  TrackData,
-} from "@/backend/services/ProcessedValueService";
+import { ParameterDataForDeployment, TrackData } from "@/backend/services/ProcessedValueService";
 
 const MeasurementData = () => {
-  const [deployment, setDeployment] = useState<number>(-1);
-  const [logger, setLogger] = useState<number>(-1);
+  const { data: dataStore } = useStore();
+  const [deployment, setDeployment] = useState<number>(dataStore.selectedColumn.deployment_id || -1);
+  const [logger, setLogger] = useState<number>(dataStore.selectedColumn.logger_id || -1);
   const [tableData, setTableData] = useState<DeploymentTableData | undefined>();
 
   const [parameterDataForDeployment, setParameterDataForDeployment] = useState<
@@ -27,26 +25,17 @@ const MeasurementData = () => {
   >(undefined);
   const [trackData, setTrackData] = useState<TrackData[]>();
 
-  const { data: dataStore } = useStore();
-
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
-  const processedValueService: ProcessedValueService = new ProcessedValueService(
-    dataStore
-  );
+  const processedValueService: ProcessedValueService = new ProcessedValueService(dataStore);
   const setAppliedData = useCallback(
     async (deployment: number, logger: number) => {
       setDeployment(deployment);
       setLogger(logger);
 
       if (deployment > -1 && logger > -1) {
-        const result = await processedValueService.getParameterDataForDeployment(
-          deployment,
-          logger
-        );
+        const result = await processedValueService.getParameterDataForDeployment(deployment, logger);
 
-        setParameterDataForDeployment(
-          (result as unknown) as ParameterDataForDeployment[]
-        );
+        setParameterDataForDeployment(result as unknown as ParameterDataForDeployment[]);
       }
     },
     [setDeployment, setLogger]
@@ -58,10 +47,7 @@ const MeasurementData = () => {
       return;
     }
     const data = await deploymentService.getDeploymentById(deployment, logger);
-    const res = await processedValueService.getTrackDataByLoggerAndDeployment(
-      deployment,
-      logger
-    );
+    const res = await processedValueService.getTrackDataByLoggerAndDeployment(deployment, logger);
     setTrackData(res as TrackData[]);
     setTableData(data);
   }, [deployment]);
@@ -73,19 +59,17 @@ const MeasurementData = () => {
     <div className="flex flex-col">
       <AnkerMenu ankers={MeasurementAnkerTitles} />
       <div className="flex flex-col md:flex-row gap-0 md:gap-4">
-        <DeploymentSelection setAppliedData={setAppliedData} />
+        <DeploymentSelection
+          setAppliedData={setAppliedData}
+          deployment={dataStore.selectedColumn.deployment_id}
+          logger={dataStore.selectedColumn.logger_id}
+        />
         <Metadata tableData={tableData} />
       </div>
 
-      <CardWraper
-        text="Parameter over time"
-        hasMap={false}
-        id={MeasurementAnkers.ParameterOverTime}
-      >
+      <CardWraper text="Parameter over time" hasMap={false} id={MeasurementAnkers.ParameterOverTime}>
         <ChartLayout
-          parameterData={
-            parameterDataForDeployment as ParameterDataForDeployment[]
-          }
+          parameterData={parameterDataForDeployment as ParameterDataForDeployment[]}
           logger={logger}
           deployment={deployment}
         ></ChartLayout>

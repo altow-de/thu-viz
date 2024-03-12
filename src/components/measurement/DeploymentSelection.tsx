@@ -12,16 +12,18 @@ import { useStore } from "@/frontend/store";
 
 interface DeploymentSelectionProps {
   setAppliedData: (deployment: number, logger: number) => void;
+  logger?: number;
+  deployment?: number;
 }
 
-const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedData }) => {
+const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedData, logger, deployment }) => {
   const { data: dataStore } = useStore();
   const loggerService: LoggerService = new LoggerService(dataStore);
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
   const [loggers, setLoggers] = useState<Logger[]>([]);
   const [deployments, setDeployments] = useState<Deployment[]>([]);
-  const [selectedLogger, setSelectedLogger] = useState<number>(-1);
-  const [selectedDeployment, setSelectedDeployment] = useState<number>(-1);
+  const [selectedLogger, setSelectedLogger] = useState<number>(logger || -1);
+  const [selectedDeployment, setSelectedDeployment] = useState<number>(deployment || -1);
 
   const onApplyClick = async () => {
     await setAppliedData(selectedDeployment, selectedLogger);
@@ -81,17 +83,27 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
         id={MeasurementAnkers.SelectionSingleDeployment}
       >
         <Headline text={"Choose logger ID"} />
-        <DropwDown options={loggers} option_keys={["logger_id", "Comment"]} setSelection={selectLogger} />
+        {loggers.length > 0 && (
+          <DropwDown
+            options={loggers}
+            option_keys={["logger_id", "Comment"]}
+            setSelection={selectLogger}
+            defaultValue={logger}
+          />
+        )}
 
         <Headline text={"Choose deployment"} />
-        <DropwDown
-          options={deployments}
-          option_keys={["deployment_id"]}
-          disabled={selectedLogger === -1}
-          setSelection={selectDeployment}
-        />
+        {loggers?.length > 0 && deployments?.length > 0 && (
+          <DropwDown
+            options={deployments}
+            option_keys={["deployment_id"]}
+            disabled={selectedLogger === -1}
+            setSelection={selectDeployment}
+            defaultValue={deployment}
+          />
+        )}
         <div className="flex justify-center gap-2">
-          <Button text="Apply" onClick={onApplyClick} disabled={!(selectedLogger > -1 && selectedDeployment > -1)} />
+          <Button text="Apply" onClick={onApplyClick} disabled={selectedLogger === -1 || selectedDeployment === -1} />
           <Button text="Reset" onClick={onResetClick} />
         </div>
       </CardWrapper>

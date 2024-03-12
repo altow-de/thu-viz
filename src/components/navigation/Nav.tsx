@@ -1,4 +1,5 @@
 import { NavigationPage } from "@/frontend/constants";
+import { useStore } from "@/frontend/store";
 
 export interface NavProps {
   selectedNav: number;
@@ -6,6 +7,7 @@ export interface NavProps {
 }
 
 const Nav = ({ selectedNav, setSelectedNav }: NavProps) => {
+  const { data: dataStore } = useStore();
   return (
     <div className="h-8 flex flex-1 w-full justify-center sm:justify-end items-end sm:items-center text-danube-950 gap-6">
       {NavigationPage.map((page, index) => {
@@ -13,6 +15,7 @@ const Nav = ({ selectedNav, setSelectedNav }: NavProps) => {
           <div
             key={index}
             onClick={() => {
+              dataStore.setSelectedNav(index);
               setSelectedNav(index);
             }}
             className={`font-medium cursor-pointer	 ${

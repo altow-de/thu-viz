@@ -5,6 +5,7 @@ import { DateTimeLocaleOptions, TableTitle } from "@/frontend/constants";
 import convert from "convert";
 import { getTimeObjectForSort } from "@/frontend/utils";
 import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
+import { useStore } from "@/frontend/store";
 
 interface TableProps {
   data: OverviewDeploymentTrackData[];
@@ -15,6 +16,7 @@ interface TableProps {
 const Table = ({ data, maxHeight, textSize }: TableProps) => {
   const [tableData, setTableData] = useState<OverviewDeploymentTrackData[]>(data);
   const [sorted, setSorted] = useState<boolean>(false);
+  const { data: dataStore } = useStore();
 
   useEffect(() => {
     setTableData(data);
@@ -145,6 +147,34 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
     setSorted(!sorted);
   };
 
+  const createColumn = (index: number, i: number, row: OverviewDeploymentTrackData, titleKey: string) => {
+    if (titleKey === "deployment_id") {
+      return (
+        <div
+          onClick={() => {
+            dataStore.setSelectedColumn(Object(row)["logger_id"], Object(row)[titleKey]);
+            dataStore.setSelectedNav(1);
+          }}
+          key={"col-" + i}
+          className={` ${
+            index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"
+          } py-3 px-2 self-center h-full underline font-bold cursor-pointer hover:text-danube-700`}
+        >
+          {formatColVal(row as OverviewDeploymentTrackData, titleKey)}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        key={"col-" + i}
+        className={` ${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-3 px-2 self-center h-full`}
+      >
+        {formatColVal(row as OverviewDeploymentTrackData, titleKey)}
+      </div>
+    );
+  };
+
   return (
     <div className="overflow-x-auto rounded-t-lg shadow-md">
       {(!tableData || tableData?.length === 0) && (
@@ -165,16 +195,7 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
               >
                 <div className={`grid grid-cols-7 gap-0.5 bg-white ${maxHeight}`}>
                   {Object.keys(TableTitle).map((titleKey, i) => {
-                    return (
-                      <div
-                        key={"col-" + i}
-                        className={` ${
-                          index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"
-                        } py-3 px-2 self-center h-full`}
-                      >
-                        {formatColVal(row as OverviewDeploymentTrackData, titleKey)}
-                      </div>
-                    );
+                    return createColumn(index, i, row, titleKey);
                   })}
                   <Switch style={`${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-3 px-2 text-danube-900`} />
                 </div>

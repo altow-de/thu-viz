@@ -132,8 +132,6 @@ const Chart = ({
       .y1((d) => yScale(d.value))
       .curve(d3.curveBasis);
 
-    console.log(areaBuilder);
-
     const areaPath = graphGroup
       .append("g")
       .attr("clip-path", "url(#clipCharts)")
@@ -241,7 +239,6 @@ const Chart = ({
 
     //single zoom reset on right click
     svgElement.on("mousedown", (event) => {
-      console.log(selectionRef.current);
       if (selectionRef.current.length === 0) return;
       if (event.button === 2) {
         const removedZoom = selectionRef.current.pop();

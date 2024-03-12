@@ -9,6 +9,7 @@ import { Deployment, Logger } from "@/backend/entities";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { MeasurementAnkers } from "@/frontend/enum";
 import { useStore } from "@/frontend/store";
+import EmptyDropdown from "../basic/EmptyDropdown";
 
 interface DeploymentSelectionProps {
   setAppliedData: (deployment: number, logger: number) => void;
@@ -91,9 +92,9 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
             defaultValue={logger}
           />
         )}
-
+        {(loggers.length === 0 || !loggers) && <EmptyDropdown />}
         <Headline text={"Choose deployment"} />
-        {loggers?.length > 0 && deployments?.length > 0 && (
+        {deployments?.length > 0 && (
           <DropwDown
             options={deployments}
             option_keys={["deployment_id"]}
@@ -102,6 +103,7 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
             defaultValue={deployment}
           />
         )}
+        {(deployments.length === 0 || !deployments) && <EmptyDropdown />}
         <div className="flex justify-center gap-2">
           <Button text="Apply" onClick={onApplyClick} disabled={selectedLogger === -1 || selectedDeployment === -1} />
           <Button text="Reset" onClick={onResetClick} />

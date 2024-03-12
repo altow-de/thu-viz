@@ -21,6 +21,7 @@ const DropwDown: React.FC<DropwDownProps> = ({ options, option_keys, setSelectio
   };
 
   const defaultIndex = options?.findIndex((opt: any) => opt[option_keys[0]] === defaultValue);
+
   return (
     <select
       className="mb-4 minimal text-danube-900 border-danube-400 border py-2 px-4 w-full rounded-lg font-light text-sm placeholder-gray-custom bg-white disabled:opacity-40 disabled:cursor-not-allowed outline-danube-600 appearance-none"

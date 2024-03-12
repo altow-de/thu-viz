@@ -33,8 +33,10 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         ).to("best");
         return converted.quantity.toFixed(0) + converted.unit;
       case "deepest":
-        const num = (Number(value) * -1).toFixed(1);
-        return num + "m";
+        const preassure = Number(value) * -1;
+        //caluclate depth from pressure value
+        const depth = ((preassure - 1013) / 100).toFixed(1);
+        return depth + "m";
       default:
         return value;
     }

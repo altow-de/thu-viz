@@ -64,7 +64,7 @@ const Overview = () => {
           hasMap={true}
           id={OverviewAnkers.PositionOfDeployments}
         >
-          <OceanMap type={MapType.point} data={overviewDeploymentTrackData} />
+          <OceanMap type={MapType.point} data={overviewDeploymentTrackData} region={region} />
         </CardWrapper>
       </div>
     </div>

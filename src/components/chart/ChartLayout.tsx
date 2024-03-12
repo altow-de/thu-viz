@@ -13,23 +13,15 @@ interface ChartLayoutProps {
   deployment: number;
 }
 
-const ChartLayout = ({
-  parameterData,
-  logger,
-  deployment,
-}: ChartLayoutProps) => {
-  const [width, setWidth] = useState(
-    window.innerWidth > 370 ? 300 : window.innerWidth - 70
-  );
+const ChartLayout = ({ parameterData, logger, deployment }: ChartLayoutProps) => {
+  const [width, setWidth] = useState(window.innerWidth > 370 ? 300 : window.innerWidth - 70);
   const [diagramData, setDiagramData] = useState<{
     [key: string]: DiagramDataForParameterAndDeployment[];
-  }>([]);
+  }>({});
   const [dataLoading, setDataLoading] = useState(false);
   const [brush, setBrush] = useState<number[]>([0, 0]);
   const { data: dataStore } = useStore();
-  const processedValueService: ProcessedValueService = new ProcessedValueService(
-    dataStore
-  );
+  const processedValueService: ProcessedValueService = new ProcessedValueService(dataStore);
 
   useEffect(() => {
     setDataLoading(true);
@@ -37,23 +29,21 @@ const ChartLayout = ({
 
     Promise.all(
       parameterData.map(async (obj: ParameterDataForDeployment) => {
-        const data = await processedValueService.getDiagramDataForParameterAndDeployment(
+        const data = (await processedValueService.getDiagramDataForParameterAndDeployment(
           deployment,
           logger,
           obj.parameter
-        );
+        )) as DiagramDataForParameterAndDeployment[];
 
         return data.map((d) => ({
           ...d,
           measuring_time: new Date(d.measuring_time),
-          value: parseFloat(d.value),
+          value: parseFloat(d.value || ""),
         }));
       })
     )
       .then((results) => {
-        const newData = Object.fromEntries(
-          parameterData.map((obj, index) => [obj.parameter, results[index]])
-        );
+        const newData: {} = Object.fromEntries(parameterData.map((obj, index) => [obj.parameter, results[index]]));
         setDiagramData((prevDiagramData) => ({
           ...prevDiagramData,
           ...newData,
@@ -88,12 +78,7 @@ const ChartLayout = ({
         return (
           <div key={obj.parameter} className=" flex-grow flex justify-center ">
             {dataLoading ? (
-              <img
-                className="z-0"
-                src="pulse_load.svg"
-                width={width}
-                height={300}
-              />
+              <img className="z-0" src="pulse_load.svg" width={width} height={300} />
             ) : (
               diagramData[obj.parameter] !== undefined &&
               logger > -1 &&
@@ -107,12 +92,7 @@ const ChartLayout = ({
                   width={width}
                   xAxisTitle={"time"}
                   yAxisTitle={obj.parameter}
-                  title={
-                    obj.parameter
-                      ? obj.parameter?.charAt(0).toUpperCase() +
-                        obj.parameter.slice(1)
-                      : ""
-                  }
+                  title={obj.parameter ? obj.parameter?.charAt(0).toUpperCase() + obj.parameter.slice(1) : ""}
                 />
               )
             )}

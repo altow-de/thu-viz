@@ -15,13 +15,15 @@ import { LayerZoom, MapStyles } from "@/frontend/constants";
 import { MapType } from "@/frontend/enum";
 import { TrackData } from "@/backend/services/ProcessedValueService";
 import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
+import { Region } from "@/frontend/types";
 
 interface OceanMapProps {
   type: MapType;
   data?: TrackData[] | OverviewDeploymentTrackData[];
+  region?: Region;
 }
 
-const OceanMap = ({ type, data }: OceanMapProps) => {
+const OceanMap = ({ type, data, region }: OceanMapProps) => {
   const mapContainer = useRef(null);
   const map = useRef<Map | null>(null);
   const [mapStyle, setMapStyle] = useState(Object.keys(MapStyles)[0]);
@@ -68,6 +70,7 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
     map.current?.on("styledata", function () {
       handleImages();
       handleSource();
+      handleRegionLayer();
       handleLayer();
       handlePopUps();
     });
@@ -153,10 +156,10 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
       });
     }
 
-    if (type === MapType.route && trackData) {
+    if (type === MapType.route) {
       addRouteSource(trackData);
     }
-    if (type === MapType.point && trackData) {
+    if (type === MapType.point) {
       addPointSource(trackData);
     }
   };
@@ -239,6 +242,42 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
         source: "route-point-source",
         layout: {
           "icon-image": image,
+          "icon-anchor": "top",
+        },
+      });
+    }
+  };
+
+  const handleRegionLayer = () => {
+    if (!region) return;
+
+    const data = {
+      type: "Feature",
+      properties: {},
+      geometry: {
+        type: "Polygon",
+        coordinates: [region.coordinates],
+      },
+    };
+
+    if (!map.current?.getSource("region-source")) {
+      map.current?.addSource("region-source", {
+        type: "geojson",
+        data: data,
+      });
+    } else {
+      (map?.current?.getSource("region-source") as GeoJSONSource)?.setData(data);
+    }
+
+    if (!map.current?.getLayer("region") && map.current?.getSource("region-source")) {
+      map.current?.addLayer({
+        id: "region",
+        type: "fill",
+        ...LayerZoom,
+        source: "region-source",
+        paint: {
+          "fill-color": "#5b9bd5",
+          "fill-opacity": 0.3,
         },
       });
     }
@@ -250,8 +289,6 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
    */
   const handleLayer = () => {
     if (!map.current?.getLayer("openseamap")) {
-      console.log(map.current);
-
       map.current?.addLayer({
         id: "openseamap",
         type: "raster",
@@ -273,20 +310,21 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
   // Effect to initialize the map
   useEffect(() => {
     if (!mapContainer?.current) return;
-    if (map.current) {
+    if (map.current && map.current.loaded()) {
       if (data?.[0]) {
         const { lng, lat } = extractCoordinates(data[0]);
         map.current.setCenter([lng, lat]);
       }
       map.current.setZoom(15);
-      map.current.on("load", async function () {
-        handleImages();
-        handleSource();
-        handleLayer();
-        handlePopUps();
-      });
-      map;
+
+      //initializing
+      handleImages();
+      handleRegionLayer();
+      handleSource();
+      handleLayer();
+      handlePopUps();
     } else {
+      const { lng, lat } = extractCoordinates(data?.[0]) || [initialState.lng, initialState.lat];
       map.current = new Map({
         container: mapContainer.current,
         style: `${
@@ -295,18 +333,19 @@ const OceanMap = ({ type, data }: OceanMapProps) => {
           "/style.json?key=" +
           process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN
         }`,
-        center: [initialState.lng, initialState.lat],
-        zoom: initialState.zoom,
+        center: [lng, lat],
+        zoom: 15,
       });
       map.current.on("load", async function () {
         handleImages();
+        handleRegionLayer();
         handleSource();
         handleLayer();
         handlePopUps();
       });
       map.current.addControl(new NavigationControl(), "bottom-right");
     }
-  }, [mapStyle, data]);
+  }, [mapStyle, data, region]);
 
   return (
     <div className="relative">

@@ -10,18 +10,24 @@ import {
   GeoJSONSource,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import MapStyle from "./MapStyle";
 import { LayerZoom, MapStyles } from "@/frontend/constants";
 import { MapType } from "@/frontend/enum";
 import { TrackData } from "@/backend/services/ProcessedValueService";
 import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 import { Region } from "@/frontend/types";
+import MapStyle from "./MapStyle";
+import { getDepthFromPressure } from "@/frontend/utils";
 
 interface OceanMapProps {
   type: MapType;
   data?: TrackData[] | OverviewDeploymentTrackData[];
   region?: Region;
 }
+
+type TrackObj = {
+  coordinates: number[][];
+  info: { depth?: number; deployment_id?: number; logger_id?: number; value?: number; name?: string };
+};
 
 const OceanMap = ({ type, data, region }: OceanMapProps) => {
   const mapContainer = useRef(null);
@@ -53,11 +59,25 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
 
     return { lng, lat };
   };
+  const getTrackDataObj = (obj: TrackData | OverviewDeploymentTrackData) => {
+    const trackDataObj = obj as TrackData;
+    const deploymentTrackDataObj = obj as OverviewDeploymentTrackData;
+    if (trackDataObj.depth) {
+      return {
+        depth: getDepthFromPressure(Number(trackDataObj.depth)),
+        deployment_id: trackDataObj.deployment_id,
+        logger_id: trackDataObj.logger_id,
+        value: trackDataObj.value,
+      };
+    }
+    return { name: deploymentTrackDataObj.name };
+  };
   const trackData =
     data && data.length > 0
       ? data?.map((trackObj: TrackData | OverviewDeploymentTrackData) => {
           const { lng, lat } = extractCoordinates(trackObj);
-          return [lng, lat];
+          const info = getTrackDataObj(trackObj);
+          return { coordinates: [lng, lat], info: info } as unknown as TrackObj;
         })
       : [];
 
@@ -100,7 +120,14 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
         const geometry: GeoJSON.Geometry = feature.geometry as GeoJSON.Point;
 
         const coordinates = geometry.coordinates?.slice();
-        const html = `  <div>Hover info</div>  `;
+        const jsonObj = JSON.parse(feature.properties.info);
+
+        const htmlString = Object.keys(jsonObj).map((jsonKey) => {
+          return `<div>${jsonKey} : ${jsonObj[jsonKey]}</div>`;
+        });
+
+        const html = `<div>Hover info</div><div>${htmlString.join("")}</div>`;
+
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
         // over the copy being pointed to.
@@ -164,15 +191,15 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
     }
   };
 
-  const addPointSource = (coordinates: number[][]) => {
-    const features = coordinates?.map((coord) => {
+  const addPointSource = (trackData: TrackObj[]) => {
+    const features = trackData.map((track) => {
       return {
         geometry: {
           type: "Point",
-          coordinates: coord,
+          coordinates: track.coordinates,
         },
         type: "Feature",
-        properties: {},
+        properties: { info: track.info },
       };
     });
 
@@ -192,13 +219,13 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
     }
   };
 
-  const addRouteSource = (coordinates: number[][]) => {
+  const addRouteSource = (trackData: TrackObj[]) => {
     const data = {
       type: "Feature",
       properties: {},
       geometry: {
         type: "LineString",
-        coordinates: coordinates,
+        coordinates: trackData.map((track) => track.coordinates),
       },
     };
 
@@ -210,7 +237,7 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
     } else {
       (map?.current?.getSource("route-source") as GeoJSONSource)?.setData(data);
     }
-    addPointSource(coordinates);
+    addPointSource(trackData);
   };
 
   const addRouteLayer = () => {

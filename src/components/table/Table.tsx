@@ -3,7 +3,7 @@ import TableHeader from "./TableHeader";
 import Switch from "./Switch";
 import { DateTimeLocaleOptions, TableTitle } from "@/frontend/constants";
 import convert from "convert";
-import { getTimeObjectForSort } from "@/frontend/utils";
+import { getDepthFromPressure, getTimeObjectForSort } from "@/frontend/utils";
 import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 import { useStore } from "@/frontend/store";
 
@@ -35,10 +35,7 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         ).to("best");
         return converted.quantity.toFixed(0) + converted.unit;
       case "deepest":
-        const preassure = Number(value) * -1;
-        //caluclate depth from pressure value
-        const depth = ((preassure - 1013) / 100).toFixed(1);
-        return depth + "m";
+        return getDepthFromPressure(Number(value));
       default:
         return value;
     }
@@ -85,6 +82,37 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         return numA - numB;
       });
 
+    if (column_key === "deepest" && direction === "down") {
+      sortedData = data.sort((a, b) => {
+        const numA: number = Number(Object(a)[column_key].replace("m", ""));
+        const numB: number = Number(Object(b)[column_key].replace("m", ""));
+
+        if (numA === null || numA === undefined || isNaN(numA)) {
+          return 1;
+        }
+        if (numB === null || numB === undefined || isNaN(numB)) {
+          return -1;
+        }
+
+        return numB - numA;
+      });
+    }
+    if (column_key === "deepest" && direction === "up") {
+      sortedData = data.sort((a, b) => {
+        const numA: number = Number(Object(a)[column_key].replace("m", ""));
+        const numB: number = Number(Object(b)[column_key].replace("m", ""));
+
+        if (numA === null || numA === undefined || isNaN(numA)) {
+          return 1;
+        }
+        if (numB === null || numB === undefined || isNaN(numB)) {
+          return -1;
+        }
+
+        return numA - numB;
+      });
+    }
+
     if (column_key === "time_end" && direction === "down") {
       sortedData = data.sort((a, b) => {
         const numA: number = getTimeObjectForSort(formatColVal(a, column_key));
@@ -100,7 +128,7 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         return numB - numA;
       });
     }
-    if (column_key === "time_end" && direction === "up")
+    if (column_key === "time_end" && direction === "up") {
       sortedData = data.sort((a, b) => {
         const numA: number = getTimeObjectForSort(formatColVal(a, column_key));
         const numB: number = getTimeObjectForSort(formatColVal(b, column_key));
@@ -114,8 +142,8 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
 
         return numA - numB;
       });
-
-    if (type !== "number" && direction === "up" && column_key !== "time_end") {
+    }
+    if (type !== "number" && direction === "up" && column_key !== "time_end" && column_key !== "deepest") {
       sortedData = data.sort((a, b) => {
         const strA: string = String(Object(a)[column_key]);
         const strB: string = String(Object(b)[column_key]);
@@ -129,7 +157,7 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         return strB.localeCompare(strA);
       });
     }
-    if (type !== "number" && direction === "down" && column_key !== "time_end") {
+    if (type !== "number" && direction === "down" && column_key !== "time_end" && column_key !== "deepest") {
       sortedData = data.sort((a, b) => {
         const strA: string = String(Object(a)[column_key]);
         const strB: string = String(Object(b)[column_key]);

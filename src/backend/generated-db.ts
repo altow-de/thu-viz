@@ -157,9 +157,9 @@ export interface PlatformContainsLogger {
 
 export interface ProcessedValue {
   command_id: number;
-  depth: Generated<Decimal | null>;
   measuring_time: Date;
   position: Point;
+  pressure: Generated<Decimal | null>;
   processed_value_id: Generated<number>;
   processing_time: Date;
   published: Generated<number>;

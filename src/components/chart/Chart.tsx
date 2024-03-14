@@ -56,15 +56,6 @@ const Chart = ({
       (d) => d.measuring_time,
       (d) => d.value
     );
-
-    // Y axis
-    const [min, max]: number[] | undefined[] = d3.extent(data, (d) => d.value);
-    const yScale = d3
-      .scaleLinear()
-      .domain(yBrushEnd.length === 0 ? [min, max || 0] : [yBrushEnd[0], yBrushEnd[1]])
-      .nice()
-      .range([boundsHeight, 0]);
-
     // X axis
     const xMin = new Date(dataObj.time_start);
     const xMax = new Date(dataObj.time_end);
@@ -72,6 +63,30 @@ const Chart = ({
       .scaleTime() // change to time scale when working with actual time data
       .domain(xBrushEnd[0] === 0 ? [xMin, xMax] : [xBrushEnd[0], xBrushEnd[1]])
       .range([0, boundsWidth]);
+
+    // Y axis
+    const filteredData = data.filter(
+      (d) => d.measuring_time >= xScale.domain()[0] && d.measuring_time <= xScale.domain()[1]
+    );
+    const yData = filteredData?.length > 0 || xBrushEnd[0] > 0 ? filteredData : data;
+    const [calculatedMin, calculatedMax]: (number | undefined)[] = d3.extent(yData, (d) => Number(d.value));
+
+    //calulcate min and max y axis
+    const min =
+      calculatedMin !== undefined
+        ? calculatedMin !== calculatedMax
+          ? calculatedMin
+          : Math.max(calculatedMin - 10, 0) // > 0
+        : 0;
+
+    const max =
+      calculatedMax !== undefined ? (calculatedMax !== calculatedMin ? calculatedMax : calculatedMax + 10) : 10;
+
+    const yScale = d3
+      .scaleLinear()
+      .domain(yBrushEnd.length === 0 ? [min || 0, max || 0] : [yBrushEnd[0], yBrushEnd[1]])
+      .nice()
+      .range([boundsHeight, 0]);
 
     // x axis generator
     const xAxisGenerator = d3.axisBottom(xScale).ticks(6);
@@ -182,6 +197,8 @@ const Chart = ({
       .on("end", (event) => {
         if (!event.selection) return;
         const [x0, x1] = event.selection.map(xScale.invert);
+        const filteredData = data.filter((d) => d.measuring_time >= x0 && d.measuring_time <= x1);
+        if (filteredData.length === 0) return;
         onXBrushEnd(x0, x1);
         selectionRef.current.push([x0, x1]);
       });

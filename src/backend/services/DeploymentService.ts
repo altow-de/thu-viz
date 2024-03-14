@@ -32,7 +32,7 @@ export class DeploymentService extends BackendDbService {
       .selectFrom("ProcessedValueHasRawValue")
       .innerJoin("ProcessedValue", "ProcessedValue.processed_value_id", "ProcessedValueHasRawValue.processed_value_id")
       .select("ProcessedValueHasRawValue.deployment_id")
-      .select(sql`MIN(ProcessedValue.depth)`.as("deepest"))
+      .select(sql`MIN(ProcessedValue.pressure)`.as("deepest"))
       .where("ProcessedValue.valid", "=", 1)
       .groupBy("ProcessedValueHasRawValue.deployment_id")
       .as("dpst");

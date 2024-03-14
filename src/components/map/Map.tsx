@@ -62,9 +62,9 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
   const getTrackDataObj = (obj: TrackData | OverviewDeploymentTrackData) => {
     const trackDataObj = obj as TrackData;
     const deploymentTrackDataObj = obj as OverviewDeploymentTrackData;
-    if (trackDataObj.depth) {
+    if (trackDataObj.pressure) {
       return {
-        depth: getDepthFromPressure(Number(trackDataObj.depth)),
+        depth: getDepthFromPressure(Number(trackDataObj.pressure)),
         deployment_id: trackDataObj.deployment_id,
         logger_id: trackDataObj.logger_id,
         value: trackDataObj.value,
@@ -269,7 +269,6 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
         source: "route-point-source",
         layout: {
           "icon-image": image,
-          "icon-anchor": "top",
         },
       });
     }

@@ -2,7 +2,7 @@ import { Deployment } from "@/backend/entities";
 import { FrontendDbService } from "./FrontendDbService";
 import { DeploymentTableData, Region } from "../types";
 import { DataStore } from "../store/dataStore";
-import { OverviewDeploymentData, OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
+import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 
 export class DeploymentService extends FrontendDbService {
   constructor(dataStore: DataStore) {

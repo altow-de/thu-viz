@@ -70,6 +70,8 @@ const ChartLayout = ({ parameterData, logger, deployment }: ChartLayoutProps) =>
   }, []);
 
   const handleBrushEnd = (x0: number = 0, x1: number = 0) => {
+    console.log(x0, x1);
+
     setBrush([x0, x1]);
   };
   return (

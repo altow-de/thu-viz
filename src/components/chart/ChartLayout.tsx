@@ -6,27 +6,54 @@ import Chart from "./Chart";
 import React, { useState, useEffect } from "react";
 import { useStore } from "@/frontend/store";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
+import {
+  CastData,
+  DataPoint,
+  UpAndDownCastCalculationService,
+} from "@/frontend/services/UpAndDownCastCalculationService";
+import ChartWrapper from "./ChartWrapper";
+import NoDiagramData from "./NoDiagramData";
+import { findLongestArray } from "@/frontend/utils";
 
 interface ChartLayoutProps {
   parameterData: ParameterDataForDeployment[];
   logger: number;
   deployment: number;
+  setCastData: (castData: { [key: string]: CastData }) => void;
+  width: number;
+  brushValue: number[];
+  handleBrushEnd: (x0: number, x1: number) => void;
+  setResetCastChart: (resetCastChart: boolean) => void;
+  dataLoading: boolean;
+  setDataLoading: (dataLoading: boolean) => void;
 }
 
-const ChartLayout = ({ parameterData, logger, deployment }: ChartLayoutProps) => {
-  const [width, setWidth] = useState(window.innerWidth > 370 ? 300 : window.innerWidth - 70);
+const ChartLayout = ({
+  parameterData,
+  logger,
+  deployment,
+  width,
+  setCastData,
+  handleBrushEnd,
+  brushValue,
+  setResetCastChart,
+  dataLoading,
+  setDataLoading,
+}: ChartLayoutProps) => {
+  const upAndDownCastCalculationService: UpAndDownCastCalculationService = new UpAndDownCastCalculationService(0.2, 5);
+  const [completeParameterData, setCompleteParameterData] = useState<ParameterDataForDeployment[]>(parameterData);
+
   const [diagramData, setDiagramData] = useState<{
     [key: string]: DiagramDataForParameterAndDeployment[];
   }>({});
-  const [dataLoading, setDataLoading] = useState(false);
-  const [brush, setBrush] = useState<number[]>([0, 0]);
+
   const { data: dataStore } = useStore();
   const processedValueService: ProcessedValueService = new ProcessedValueService(dataStore);
 
   useEffect(() => {
     setDataLoading(true);
     if (!parameterData) return;
-
+    let castDataObj: { [key: string]: CastData } = {};
     Promise.all(
       parameterData.map(async (obj: ParameterDataForDeployment) => {
         const data = (await processedValueService.getDiagramDataForParameterAndDeployment(
@@ -34,6 +61,8 @@ const ChartLayout = ({ parameterData, logger, deployment }: ChartLayoutProps) =>
           logger,
           obj.parameter
         )) as DiagramDataForParameterAndDeployment[];
+        const tmp = upAndDownCastCalculationService.execute(data as unknown as DataPoint[]);
+        castDataObj[obj.parameter] = tmp;
 
         return data.map((d) => ({
           ...d,
@@ -44,9 +73,22 @@ const ChartLayout = ({ parameterData, logger, deployment }: ChartLayoutProps) =>
     )
       .then((results) => {
         const newData: {} = Object.fromEntries(parameterData.map((obj, index) => [obj.parameter, results[index]]));
+        const longestArray = findLongestArray(results);
+
+        const pressureObj = parameterData.find((parameterObj) => parameterObj.parameter === longestArray[0].parameter);
+        const parameterWithPressureData = [{ ...pressureObj, parameter: "pressure", unit: "mbar" }].concat(
+          parameterData
+        ) as ParameterDataForDeployment[];
+        setCompleteParameterData(parameterWithPressureData);
+        const pressureArray = longestArray.map((pressureObj: DiagramDataForParameterAndDeployment) => {
+          return { ...pressureObj, parameter: "pressure", value: pressureObj.pressure };
+        });
+        const completeData = { ...newData, pressure: pressureArray };
+        setCastData(castDataObj);
+        setResetCastChart(true);
         setDiagramData((prevDiagramData) => ({
           ...prevDiagramData,
-          ...newData,
+          ...completeData,
         }));
         setDataLoading(false);
       })
@@ -57,47 +99,29 @@ const ChartLayout = ({ parameterData, logger, deployment }: ChartLayoutProps) =>
       });
   }, [parameterData]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setWidth(window.innerWidth > 370 ? 300 : window.innerWidth - 50);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  const handleBrushEnd = (x0: number = 0, x1: number = 0) => {
-    console.log(x0, x1);
-
-    setBrush([x0, x1]);
-  };
   return (
     <div className="flex flex-wrap">
-      {parameterData?.map((obj: ParameterDataForDeployment, i) => {
+      {(!completeParameterData || completeParameterData?.length === 0 || logger === -1 || deployment === -1) && (
+        <NoDiagramData />
+      )}
+      {completeParameterData?.map((obj: ParameterDataForDeployment, i) => {
         return (
           <div key={obj.parameter} className=" flex-grow flex justify-center ">
-            {dataLoading ? (
-              <img className="z-0" src="pulse_load.svg" width={width} height={300} />
-            ) : (
-              diagramData[obj.parameter] !== undefined &&
-              logger > -1 &&
-              deployment > -1 && (
+            <ChartWrapper dataLoading={dataLoading} width={width}>
+              {diagramData[obj.parameter] !== undefined && logger > -1 && deployment > -1 && (
                 <Chart
                   data={diagramData[obj.parameter]}
                   dataObj={obj}
-                  onLoggerChange={parameterData}
+                  onLoggerChange={completeParameterData}
                   onXBrushEnd={handleBrushEnd}
-                  brushValue={brush}
                   width={width}
                   xAxisTitle={"time"}
                   yAxisTitle={obj.parameter}
                   title={obj.parameter ? obj.parameter?.charAt(0).toUpperCase() + obj.parameter.slice(1) : ""}
+                  brushValue={brushValue}
                 />
-              )
-            )}
+              )}
+            </ChartWrapper>
           </div>
         );
       })}

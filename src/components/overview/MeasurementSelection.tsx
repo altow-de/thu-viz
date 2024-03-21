@@ -11,6 +11,7 @@ import { PlatformService } from "@/frontend/services/PlatformService";
 import { Region } from "@/frontend/types";
 import { OverviewAnkers } from "@/frontend/enum";
 import { useStore } from "@/frontend/store";
+import { regions } from "@/frontend/regions";
 
 interface MeasurementSelectionProps {
   setStartDate: (time_start: Date) => void;
@@ -29,30 +30,6 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
   setApplyClicked,
   applyClicked,
 }) => {
-  const regions: Region[] = [
-    {
-      name: "Baltic Sea",
-      polygon: "POLYGON((10.0 54.0, 30.0 54.0, 30.0 60.0, 10.0 60.0, 10.0 54.0))",
-      coordinates: [
-        [10.0, 54.0],
-        [30.0, 54.0],
-        [30.0, 60.0],
-        [10.0, 60.0],
-        [10.0, 54.0],
-      ],
-    },
-    {
-      name: "North Sea",
-      polygon: "POLYGON((10.0 55.0, 30.0 55.0, 30.0 60.0, 10.0 60.0, 10.0 55.0))",
-      coordinates: [
-        [10.0, 55.0],
-        [30.0, 55.0],
-        [30.0, 60.0],
-        [10.0, 60.0],
-        [10.0, 55.0],
-      ],
-    },
-  ];
   const { data: dataStore } = useStore();
   const platformService: PlatformService = new PlatformService(dataStore);
   const [platforms, setPlatforms] = useState<PlatformsCombinedWithVessels[]>([]);

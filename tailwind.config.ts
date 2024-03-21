@@ -29,6 +29,8 @@ const config: Config = {
       },
       "red-custom": "#963748",
       "gray-custom": "#8c9192",
+      "magenta-downcast": "#7B00F6",
+      "magenta-bottom": "#BF39D5",
     },
   },
   plugins: [

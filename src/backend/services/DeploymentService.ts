@@ -3,6 +3,7 @@ import { db } from "../db";
 import { BackendDbService } from "./BackendDbService";
 import { Region } from "@/frontend/types";
 import { format } from "date-fns";
+import { isValidDate } from "@/frontend/utils";
 
 export class DeploymentService extends BackendDbService {
   constructor() {
@@ -37,20 +38,15 @@ export class DeploymentService extends BackendDbService {
       .groupBy("ProcessedValueHasRawValue.deployment_id")
       .as("dpst");
 
-    if (
-      time_start?.toString() !== "undefined" ||
-      time_end?.toString() !== "undefined" ||
-      logger_ids?.length > 0 ||
-      (region && String(region) !== "undefined")
-    ) {
+    if (isValidDate(time_start) || isValidDate(time_end) || logger_ids?.length > 0 || region !== undefined) {
       query = query.where((eb: any) => {
         const conditions = [];
 
-        if (time_start?.toString() !== "undefined") {
+        if (isValidDate(time_start)) {
           const formatedStartDate = format(time_start as Date, "yyyy-MM-dd HH:mm:ss");
           conditions.push(eb("Deployment.time_start", ">=", formatedStartDate as unknown as Date));
         }
-        if (time_end?.toString() !== "undefined") {
+        if (isValidDate(time_end)) {
           const formatedEndDate = format(time_end as Date, "yyyy-MM-dd HH:mm:ss");
           conditions.push(eb("Deployment.time_end", "<=", formatedEndDate as unknown as Date));
         }
@@ -58,9 +54,8 @@ export class DeploymentService extends BackendDbService {
           conditions.push(eb("Deployment.logger_id", "in", logger_ids));
         }
 
-        if (region && String(region) !== "undefined") {
-          const polygon = (JSON.parse(region.toString()) as Region).polygon.toString();
-
+        if (region) {
+          const polygon = region.polygon.toString();
           conditions.push(eb(sql`ST_Contains(ST_GeomFromText(${polygon}), Deployment.position_start)`, "=", true));
         }
         return conditions.length > 0 ? eb.and(conditions) : eb;

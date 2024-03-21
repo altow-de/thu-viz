@@ -25,6 +25,11 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [selectedLogger, setSelectedLogger] = useState<number>(logger || -1);
   const [selectedDeployment, setSelectedDeployment] = useState<number>(deployment || -1);
+  useEffect(() => {
+    if (selectedLogger > -1 && selectedDeployment > -1) {
+      setAppliedData(selectedDeployment, selectedLogger);
+    }
+  }, []);
 
   const onApplyClick = async () => {
     await setAppliedData(selectedDeployment, selectedLogger);

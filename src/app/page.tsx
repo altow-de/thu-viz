@@ -11,7 +11,6 @@ import { observer } from "mobx-react-lite";
 const Home = () => {
   const { data: dataStore } = useStore();
   const [selectedNav, setSelectedNav] = useState(0);
-
   useEffect(() => {
     setSelectedNav(dataStore.selectedNav);
   }, [dataStore.selectedNav]);

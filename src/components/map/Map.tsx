@@ -63,8 +63,9 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
     const trackDataObj = obj as TrackData;
     const deploymentTrackDataObj = obj as OverviewDeploymentTrackData;
     if (trackDataObj.pressure) {
+      const depthObj = getDepthFromPressure(Number(trackDataObj.pressure)).val;
       return {
-        depth: getDepthFromPressure(Number(trackDataObj.pressure)),
+        depth: depthObj.toString(),
         deployment_id: trackDataObj.deployment_id,
         logger_id: trackDataObj.logger_id,
         value: trackDataObj.value,
@@ -276,16 +277,20 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
 
   const handleRegionLayer = () => {
     if (!region) return;
-
+    const features = region.coordinates.map((polygon) => {
+      return {
+        type: "Feature",
+        properties: {}, // Zusätzliche Eigenschaften für das Feature
+        geometry: {
+          type: "Polygon",
+          coordinates: polygon,
+        },
+      };
+    });
     const data = {
-      type: "Feature",
-      properties: {},
-      geometry: {
-        type: "Polygon",
-        coordinates: [region.coordinates],
-      },
+      type: "FeatureCollection",
+      features: features,
     };
-
     if (!map.current?.getSource("region-source")) {
       map.current?.addSource("region-source", {
         type: "geojson",
@@ -302,8 +307,8 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
         ...LayerZoom,
         source: "region-source",
         paint: {
-          "fill-color": "#5b9bd5",
-          "fill-opacity": 0.3,
+          "fill-color": "#963748",
+          "fill-opacity": 0.2,
         },
       });
     }

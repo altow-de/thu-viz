@@ -1,10 +1,9 @@
+import { NextApiRequest, NextApiResponse } from "next";
 import { DatabaseError } from "@/backend/services/DatabaseError";
 import { DeploymentService, OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 import { Region } from "@/frontend/types";
-import type { NextApiRequest, NextApiResponse } from "next";
 
 const deploymentService = new DeploymentService();
-
 /**
  * Handles the retrieval of all sensors.
  * @param {NextApiRequest} req - The Next.js API request object.
@@ -15,19 +14,24 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<OverviewDeploymentTrackData[] | DatabaseError>
 ) {
-  const platform_id = Number(req.query.platform_id);
-  const region = req.query.region as unknown as Region;
+  // Stellen Sie sicher, dass nur POST-Anfragen akzeptiert werden
 
-  const time_start = req.query.time_start as unknown as Date;
-  const time_end = req.query.time_end as unknown as Date;
+  if (req.method !== "POST") {
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
 
   try {
+    const { platform_id, region, time_start, time_end } = req.body;
+
+    const platformId = platform_id !== undefined && platform_id > -1 ? Number(platform_id) : undefined;
+
     const dpResponse = await deploymentService.getOverviewDeploymentDataByTimePlatformAndRegion(
-      time_start,
-      time_end,
-      platform_id,
-      region
+      new Date(time_start),
+      new Date(time_end),
+      platformId,
+      region as Region
     );
+
     res.status(200).json(dpResponse);
   } catch (error) {
     res.status(500).json(error as DatabaseError);

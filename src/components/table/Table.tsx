@@ -35,7 +35,7 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         ).to("best");
         return converted.quantity.toFixed(0) + converted.unit;
       case "deepest":
-        return getDepthFromPressure(Number(value));
+        return getDepthFromPressure(Number(value)).val + "m";
       default:
         return value;
     }
@@ -84,8 +84,8 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
 
     if (column_key === "deepest" && direction === "down") {
       sortedData = data.sort((a, b) => {
-        const numA: number = Number(Object(a)[column_key].replace("m", ""));
-        const numB: number = Number(Object(b)[column_key].replace("m", ""));
+        const numA: number = Number(Object(a)[column_key]);
+        const numB: number = Number(Object(b)[column_key]);
 
         if (numA === null || numA === undefined || isNaN(numA)) {
           return 1;
@@ -99,8 +99,8 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
     }
     if (column_key === "deepest" && direction === "up") {
       sortedData = data.sort((a, b) => {
-        const numA: number = Number(Object(a)[column_key].replace("m", ""));
-        const numB: number = Number(Object(b)[column_key].replace("m", ""));
+        const numA: number = Number(Object(a)[column_key]);
+        const numB: number = Number(Object(b)[column_key]);
 
         if (numA === null || numA === undefined || isNaN(numA)) {
           return 1;

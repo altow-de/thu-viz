@@ -24,5 +24,21 @@ export const getTimeObjectForSort = (str: string) => {
 };
 
 export const getDepthFromPressure = (pressure: number) => {
-  return ((-1 * pressure - 1013) / 100).toFixed(1) + "m";
+  return { val: ((pressure - 1013) / 100).toFixed(1), unit: "m" };
+};
+
+export const isValidDate = (d: Date | undefined) => {
+  return d && d instanceof Date && !isNaN(d.getTime());
+};
+
+export const findLongestArray = (obj: any) => {
+  let longestArray = []; // Anfangszustand: leeres Array
+  for (let key in obj) {
+    if (Array.isArray(obj[key]) && obj[key].length > longestArray.length) {
+      // Prüfen, ob es ein Array ist und ob es länger als das bisher längste Array ist
+      longestArray = obj[key];
+    }
+  }
+
+  return longestArray; // Das längste Array zurückgeben
 };

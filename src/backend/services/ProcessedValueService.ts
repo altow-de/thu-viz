@@ -30,8 +30,10 @@ export class ProcessedValueService extends BackendDbService {
     //Define the subquery to determine the latest processing_time for each raw_value_id
     const latestProcessingTimesSubquery = db
       .selectFrom("ProcessedValueHasRawValue")
+      .innerJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
+      .innerJoin("SensorType", "Sensor.sensor_type_id", "Sensor.sensor_type_id")
       .innerJoin("ProcessedValue", "ProcessedValue.processed_value_id", "ProcessedValueHasRawValue.processed_value_id")
-      .select("ProcessedValueHasRawValue.raw_value_id")
+      .select(["ProcessedValueHasRawValue.raw_value_id", "SensorType.parameter"])
       .select(sql`MAX(ProcessedValue.processing_time)`.as("latest_processing_time"))
       .where("ProcessedValueHasRawValue.processed_value_id", "in", rawValueIds)
       .where("ProcessedValue.valid", "=", 1)
@@ -92,6 +94,7 @@ export class ProcessedValueService extends BackendDbService {
           "ProcessedValue.value",
           "ProcessedValue.measuring_time",
           "ProcessedValue.processed_value_id",
+          "ProcessedValue.pressure",
         ])
         .groupBy("ProcessedValue.processed_value_id")
         .execute();

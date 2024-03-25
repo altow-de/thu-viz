@@ -40,25 +40,28 @@ const CastChart = ({
   const [yBrushEnd, setYBrushEnd] = useState<number[]>(reset ? [0, 0] : yBrushValue);
 
   const boundsWidth = width - MARGIN.right - MARGIN.left;
+  useEffect(() => {
+    if (reset) setXBrushEnd([0, 0]);
+  }, []);
 
   const setupScales = (data: DataPoint[], boundsWidth: number) => {
-    if (reset) setXBrushEnd([0, 0]);
     const [xMin, xMax]: (number | undefined)[] = d3.extent(data, (d) => Number(d.value.replace(",", ".")));
-
+    const xEnd = reset ? [0, 0] : xBrushEnd;
+    const yEnd = reset ? [0, 0] : yBrushEnd;
     const xScale = d3
       .scaleLinear()
-      .domain(xBrushEnd[0] > 0 || xBrushEnd[1] > 0 ? xBrushEnd : [xMin || 0, xMax || 0])
+      .domain(xEnd[0] > 0 || xEnd[1] > 0 ? xEnd : [xMin || 0, xMax || 0])
       .range([0, boundsWidth]);
 
     const filteredData = data.filter(
       (d) => Number(d.value) >= xScale.domain()[0] && Number(d.value) <= xScale.domain()[1]
     );
-    const yData = filteredData?.length > 0 || xBrushEnd[0] > 0 ? filteredData : data;
+    const yData = filteredData?.length > 0 || yEnd[0] > 0 ? filteredData : data;
     const [yMin, yMax]: (number | undefined)[] = d3.extent(yData, (d) => Number(d.depth));
 
     const yScale = d3
       .scaleLinear()
-      .domain(yBrushEnd[0] > 0 || yBrushEnd[1] > 0 ? yBrushEnd : [yMax || 0, yMin || 0])
+      .domain(yEnd[0] > 0 || yEnd[1] > 0 ? yEnd : [yMax || 0, yMin || 0])
       .range([height, 0]);
 
     return { xScale, yScale };
@@ -113,13 +116,11 @@ const CastChart = ({
         setXBrushEnd([x0, x1]);
         setResetCastChart(false);
       });
-    const xBrushGroup = svg.append("g").attr("clip-path", "url(#clipCharts)").append("g");
     const yBrushGroup = svg
       .append("g")
-      .attr("clip-path", "url(#yclip)")
-      .attr("fill", "red")
-      .attr("stroke", "red")
+      .attr("transform", `translate(${boundsWidth / 6}, 0)`)
       .append("g");
+    const xBrushGroup = svg.append("g").attr("clip-path", "url(#clipCharts)").append("g");
 
     const yBrush = d3
       .brushY()
@@ -139,10 +140,11 @@ const CastChart = ({
         if (!event.selection) return;
         const [y0, y1] = event.selection.map(yScale.invert);
         setYBrushEnd([y1, y0]);
+        setResetCastChart(false);
       });
+    yBrush.handleSize(1.5);
     yBrushGroup.call(yBrush).select(".overlay").attr("cursor", "ns-resize");
     xBrushGroup.call(xBrush).select(".overlay").attr("cursor", "ew-resize");
-    yBrush.handleSize(1.5);
   };
 
   const drawSegment = (
@@ -207,16 +209,9 @@ const CastChart = ({
 
       const { xScale, yScale } = setupScales(data, boundsWidth);
       drawAxes(svg, xScale, yScale);
-      const chartBody = svg.append("g").attr("clip-path", "url(#clipCharts)").append("g");
-
+      const chartBody = svg.append("g").attr("clip-path", "url(#clipCharts)");
       createBrushes(chartBody, xScale, yScale);
-      draw(chartBody, i_down, i_down_end, i_up, i_up_end, xScale, yScale);
-      addAxisLabels(svg, title, boundsWidth);
       const graphGroup = svg.append("g").attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
-
-      // Apply the clip path to the group
-      graphGroup.attr("clip-path", "url(#clipCharts)");
-
       const areaPath = graphGroup
         .append("g")
         .attr("clip-path", "url(#clipCharts)")
@@ -234,11 +229,10 @@ const CastChart = ({
         .append("defs")
         .append("clipPath")
         .attr("id", "yclip")
-        .append("rect")
         .attr("fill", "lightgrey")
         .attr("width", boundsWidth / 6)
         .attr("height", height)
-        .attr("x", width)
+        .attr("x", 0)
         .attr("y", 0);
 
       const xBrushArea = svg
@@ -250,6 +244,12 @@ const CastChart = ({
         .attr("height", height)
         .attr("x", 0)
         .attr("y", 0);
+
+      draw(chartBody, i_down, i_down_end, i_up, i_up_end, xScale, yScale);
+      addAxisLabels(svg, title, boundsWidth);
+
+      // Apply the clip path to the group
+      graphGroup.attr("clip-path", "url(#clipCharts)");
     }
   }, [data, i_down, i_down_end, i_up, i_up_end, width, title, xBrushEnd, yBrushEnd]);
 

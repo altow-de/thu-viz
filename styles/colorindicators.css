@@ -1,0 +1,23 @@
+#color-dot-Downcast {
+  background-color: #7b00f6;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 5px;
+}
+
+#color-dot-BottomU {
+  background-color: #bf39d5;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 5px;
+}
+
+#color-dot-Upcast {
+  background-color: #cae2f3;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 5px;
+}

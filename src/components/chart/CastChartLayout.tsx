@@ -27,28 +27,23 @@ const CastChartLayout = ({
   resetCastChart,
   setResetCastChart,
 }: CastChartLayoutProps) => {
+  const [onSwitch, setOnSwitch] = useState<boolean>(false);
   const [activeGraph, setActiveGraph] = useState({
-    graphDowncast: true,
-    graphBottomU: true,
-    graphUpcast: true,
+    checkbox1: true,
+    checkbox2: true,
+    checkbox3: true,
   });
   const [xCastBrush, setXCastBrush] = useState<number[]>([0, 0]);
+
   const syncCastCharts = (x1: number, x2: number) => {
     setXCastBrush([x1, x2]);
   };
 
-  const setAppliedData = (activeCheckboxes: any, activeSwitch) => {
-    if (activeCheckboxes.checkbox1) {
-      setActiveGraph(!activeGraph.graphDowncast);
-    }
-    if (activeCheckboxes.checkbox2) {
-      setActiveGraph(!activeGraph.graphBottomU);
-    }
-    if (activeCheckboxes.checkbox3) {
-      setActiveGraph(!activeGraph.graphUpcast);
-    }
-    console.log(activeGraph);
+  const setAppliedData = (checkboxes: any, activeSwitch: boolean) => {
+    setActiveGraph(checkboxes);
+    setOnSwitch(activeSwitch);
   };
+
   return (
     <div className="flex flex-row max-[600px]:flex-wrap">
       <div className="grow">
@@ -80,6 +75,7 @@ const CastChartLayout = ({
                     reset={resetCastChart}
                     setResetCastChart={setResetCastChart}
                     onCheck={activeGraph}
+                    onSwitch={onSwitch}
                   />
                 )}
               </ChartWrapper>

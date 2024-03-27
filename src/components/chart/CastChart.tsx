@@ -18,6 +18,7 @@ interface ChartProps {
   reset: boolean;
   setResetCastChart: (resetCastChart: boolean) => void;
   onCheck: any;
+  onSwitch: boolean;
 }
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
@@ -36,6 +37,7 @@ const CastChart = ({
   reset,
   setResetCastChart,
   onCheck,
+  onSwitch,
 }: ChartProps) => {
   const d3Container = useRef<SVGSVGElement | null>(null);
   const [xBrushEnd, setXBrushEnd] = useState<number[]>(
@@ -207,9 +209,9 @@ const CastChart = ({
     xScale: d3.ScaleLinear<number, number, never>,
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
-    const downcastColor = onCheck.graphDowncast ? "#7B00F6" : "";
-    const bottomcastColor = onCheck.graphBottomU ? "#BF39D5" : "";
-    const upcastColor = onCheck.graphUpcast ? "#cae2f3" : "";
+    const downcastColor = onCheck.checkbox1 || onSwitch ? "#7B00F6" : "";
+    const bottomcastColor = onCheck.checkbox2 || onSwitch ? "#BF39D5" : "";
+    const upcastColor = onCheck.checkbox3 || onSwitch ? "#cae2f3" : "";
     drawSegment(svg, 0, i_down, downcastColor, xScale, yScale); // Downcast
     drawSegment(svg, i_down, i_down_end, bottomcastColor, xScale, yScale); // Bottomcast
     drawSegment(svg, i_up, i_up_end, upcastColor, xScale, yScale); // Upcast
@@ -282,6 +284,7 @@ const CastChart = ({
     xBrushEnd,
     yBrushEnd,
     onCheck,
+    onSwitch,
   ]);
 
   return (

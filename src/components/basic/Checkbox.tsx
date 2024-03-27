@@ -1,40 +1,48 @@
 import { useState } from "react";
+import "/Users/macbookpro13/Documents/thu-viz/styles/colorindicators.css";
 
 interface CheckboxProps {
   activeSwitch: boolean;
   label: string;
   id: string;
-  isChecked: any;
-  handleChecked: any;
+  checkbox: any;
+  handleCheckboxChange: any;
 }
 
 const Checkbox = ({
   activeSwitch,
   label,
-  isChecked,
-  handleChecked,
+  checkbox,
+  handleCheckboxChange,
+  id,
 }: CheckboxProps) => {
-  const handleCheckboxChange = () => {
-    // handleChecked(!isChecked);
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked: boolean = event.target.checked;
+    handleCheckboxChange(id, isChecked); // Call the function provided by the parent
   };
 
   return (
-    <div className="flex items-center">
+    <div className="flex group items-center my-1">
       <input
         id={"link-checkbox" + label}
         type="checkbox"
         value=""
-        className="w-4 h-4 text-danube-600 bg-gray-100 border-gray-300 rounded focus:ring-danube-500 dark:focus:ring-danube-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        className="w-4 h-4 form-checkbox text-danube-600 bg-gray-100 border-gray-300 rounded focus:ring-danube-500 dark:focus:ring-danube-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
         disabled={activeSwitch}
-        checked={activeSwitch ? true : isChecked}
-        onChange={handleCheckboxChange}
+        checked={activeSwitch ? true : checkbox}
+        onChange={handleChange}
       />
       <label
         htmlFor={"link-checkbox" + label}
-        className="ms-2 text-sm font-medium text-danube-900 dark:text-gray-300"
+        className={`ms-2 text-sm font-medium text-danube-900 dark:text-gray-300  ${
+          activeSwitch
+            ? ""
+            : "group-hover:text-danube-700 dark:group-hover:text-danube-300 cursor-pointer"
+        }  transition-colors duration-200`}
       >
         {label}
       </label>
+      <div id={"color-dot-" + label}></div>
     </div>
   );
 };

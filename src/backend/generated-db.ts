@@ -159,7 +159,7 @@ export interface ProcessedValue {
   command_id: number;
   measuring_time: Date;
   position: Point;
-  pressure: Generated<Decimal | null>;
+  pressure: number;
   processed_value_id: Generated<number>;
   processing_time: Date;
   published: Generated<number>;

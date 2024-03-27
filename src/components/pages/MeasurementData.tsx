@@ -1,5 +1,5 @@
 import { MapType, MeasurementAnkers } from "@/frontend/enum";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "../basic/Button";
 import OceanMap from "../map/Map";
 import CardWraper from "../wrapper/CardWrapper";
@@ -14,7 +14,8 @@ import { useStore } from "@/frontend/store";
 import ChartLayout from "../chart/ChartLayout";
 import { ParameterDataForDeployment, TrackData } from "@/backend/services/ProcessedValueService";
 import CastChartLayout from "../chart/CastChartLayout";
-import { CastData, DataPoint } from "@/frontend/services/UpAndDownCastCalculationService";
+import { CastData } from "@/frontend/services/UpAndDownCastCalculationService";
+import { convertChartToPNG, createAndDownloadZip } from "@/frontend/utils";
 
 const MeasurementData = () => {
   const { data: dataStore } = useStore();
@@ -28,6 +29,8 @@ const MeasurementData = () => {
   const [brushSync, setBrushSync] = useState<boolean>(false);
   const [dataLoading, setDataLoading] = useState<boolean>(false);
   const [resetCastChart, setResetCastChart] = useState<boolean>(false);
+  const oceanMapRef = useRef(null);
+  const [exportChartIDs, setExportChartIDs] = useState<string[]>([]);
 
   const [parameterDataForDeployment, setParameterDataForDeployment] = useState<
     ParameterDataForDeployment[] | undefined
@@ -36,6 +39,19 @@ const MeasurementData = () => {
 
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
   const processedValueService: ProcessedValueService = new ProcessedValueService(dataStore);
+
+  const exportMap = () => {
+    let blobs: any[] = [];
+    oceanMapRef.current.exportMapAsPNG((blob: any) => {
+      blobs.push({ blob, filename: "map.png" });
+      exportChartIDs.forEach((chartId, index) => {
+        convertChartToPNG(chartId, (blb) => {
+          blobs.push(blb);
+          if (blobs.length === exportChartIDs.length + 1) createAndDownloadZip(blobs);
+        });
+      });
+    });
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -57,6 +73,13 @@ const MeasurementData = () => {
         const result = await processedValueService.getParameterDataForDeployment(deployment, logger);
 
         setParameterDataForDeployment(result as unknown as ParameterDataForDeployment[]);
+        const exportIDs: string[] = ["pressure-chart"];
+        (result as ParameterDataForDeployment[])?.map((res) => {
+          exportIDs.push(res.parameter + "-chart");
+          exportIDs.push(res.parameter + "-cast_chart");
+        });
+
+        setExportChartIDs(exportIDs);
       } else {
         setParameterDataForDeployment([]);
       }
@@ -139,10 +162,10 @@ const MeasurementData = () => {
         ></CastChartLayout>
       </CardWraper>
       <CardWraper text={"Tracks"} hasMap={true} id={MeasurementAnkers.Track}>
-        <OceanMap type={MapType.route} data={trackData} />
+        <OceanMap ref={oceanMapRef} type={MapType.route} data={trackData} />
       </CardWraper>
       <div className="flex justify-center">
-        <Button text={"Export plots"} onClick={() => {}} />
+        <Button text={"Export plots"} onClick={exportMap} />
       </div>
     </div>
   );

@@ -116,8 +116,8 @@ const ChartLayout = ({
                   onXBrushEnd={handleBrushEnd}
                   width={width}
                   xAxisTitle={"time"}
-                  yAxisTitle={obj.parameter}
-                  title={obj.parameter ? obj.parameter?.charAt(0).toUpperCase() + obj.parameter.slice(1) : ""}
+                  yAxisTitle={obj.unit}
+                  title={obj.parameter}
                   brushValue={brushValue}
                 />
               )}

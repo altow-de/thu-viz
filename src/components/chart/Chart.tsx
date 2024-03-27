@@ -318,7 +318,13 @@ const Chart = ({
   return (
     <div id="chartContainer" className="flex-auto inline-block">
       <div className="pl-7 text-sm text-danube-600 font-semibold">{title}</div>
-      <svg ref={axesRef} width={width} height={300} style={{ display: "block", margin: "auto" }}></svg>
+      <svg
+        id={title + "-chart"}
+        ref={axesRef}
+        width={width}
+        height={300}
+        style={{ display: "block", margin: "auto" }}
+      ></svg>
     </div>
   );
 };

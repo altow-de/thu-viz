@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
   GeoJSONFeature,
   Map,
@@ -36,7 +36,7 @@ type TrackObj = {
   };
 };
 
-const OceanMap = ({ type, data, region }: OceanMapProps) => {
+const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
   const mapContainer = useRef(null);
   const map = useRef<Map | null>(null);
   const [mapStyle, setMapStyle] = useState(Object.keys(MapStyles)[0]);
@@ -345,6 +345,26 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
       addPointLayer("location");
     }
   };
+  useImperativeHandle(ref, () => ({
+    exportMapAsPNG,
+  }));
+
+  const exportMapAsPNG = (callback: (blob: any) => void) => {
+    if (!map.current) return;
+
+    // Stellen Sie sicher, dass die Karte geladen ist
+    if (map.current.isStyleLoaded()) {
+      // Zugriff auf das Canvas-Element der Maplibre-Karte
+      const canvas = map.current.getCanvas();
+      map.current.redraw();
+      // Verwenden Sie die toBlob Methode, um den Canvas Inhalt in ein Blob umzuwandeln
+      canvas.toBlob((blob) => {
+        if (callback && typeof callback === "function") {
+          callback(blob); // Rufen Sie die Callback-Funktion mit dem Blob auf
+        }
+      }, "ocean-map/png"); // Stellen Sie sicher, dass der MIME-Typ korrekt ist
+    }
+  };
 
   // Effect to initialize the map
   useEffect(() => {
@@ -374,6 +394,9 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
         }`,
         center: [lng, lat],
         zoom: 15,
+        glOptions: {
+          preserveDrawingBuffer: true,
+        },
       });
       map.current.on("load", async function () {
         handleImages();
@@ -392,5 +415,5 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
       <div className="h-[320px] sm:h-[580px]" ref={mapContainer} />
     </div>
   );
-};
+});
 export default OceanMap;

@@ -28,7 +28,6 @@ const CastChartLayout = ({
 }: CastChartLayoutProps) => {
   const [xCastBrush, setXCastBrush] = useState<number[]>([0, 0]);
   const syncCastCharts = (x1: number, x2: number) => {
-    console.log("aa");
     setXCastBrush([x1, x2]);
   };
   return (

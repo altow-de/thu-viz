@@ -26,7 +26,14 @@ interface OceanMapProps {
 
 type TrackObj = {
   coordinates: number[][];
-  info: { depth?: number; deployment_id?: number; logger_id?: number; value?: number; name?: string };
+  info: {
+    depth?: number;
+    deployment_id?: number;
+    logger_id?: number;
+    value?: number;
+    name?: string;
+    parameter?: string;
+  };
 };
 
 const OceanMap = ({ type, data, region }: OceanMapProps) => {
@@ -68,6 +75,7 @@ const OceanMap = ({ type, data, region }: OceanMapProps) => {
         depth: depthObj.toString(),
         deployment_id: trackDataObj.deployment_id,
         logger_id: trackDataObj.logger_id,
+        parameter: trackDataObj.parameter,
         value: trackDataObj.value,
       };
     }

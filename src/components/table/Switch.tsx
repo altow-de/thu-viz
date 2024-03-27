@@ -2,20 +2,32 @@ import { useState } from "react";
 
 interface SwitchProps {
   style: string;
+  type: string;
+  onSwitch: React.Dispatch<React.SetStateAction<boolean>>;
 }
-
-const Switch = ({ style }: SwitchProps) => {
+const colorObj: Record<string, string> = {
+  table: "bg-danube-600 ring-danube-600",
+  cast: "bg-green-castcheck ring-green-castcheck",
+};
+const Switch = ({ style, type, onSwitch }: SwitchProps) => {
   const [trigger, setTrigger] = useState<boolean>(false);
 
   const onTrigger = () => {
     setTrigger(!trigger);
+    onSwitch(!trigger);
   };
   return (
-    <div className={`flex flex-col flex-1 items-center py-4 px-2  ${style}`}>
+    <div
+      className={`${
+        type === "table"
+          ? `flex flex-col flex-1 items-center py-4 px-2  ${style}`
+          : style
+      }`}
+    >
       <div className="relative" onClick={onTrigger}>
         <div
           className={`relative w-8 h-4 drop-shadow-md rounded-full cursor-pointer duration-300 ring-1 ${
-            trigger ? " bg-danube-600 ring-danube-600" : " bg-gray-custom ring-gray-custom "
+            trigger ? colorObj[type] : " bg-gray-custom ring-gray-custom "
           }`}
         >
           <div

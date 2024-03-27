@@ -1,18 +1,38 @@
+import { useState } from "react";
+
 interface CheckboxProps {
-  checked: boolean;
+  activeSwitch: boolean;
   label: string;
+  id: string;
+  isChecked: any;
+  handleChecked: any;
 }
 
-const Checkbox = ({ checked, label }: CheckboxProps) => {
+const Checkbox = ({
+  activeSwitch,
+  label,
+  isChecked,
+  handleChecked,
+}: CheckboxProps) => {
+  const handleCheckboxChange = () => {
+    // handleChecked(!isChecked);
+  };
+
   return (
     <div className="flex items-center">
       <input
-        id="link-checkbox"
+        id={"link-checkbox" + label}
         type="checkbox"
         value=""
-        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        className="w-4 h-4 text-danube-600 bg-gray-100 border-gray-300 rounded focus:ring-danube-500 dark:focus:ring-danube-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        disabled={activeSwitch}
+        checked={activeSwitch ? true : isChecked}
+        onChange={handleCheckboxChange}
       />
-      <label htmlFor="link-checkbox" className="ms-2 text-sm font-medium text-danube-900 dark:text-gray-300">
+      <label
+        htmlFor={"link-checkbox" + label}
+        className="ms-2 text-sm font-medium text-danube-900 dark:text-gray-300"
+      >
         {label}
       </label>
     </div>

@@ -1,6 +1,3 @@
-import { useState } from "react";
-import "/Users/macbookpro13/Documents/thu-viz/styles/colorindicators.css";
-
 interface CheckboxProps {
   activeSwitch: boolean;
   label: string;
@@ -9,13 +6,7 @@ interface CheckboxProps {
   handleCheckboxChange: (checkboxName: string, isChecked: boolean) => void;
 }
 
-const Checkbox = ({
-  activeSwitch,
-  label,
-  checkbox,
-  handleCheckboxChange,
-  id,
-}: CheckboxProps) => {
+const Checkbox = ({ activeSwitch, label, checkbox, handleCheckboxChange, id }: CheckboxProps) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked: boolean = event.target.checked;
     handleCheckboxChange(id, isChecked);
@@ -39,9 +30,7 @@ const Checkbox = ({
       <label
         htmlFor={"link-checkbox" + label}
         className={`ms-2 text-sm text-danube-900 dark:text-gray-300  ${
-          activeSwitch
-            ? ""
-            : "group-hover:text-danube-700 dark:group-hover:text-danube-300 cursor-pointer"
+          activeSwitch ? "" : "group-hover:text-danube-700 dark:group-hover:text-danube-300 cursor-pointer"
         }  transition-colors duration-200`}
       >
         {label}

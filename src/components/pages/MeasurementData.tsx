@@ -24,7 +24,9 @@ const MeasurementData = () => {
   const [tableData, setTableData] = useState<DeploymentTableData | undefined>();
   const [chartWidth, setChartWidth] = useState(window.innerWidth > 370 ? 300 : window.innerWidth - 70);
   const [castData, setCastData] = useState<{ [key: string]: CastData }>({});
-  const [defaultCastData, setDefaultCastData] = useState<{ [key: string]: CastData }>({});
+  const [defaultCastData, setDefaultCastData] = useState<{
+    [key: string]: CastData;
+  }>({});
   const [brush, setBrush] = useState<number[]>([0, 0]);
   const [brushSync, setBrushSync] = useState<boolean>(false);
   const [dataLoading, setDataLoading] = useState<boolean>(false);
@@ -64,6 +66,7 @@ const MeasurementData = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
   const setAppliedData = useCallback(
     async (deployment: number, logger: number) => {
       setDeployment(deployment);

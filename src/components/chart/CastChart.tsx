@@ -17,6 +17,8 @@ interface ChartProps {
   brushSync: boolean;
   reset: boolean;
   setResetCastChart: (resetCastChart: boolean) => void;
+  onCheck: any;
+  onSwitch: boolean;
 }
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
@@ -34,10 +36,16 @@ const CastChart = ({
   brushSync,
   reset,
   setResetCastChart,
+  onCheck,
+  onSwitch,
 }: ChartProps) => {
   const d3Container = useRef<SVGSVGElement | null>(null);
-  const [xBrushEnd, setXBrushEnd] = useState<number[]>(reset ? [0, 0] : xBrushValue);
-  const [yBrushEnd, setYBrushEnd] = useState<number[]>(reset ? [0, 0] : yBrushValue);
+  const [xBrushEnd, setXBrushEnd] = useState<number[]>(
+    reset ? [0, 0] : xBrushValue
+  );
+  const [yBrushEnd, setYBrushEnd] = useState<number[]>(
+    reset ? [0, 0] : yBrushValue
+  );
 
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   useEffect(() => {
@@ -45,7 +53,9 @@ const CastChart = ({
   }, []);
 
   const setupScales = (data: DataPoint[], boundsWidth: number) => {
-    const [xMin, xMax]: (number | undefined)[] = d3.extent(data, (d) => Number(d.value.replace(",", ".")));
+    const [xMin, xMax]: (number | undefined)[] = d3.extent(data, (d) =>
+      Number(d.value.replace(",", "."))
+    );
     const xEnd = reset ? [0, 0] : xBrushEnd;
     const yEnd = reset ? [0, 0] : yBrushEnd;
     const xScale = d3
@@ -54,10 +64,14 @@ const CastChart = ({
       .range([0, boundsWidth]);
 
     const filteredData = data.filter(
-      (d) => Number(d.value) >= xScale.domain()[0] && Number(d.value) <= xScale.domain()[1]
+      (d) =>
+        Number(d.value) >= xScale.domain()[0] &&
+        Number(d.value) <= xScale.domain()[1]
     );
     const yData = filteredData?.length > 0 || yEnd[0] > 0 ? filteredData : data;
-    const [yMin, yMax]: (number | undefined)[] = d3.extent(yData, (d) => Number(d.depth));
+    const [yMin, yMax]: (number | undefined)[] = d3.extent(yData, (d) =>
+      Number(d.depth)
+    );
 
     const yScale = d3
       .scaleLinear()
@@ -120,7 +134,10 @@ const CastChart = ({
       .append("g")
       .attr("transform", `translate(${boundsWidth / 6}, 0)`)
       .append("g");
-    const xBrushGroup = svg.append("g").attr("clip-path", "url(#clipCharts)").append("g");
+    const xBrushGroup = svg
+      .append("g")
+      .attr("clip-path", "url(#clipCharts)")
+      .append("g");
 
     const yBrush = d3
       .brushY()
@@ -192,9 +209,12 @@ const CastChart = ({
     xScale: d3.ScaleLinear<number, number, never>,
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
-    drawSegment(svg, 0, i_down, "#7B00F6", xScale, yScale); // Downcast
-    drawSegment(svg, i_down, i_down_end, "#BF39D5", xScale, yScale); // Bottomcast
-    drawSegment(svg, i_up, i_up_end, "#cae2f3", xScale, yScale); // Upcast
+    const downcastColor = onCheck.checkbox1 || onSwitch ? "#7B00F6" : "";
+    const bottomcastColor = onCheck.checkbox2 || onSwitch ? "#BF39D5" : "";
+    const upcastColor = onCheck.checkbox3 || onSwitch ? "#cae2f3" : "";
+    drawSegment(svg, 0, i_down, downcastColor, xScale, yScale); // Downcast
+    drawSegment(svg, i_down, i_down_end, bottomcastColor, xScale, yScale); // Bottomcast
+    drawSegment(svg, i_up, i_up_end, upcastColor, xScale, yScale); // Upcast
   };
 
   useEffect(() => {
@@ -211,7 +231,9 @@ const CastChart = ({
       drawAxes(svg, xScale, yScale);
       const chartBody = svg.append("g").attr("clip-path", "url(#clipCharts)");
       createBrushes(chartBody, xScale, yScale);
-      const graphGroup = svg.append("g").attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
+      const graphGroup = svg
+        .append("g")
+        .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
       const areaPath = graphGroup
         .append("g")
         .attr("clip-path", "url(#clipCharts)")
@@ -251,7 +273,19 @@ const CastChart = ({
       // Apply the clip path to the group
       graphGroup.attr("clip-path", "url(#clipCharts)");
     }
-  }, [data, i_down, i_down_end, i_up, i_up_end, width, title, xBrushEnd, yBrushEnd]);
+  }, [
+    data,
+    i_down,
+    i_down_end,
+    i_up,
+    i_up_end,
+    width,
+    title,
+    xBrushEnd,
+    yBrushEnd,
+    onCheck,
+    onSwitch,
+  ]);
 
   return (
     <div id="chartContainer" className="flex-auto inline-block">

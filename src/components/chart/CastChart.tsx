@@ -290,7 +290,7 @@ const CastChart = ({
   return (
     <div id="chartContainer" className="flex-auto inline-block">
       <div className="pl-7 text-sm text-danube-600 font-semibold">{title}</div>
-      <svg ref={d3Container} style={{ display: "block", margin: "auto" }}></svg>
+      <svg id={title + "-cast_chart"} ref={d3Container} style={{ display: "block", margin: "auto" }}></svg>
     </div>
   );
 };

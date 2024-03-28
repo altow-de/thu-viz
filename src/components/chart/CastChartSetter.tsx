@@ -1,15 +1,11 @@
-import { ParameterDataForDeployment } from "@/backend/services/ProcessedValueService";
 import Switch from "../table/Switch";
-import { SetStateAction, useEffect, useState } from "react";
+import { useState } from "react";
 import Checkbox from "../basic/Checkbox";
 import Button from "../basic/Button";
-import "/Users/macbookpro13/Documents/thu-viz/styles/colorindicators.css";
+import "../../../styles/colorindicators.css";
 
 interface CastChartSetterProps {
-  setAppliedData: (
-    checkboxes: { [key: string]: boolean },
-    activeSwitch: boolean
-  ) => void;
+  setAppliedData: (checkboxes: { [key: string]: boolean }, activeSwitch: boolean) => void;
 }
 
 const CastChartSetter = ({ setAppliedData }: CastChartSetterProps) => {
@@ -37,17 +33,10 @@ const CastChartSetter = ({ setAppliedData }: CastChartSetterProps) => {
       <div className="flex flex-col w-[300px] h-full divide-y divide-danube-200 text-sm text-danube-900">
         <div className="py-4 group">
           <div className=" absolute bg-danube-200 shadow-md -translate-y-20  w-72 h-18 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition duration-300">
-            If deactivated, the plotted data will be reduced according to the
-            time zoom in above diagramms.
+            If deactivated, the plotted data will be reduced according to the time zoom in above diagramms.
           </div>
-          <Switch
-            style={"inline-block"}
-            type={"cast"}
-            onSwitch={setSwitchState}
-          />
-          <div className="px-2 -translate-y-[3px] inline-block">
-            Automatic Cast Detection
-          </div>
+          <Switch style={"inline-block"} type={"cast"} onSwitch={setSwitchState} />
+          <div className="px-2 -translate-y-[3px] inline-block">Automatic Cast Detection</div>
         </div>
         <div className="py-4">
           <p className="font-semibold py-2">Parts of Deployment</p>

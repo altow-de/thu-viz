@@ -166,6 +166,8 @@ export class ProcessedValueService extends BackendDbService {
           "ProcessedValue.processed_value_id",
           "ProcessedValueHasRawValue.processed_value_id"
         )
+        .innerJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
+        .innerJoin("SensorType", "Sensor.sensor_type_id", "SensorType.sensor_type_id")
         .where(sql`ST_AsText(ProcessedValue.position)`, "!=", "POINT(-999 -999)")
         .selectAll()
         .orderBy("ProcessedValue.processing_time", "desc")

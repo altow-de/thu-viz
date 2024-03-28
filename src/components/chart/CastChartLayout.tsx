@@ -28,7 +28,7 @@ const CastChartLayout = ({
   setResetCastChart,
 }: CastChartLayoutProps) => {
   const [onSwitch, setOnSwitch] = useState<boolean>(false);
-  const [activeGraph, setActiveGraph] = useState({
+  const [activeGraph, setActiveGraph] = useState<{ [key: string]: boolean }>({
     checkbox1: true,
     checkbox2: true,
     checkbox3: true,
@@ -39,19 +39,22 @@ const CastChartLayout = ({
     setXCastBrush([x1, x2]);
   };
 
-  const setAppliedData = (checkboxes: any, activeSwitch: boolean) => {
+  const setAppliedData = (
+    checkboxes: { [key: string]: boolean },
+    activeSwitch: boolean
+  ) => {
     setActiveGraph(checkboxes);
     setOnSwitch(activeSwitch);
   };
 
   return (
     <div className="flex flex-row max-[600px]:flex-wrap">
-      <div className="grow">
-        {parameterData && <CastChartSetter setAppliedData={setAppliedData} />}
-      </div>
-      <div className="flex flex-wrap">
+      <div className="flex flex-1 flex-wrap">
         {(!parameterData || parameterData?.length === 0 || !castData) && (
           <NoDiagramData />
+        )}
+        {parameterData && parameterData?.length > 0 && castData && (
+          <CastChartSetter setAppliedData={setAppliedData} />
         )}
         {parameterData?.map((obj: ParameterDataForDeployment) => {
           return (

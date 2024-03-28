@@ -96,6 +96,7 @@ const CastChart = ({
     svg
       .append("g")
       .call(d3.axisLeft(yScale).ticks(10))
+      .attr("id", "CastYAxis")
       .attr("stroke-opacity", 0)
       .attr("font-size", 10)
       .attr("color", "#8c9192")
@@ -115,6 +116,19 @@ const CastChart = ({
     xScale: d3.ScaleLinear<number, number, never>,
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
+    const xBrushGroup = svg
+      .attr("id", "xBrushGroup")
+      .append("g")
+      .attr("clip-path", "url(#clipCharts)")
+      .append("g");
+
+    const yBrushGroup = svg
+      .attr("id", "yBrushGroup")
+      .append("g")
+      .attr("transform", `translate(${-(boundsWidth / 6)}, 0)`)
+      .attr("clip-path", "url(#yclip)")
+      .append("g");
+
     const xBrush = d3
       .brushX()
       .extent([
@@ -130,14 +144,6 @@ const CastChart = ({
         setXBrushEnd([x0, x1]);
         setResetCastChart(false);
       });
-    const yBrushGroup = svg
-      .append("g")
-      .attr("transform", `translate(${boundsWidth / 6}, 0)`)
-      .append("g");
-    const xBrushGroup = svg
-      .append("g")
-      .attr("clip-path", "url(#clipCharts)")
-      .append("g");
 
     const yBrush = d3
       .brushY()
@@ -159,9 +165,11 @@ const CastChart = ({
         setYBrushEnd([y1, y0]);
         setResetCastChart(false);
       });
+
     yBrush.handleSize(1.5);
-    yBrushGroup.call(yBrush).select(".overlay").attr("cursor", "ns-resize");
+
     xBrushGroup.call(xBrush).select(".overlay").attr("cursor", "ew-resize");
+    yBrushGroup.call(yBrush).select(".overlay").attr("cursor", "ns-resize");
   };
 
   const drawSegment = (
@@ -228,23 +236,14 @@ const CastChart = ({
         .attr("transform", `translate(${MARGIN.left},${MARGIN.top})`); // grouped graphs and translated
 
       const { xScale, yScale } = setupScales(data, boundsWidth);
-      drawAxes(svg, xScale, yScale);
       const chartBody = svg.append("g").attr("clip-path", "url(#clipCharts)");
-      createBrushes(chartBody, xScale, yScale);
+      draw(chartBody, i_down, i_down_end, i_up, i_up_end, xScale, yScale);
+      drawAxes(svg, xScale, yScale);
+      const chartBrushBody = svg.append("g");
       const graphGroup = svg
+        .attr("id", "castGraphGroup")
         .append("g")
         .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
-      const areaPath = graphGroup
-        .append("g")
-        .attr("clip-path", "url(#clipCharts)")
-        .selectAll(".area")
-        .data([data])
-        .join("path")
-        .attr("fill", "url(#area-gradient)")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 2)
-        .attr("opacity", 0.8);
-      areaPath.transition().duration(1000);
 
       // CLIPS
       const yBrushArea = svg
@@ -267,11 +266,8 @@ const CastChart = ({
         .attr("x", 0)
         .attr("y", 0);
 
-      draw(chartBody, i_down, i_down_end, i_up, i_up_end, xScale, yScale);
       addAxisLabels(svg, title, boundsWidth);
-
-      // Apply the clip path to the group
-      graphGroup.attr("clip-path", "url(#clipCharts)");
+      createBrushes(chartBrushBody, xScale, yScale);
     }
   }, [
     data,
@@ -290,7 +286,11 @@ const CastChart = ({
   return (
     <div id="chartContainer" className="flex-auto inline-block">
       <div className="pl-7 text-sm text-danube-600 font-semibold">{title}</div>
-      <svg id={title + "-cast_chart"} ref={d3Container} style={{ display: "block", margin: "auto" }}></svg>
+      <svg
+        id={title + "-cast_chart"}
+        ref={d3Container}
+        style={{ display: "block", margin: "auto" }}
+      ></svg>
     </div>
   );
 };

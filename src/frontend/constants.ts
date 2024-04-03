@@ -4,18 +4,30 @@ import { Anker } from "./types";
 
 export const NavigationPage = ["Overview", "Measurement Data"];
 
-export const MapStyles: { [key: string]: string } = { "basic-v2": "Street Map", satellite: "Satellite" };
+export const MapStyles: { [key: string]: string } = {
+  "basic-v2": "Street Map",
+  satellite: "Satellite",
+};
 
 export const LayerZoom = { minzoom: 0, maxzoom: 22 };
 
 export const OverviewAnkerTitles: Anker[] = [
-  { id: OverviewAnkers.MeasurementSelection, title: "Selection of measurement data" },
+  {
+    id: OverviewAnkers.MeasurementSelection,
+    title: "Selection of measurement data",
+  },
   { id: OverviewAnkers.OverviewDeployments, title: "Overview Deployment" },
-  { id: OverviewAnkers.PositionOfDeployments, title: "Position of Deployments (Startposition)" },
+  {
+    id: OverviewAnkers.PositionOfDeployments,
+    title: "Position of Deployments (Startposition)",
+  },
 ];
 
 export const MeasurementAnkerTitles: Anker[] = [
-  { id: MeasurementAnkers.SelectionSingleDeployment, title: "Selection of single deployment" },
+  {
+    id: MeasurementAnkers.SelectionSingleDeployment,
+    title: "Selection of single deployment",
+  },
   { id: MeasurementAnkers.Metadata, title: "Metadata" },
   { id: MeasurementAnkers.ParameterOverTime, title: "Parameter over time" },
   { id: MeasurementAnkers.ParameterOverDepth, title: "Parameter over depths" },
@@ -47,4 +59,16 @@ export const DateTimeLocaleOptions: Intl.DateTimeFormatOptions = {
   minute: "numeric",
 };
 
-export const EmptyDatabaseResult = new DatabaseError(406, "Database error occurred. Result is empty.", []);
+export const ChartUnits: { [key: string]: string } = {
+  mbar: "mbar",
+  "mS_cm-1": "µS/cm",
+  "mS_cm-": "µS/cm",
+  degree_C: "°C",
+  degree_: "°C",
+};
+
+export const EmptyDatabaseResult = new DatabaseError(
+  406,
+  "Database error occurred. Result is empty.",
+  []
+);

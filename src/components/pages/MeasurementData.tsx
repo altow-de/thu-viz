@@ -12,17 +12,27 @@ import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 import { useStore } from "@/frontend/store";
 import ChartLayout from "../chart/ChartLayout";
-import { ParameterDataForDeployment, TrackData } from "@/backend/services/ProcessedValueService";
+import {
+  ParameterDataForDeployment,
+  TrackData,
+} from "@/backend/services/ProcessedValueService";
 import CastChartLayout from "../chart/CastChartLayout";
 import { CastData } from "@/frontend/services/UpAndDownCastCalculationService";
 import { convertChartToPNG, createAndDownloadZip } from "@/frontend/utils";
+import ZoomLegend from "../chart/ZoomLegend";
 
 const MeasurementData = () => {
   const { data: dataStore } = useStore();
-  const [deployment, setDeployment] = useState<number>(dataStore.selectedColumn.deployment_id || -1);
-  const [logger, setLogger] = useState<number>(dataStore.selectedColumn.logger_id || -1);
+  const [deployment, setDeployment] = useState<number>(
+    dataStore.selectedColumn.deployment_id || -1
+  );
+  const [logger, setLogger] = useState<number>(
+    dataStore.selectedColumn.logger_id || -1
+  );
   const [tableData, setTableData] = useState<DeploymentTableData | undefined>();
-  const [chartWidth, setChartWidth] = useState(window.innerWidth > 370 ? 300 : window.innerWidth - 70);
+  const [chartWidth, setChartWidth] = useState(
+    window.innerWidth > 370 ? 300 : window.innerWidth - 70
+  );
   const [castData, setCastData] = useState<{ [key: string]: CastData }>({});
   const [defaultCastData, setDefaultCastData] = useState<{
     [key: string]: CastData;
@@ -40,7 +50,9 @@ const MeasurementData = () => {
   const [trackData, setTrackData] = useState<TrackData[]>();
 
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
-  const processedValueService: ProcessedValueService = new ProcessedValueService(dataStore);
+  const processedValueService: ProcessedValueService = new ProcessedValueService(
+    dataStore
+  );
 
   const exportMap = () => {
     let blobs: any[] = [];
@@ -51,12 +63,15 @@ const MeasurementData = () => {
         if (svgElement) {
           const serializer = new XMLSerializer();
           const svgString = serializer.serializeToString(svgElement);
-          const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+          const blob = new Blob([svgString], {
+            type: "image/svg+xml;charset=utf-8",
+          });
           blobs.push({ blob, filename: `${chartId}.svg` });
         }
         convertChartToPNG(chartId, (blb) => {
           blobs.push(blb);
-          if (blobs.length === exportChartIDs.length * 2 + 1) createAndDownloadZip(blobs);
+          if (blobs.length === exportChartIDs.length * 2 + 1)
+            createAndDownloadZip(blobs);
         });
       });
     });
@@ -80,9 +95,14 @@ const MeasurementData = () => {
       setLogger(logger);
 
       if (deployment > -1 && logger > -1) {
-        const result = await processedValueService.getParameterDataForDeployment(deployment, logger);
+        const result = await processedValueService.getParameterDataForDeployment(
+          deployment,
+          logger
+        );
 
-        setParameterDataForDeployment(result as unknown as ParameterDataForDeployment[]);
+        setParameterDataForDeployment(
+          (result as unknown) as ParameterDataForDeployment[]
+        );
         const exportIDs: string[] = ["pressure-chart"];
         (result as ParameterDataForDeployment[])?.map((res) => {
           exportIDs.push(res.parameter + "-chart");
@@ -103,7 +123,10 @@ const MeasurementData = () => {
       return;
     }
     const data = await deploymentService.getDeploymentById(deployment, logger);
-    const res = await processedValueService.getTrackDataByLoggerAndDeployment(deployment, logger);
+    const res = await processedValueService.getTrackDataByLoggerAndDeployment(
+      deployment,
+      logger
+    );
     setTrackData(res as TrackData[]);
     setTableData(data);
   }, [deployment]);
@@ -121,16 +144,20 @@ const MeasurementData = () => {
     }
     const startDate = new Date(x0);
     const endDate = new Date(x1);
-    const filteredData = Object.keys(castData).reduce((acc: { [key: string]: CastData }, key) => {
-      const dataPoints = castData[key].data.filter((dataPoint) => {
-        return (
-          new Date(dataPoint.measuring_time).getTime() >= startDate.getTime() &&
-          new Date(dataPoint.measuring_time).getTime() <= endDate.getTime()
-        );
-      });
-      acc[key] = { ...castData[key], data: dataPoints }; // Behalten Sie die Struktur bei, aber aktualisieren Sie die Daten
-      return acc;
-    }, {});
+    const filteredData = Object.keys(castData).reduce(
+      (acc: { [key: string]: CastData }, key) => {
+        const dataPoints = castData[key].data.filter((dataPoint) => {
+          return (
+            new Date(dataPoint.measuring_time).getTime() >=
+              startDate.getTime() &&
+            new Date(dataPoint.measuring_time).getTime() <= endDate.getTime()
+          );
+        });
+        acc[key] = { ...castData[key], data: dataPoints }; // Behalten Sie die Struktur bei, aber aktualisieren Sie die Daten
+        return acc;
+      },
+      {}
+    );
     setCastData(filteredData);
     setResetCastChart(true);
   };
@@ -146,9 +173,18 @@ const MeasurementData = () => {
         <Metadata tableData={tableData} />
       </div>
 
-      <CardWraper text="Parameter over time" hasMap={false} id={MeasurementAnkers.ParameterOverTime}>
+      <CardWraper
+        text="Parameter over time"
+        hasMap={false}
+        id={MeasurementAnkers.ParameterOverTime}
+      >
+        {parameterDataForDeployment &&
+          !dataLoading &&
+          parameterDataForDeployment.length !== 0 && <ZoomLegend />}
         <ChartLayout
-          parameterData={parameterDataForDeployment as ParameterDataForDeployment[]}
+          parameterData={
+            parameterDataForDeployment as ParameterDataForDeployment[]
+          }
           logger={logger}
           deployment={deployment}
           setCastData={setDefaultCastData}
@@ -160,9 +196,15 @@ const MeasurementData = () => {
           setDataLoading={setDataLoading}
         ></ChartLayout>
       </CardWraper>
-      <CardWraper text="Parameter over depths" hasMap={false} id={MeasurementAnkers.ParameterOverDepth}>
+      <CardWraper
+        text="Parameter over depths"
+        hasMap={false}
+        id={MeasurementAnkers.ParameterOverDepth}
+      >
         <CastChartLayout
-          parameterData={parameterDataForDeployment as ParameterDataForDeployment[]}
+          parameterData={
+            parameterDataForDeployment as ParameterDataForDeployment[]
+          }
           width={chartWidth}
           dataLoading={dataLoading}
           castData={castData}

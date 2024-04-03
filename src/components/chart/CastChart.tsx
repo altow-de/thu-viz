@@ -240,8 +240,6 @@ const CastChart = ({
   const initReset = (svg: d3.Selection<SVGGElement, unknown, null, undefined>) => {
     //reset
     svg.on("dblclick", (event) => {
-      console.log("here");
-
       setXBrushEnd([0, 0]);
       setYBrushEnd([0, 0]);
       handleYBrushEnd(0, 0);

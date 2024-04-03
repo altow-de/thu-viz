@@ -85,17 +85,19 @@ const CastChart = ({
     xScale: d3.ScaleLinear<number, number, never>,
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
+    const maxTickWidth = 50;
+    const numberOfTicksX = Math.floor(boundsWidth / maxTickWidth);
+
     svg
       .append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(xScale).ticks(5))
+      .call(d3.axisBottom(xScale).ticks(numberOfTicksX))
       .attr("stroke-opacity", 0)
       .attr("font-size", 10)
       .attr("color", "#8c9192");
     svg
       .append("g")
       .call(d3.axisLeft(yScale).ticks(10))
-      .attr("id", "CastYAxis")
       .attr("stroke-opacity", 0)
       .attr("font-size", 10)
       .attr("color", "#8c9192")
@@ -115,14 +117,11 @@ const CastChart = ({
     xScale: d3.ScaleLinear<number, number, never>,
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
-    const xBrushGroup = svg.attr("id", "xBrushGroup").append("g").attr("clip-path", "url(#clipCharts)").append("g");
-
     const yBrushGroup = svg
-      .attr("id", "yBrushGroup")
       .append("g")
-      .attr("transform", `translate(${-(boundsWidth / 6)}, 0)`)
-      .attr("clip-path", "url(#yclip)")
+      .attr("transform", `translate(${-boundsWidth / 5}, 0)`)
       .append("g");
+    const xBrushGroup = svg.append("g").attr("clip-path", "url(#clipCharts)").append("g");
 
     const xBrush = d3
       .brushX()
@@ -135,7 +134,7 @@ const CastChart = ({
       })
       .on("end", (event) => {
         if (!event.selection) return;
-        const [x0, x1] = event.selection.map(xScale.invert);
+        const [x0, x1] = event?.selection !== null ? event?.selection?.map(xScale.invert) : [0, 0];
         setXBrushEnd([x0, x1]);
         setResetCastChart(false);
       });
@@ -144,9 +143,10 @@ const CastChart = ({
       .brushY()
       .extent([
         [0, 0],
-        [boundsWidth, height],
+        [boundsWidth / 6, height],
       ])
       .on("brush", (event) => {
+        if (!event.selection) return;
         yBrushGroup
           .selectAll(".handle--n, .handle--s")
           .style("fill", "steelblue")
@@ -157,6 +157,7 @@ const CastChart = ({
       .on("end", (event) => {
         if (!event.selection) return;
         const [y0, y1] = event.selection.map(yScale.invert);
+
         setYBrushEnd([y1, y0]);
         handleYBrushEnd(y1, y0);
         setResetCastChart(false);
@@ -203,18 +204,18 @@ const CastChart = ({
       .attr("y", 222)
       .attr("x", boundsWidth)
       .text(ChartUnits[unit]) //name of the x axis
-      .attr("font-size", 8)
+      .attr("font-size", 9)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
 
     svg
       .append("text")
-      .attr("id", "yAnchor-" + title)
-      .attr("text-anchor", "start")
-      .attr("y", -38 + MARGIN.top)
-      .attr("x", -80 + MARGIN.left)
+      .attr("id", "yAnchor-depth")
+      .attr("text-anchor", "end")
+      .attr("y", -10)
+      .attr("x", 0)
       .text("depth") //name of the y axis
-      .attr("font-size", 8)
+      .attr("font-size", 9)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
   };
@@ -274,9 +275,6 @@ const CastChart = ({
       // CLIPS
       const yBrushArea = svg
         .append("defs")
-        .append("clipPath")
-        .attr("id", "yclip")
-        .attr("fill", "lightgrey")
         .attr("width", boundsWidth / 6)
         .attr("height", height)
         .attr("x", 0)
@@ -292,9 +290,9 @@ const CastChart = ({
         .attr("x", 0)
         .attr("y", 0);
 
-      addAxisLabels(svg, title, boundsWidth);
       initReset(svg);
       createBrushes(chartBrushBody, xScale, yScale);
+      addAxisLabels(svg, title, boundsWidth);
     }
   }, [data, i_down, i_down_end, i_up, i_up_end, width, title, xBrushEnd, yBrushEnd, onCheck, onSwitch]);
 

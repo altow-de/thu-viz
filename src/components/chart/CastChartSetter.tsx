@@ -75,26 +75,38 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold }: Ca
         </div>
         <div className="py-4">
           <p className="font-semibold pt-2">Change sensitivity</p>
-          <input
-            onChange={(e) => setWindowHalfSize(Number(e.target.value))}
-            defaultValue={windowHalfSize}
-            type="text"
-            className={`w-full mb-5 mt-2 px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
-              isNaN(windowHalfSizeVal) ? "border-red-custom" : "border-danube-200"
-            }`}
-            placeholder="Window half size"
-          />
-          <input
-            defaultValue={treshold}
-            onChange={(e) => {
-              setTreshold(Number(e.target.value));
-            }}
-            type="text"
-            className={`w-full mb-5 mt-2 px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
-              isNaN(tresholdVal) ? "border-red-custom" : "border-danube-200"
-            }`}
-            placeholder="Treshold"
-          />
+          <div className="mt-2 ">
+            <input
+              name="window-half-size"
+              onChange={(e) => setWindowHalfSize(Number(e.target.value))}
+              defaultValue={windowHalfSize}
+              type="text"
+              className={`w-full px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
+                isNaN(windowHalfSizeVal) ? "border-red-custom" : "border-danube-200"
+              }`}
+              placeholder="Window half size"
+            />
+            <label className="text-danube-600 text-[10px] relative -top-1  left-1" htmlFor={"treshold"}>
+              Window half size
+            </label>
+          </div>
+          <div className="mb-5">
+            <input
+              name={"treshold"}
+              defaultValue={treshold}
+              onChange={(e) => {
+                setTreshold(Number(e.target.value));
+              }}
+              type="text"
+              className={`w-full  px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
+                isNaN(tresholdVal) ? "border-red-custom" : "border-danube-200"
+              }`}
+              placeholder="Treshold"
+            />
+            <label className="text-danube-600  text-[10px] relative -top-1 left-1" htmlFor={"treshold"}>
+              Treshold
+            </label>
+          </div>
           <Button text="Apply" onClick={onApplyClick} disabled={isNaN(tresholdVal) || isNaN(windowHalfSizeVal)} />
         </div>
       </div>

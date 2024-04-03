@@ -95,7 +95,6 @@ const CastChart = ({
     svg
       .append("g")
       .call(d3.axisLeft(yScale).ticks(10))
-      .attr("id", "CastYAxis")
       .attr("stroke-opacity", 0)
       .attr("font-size", 10)
       .attr("color", "#8c9192")
@@ -115,14 +114,11 @@ const CastChart = ({
     xScale: d3.ScaleLinear<number, number, never>,
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
-    const xBrushGroup = svg.attr("id", "xBrushGroup").append("g").attr("clip-path", "url(#clipCharts)").append("g");
-
     const yBrushGroup = svg
-      .attr("id", "yBrushGroup")
       .append("g")
-      .attr("transform", `translate(${-(boundsWidth / 6)}, 0)`)
-      .attr("clip-path", "url(#yclip)")
+      .attr("transform", `translate(${-boundsWidth / 6}, 0)`)
       .append("g");
+    const xBrushGroup = svg.append("g").attr("clip-path", "url(#clipCharts)").append("g");
 
     const xBrush = d3
       .brushX()
@@ -134,7 +130,7 @@ const CastChart = ({
         xBrushGroup.select(".overlay").attr("cursor", "none");
       })
       .on("end", (event) => {
-        const [x0, x1] = event.selection.map(xScale.invert);
+        const [x0, x1] = event?.selection !== null ? event?.selection?.map(xScale.invert) : [0, 0];
         setXBrushEnd([x0, x1]);
         setResetCastChart(false);
       });
@@ -143,7 +139,7 @@ const CastChart = ({
       .brushY()
       .extent([
         [0, 0],
-        [boundsWidth, height],
+        [boundsWidth / 6, height],
       ])
       .on("brush", (event) => {
         yBrushGroup
@@ -273,9 +269,6 @@ const CastChart = ({
       // CLIPS
       const yBrushArea = svg
         .append("defs")
-        .append("clipPath")
-        .attr("id", "yclip")
-        .attr("fill", "lightgrey")
         .attr("width", boundsWidth / 6)
         .attr("height", height)
         .attr("x", 0)
@@ -291,16 +284,20 @@ const CastChart = ({
         .attr("x", 0)
         .attr("y", 0);
 
+      createBrushes(chartBrushBody, xScale, yScale);
       addAxisLabels(svg, title, boundsWidth);
       initReset(svg);
-      createBrushes(chartBrushBody, xScale, yScale);
     }
   }, [data, i_down, i_down_end, i_up, i_up_end, width, title, xBrushEnd, yBrushEnd, onCheck, onSwitch]);
 
   return (
     <div id="chartContainer" className="flex-auto inline-block">
       <div className="pl-1 text-sm text-danube-600 font-semibold">{title}</div>
-      <svg id={title + "-cast_chart"} ref={d3Container} style={{ display: "block", margin: "auto" }}></svg>
+      <svg
+        id={title + "-cast_chart"}
+        ref={d3Container}
+        style={{ display: "block", margin: "auto", touchAction: "none" }}
+      ></svg>
     </div>
   );
 };

@@ -116,7 +116,7 @@ const CastChart = ({
   ) => {
     const yBrushGroup = svg
       .append("g")
-      .attr("transform", `translate(${-boundsWidth / 6}, 0)`)
+      .attr("transform", `translate(${-boundsWidth / 5}, 0)`)
       .append("g");
     const xBrushGroup = svg.append("g").attr("clip-path", "url(#clipCharts)").append("g");
 

@@ -13,14 +13,12 @@ interface CastChartSetterProps {
   ) => void;
   treshold: number;
   windowHalfSize: number;
+  width: number;
 }
 
-const CastChartSetter = ({ setAppliedData, treshold, windowHalfSize }: CastChartSetterProps) => {
-  const defaultCheckbox = {
-    checkbox1: true,
-    checkbox2: true,
-    checkbox3: true,
-  };
+const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold }: CastChartSetterProps) => {
+  const defaultCheckbox = { checkbox1: true, checkbox2: true, checkbox3: true };
+
   const [windowHalfSizeVal, setWindowHalfSize] = useState<number>(windowHalfSize);
   const [tresholdVal, setTreshold] = useState<number>(treshold);
   const [switchState, setSwitchState] = useState<boolean>(false);
@@ -43,7 +41,7 @@ const CastChartSetter = ({ setAppliedData, treshold, windowHalfSize }: CastChart
 
   return (
     <div className=" flex-grow flex justify-center ">
-      <div className="flex flex-col w-[300px] h-full divide-y divide-danube-200 text-sm text-danube-900">
+      <div className={`flex flex-col w-[${width}px] h-full divide-y divide-danube-200 text-sm text-danube-900`}>
         <div className="py-4 group">
           <div className=" absolute bg-danube-200 shadow-md -translate-y-20  w-72 h-18 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition duration-300">
             If deactivated, the plotted data will be reduced according to the time zoom in above diagramms.

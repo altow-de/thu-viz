@@ -16,7 +16,7 @@ import { ParameterDataForDeployment, TrackData } from "@/backend/services/Proces
 import CastChartLayout from "../chart/CastChartLayout";
 import { CastData } from "@/frontend/services/UpAndDownCastCalculationService";
 import { convertChartToPNG, createAndDownloadZip } from "@/frontend/utils";
-import { brushX } from "d3";
+import ZoomLegend from "../chart/ZoomLegend";
 
 const MeasurementData = () => {
   const { data: dataStore } = useStore();
@@ -60,7 +60,9 @@ const MeasurementData = () => {
         if (svgElement) {
           const serializer = new XMLSerializer();
           const svgString = serializer.serializeToString(svgElement);
-          const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+          const blob = new Blob([svgString], {
+            type: "image/svg+xml;charset=utf-8",
+          });
           blobs.push({ blob, filename: `${chartId}.svg` });
         }
         convertChartToPNG(chartId, (blb) => {
@@ -170,6 +172,7 @@ const MeasurementData = () => {
       </div>
 
       <CardWraper text="Parameter over time" hasMap={false} id={MeasurementAnkers.ParameterOverTime}>
+        {parameterDataForDeployment && !dataLoading && parameterDataForDeployment.length !== 0 && <ZoomLegend />}
         <ChartLayout
           parameterData={parameterDataForDeployment as ParameterDataForDeployment[]}
           logger={logger}

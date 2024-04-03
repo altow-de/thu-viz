@@ -69,7 +69,12 @@ const CastChartLayout = ({
       <div className="flex flex-1 flex-wrap">
         {(!parameterData || parameterData?.length === 0 || !castData) && <NoDiagramData />}
         {parameterData && parameterData?.length > 0 && castData && (
-          <CastChartSetter setAppliedData={setAppliedData} treshold={treshold} windowHalfSize={windowHalfSize} />
+          <CastChartSetter
+            setAppliedData={setAppliedData}
+            treshold={treshold}
+            windowHalfSize={windowHalfSize}
+            width={width}
+          />
         )}
         {parameterData?.map((obj: ParameterDataForDeployment) => {
           return (
@@ -82,6 +87,7 @@ const CastChartLayout = ({
                     i_down_end={castData[obj.parameter].downEndIndex}
                     i_up={castData[obj.parameter].upStartIndex}
                     i_up_end={castData[obj.parameter].upEndIndex}
+                    unit={obj.unit}
                     width={width}
                     title={obj.parameter}
                     xBrushValue={xCastBrush}

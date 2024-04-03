@@ -14,11 +14,11 @@ interface ChartProps {
   xBrushValue: number[];
   yBrushValue: number[];
   syncCastCharts: (y0: number, y1: number) => void;
-  brushSync: boolean;
   reset: boolean;
   setResetCastChart: (resetCastChart: boolean) => void;
   onCheck: any;
   onSwitch: boolean;
+  resetCastData: () => void;
 }
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
@@ -33,23 +33,23 @@ const CastChart = ({
   title,
   xBrushValue,
   yBrushValue,
-  brushSync,
   reset,
   setResetCastChart,
   onCheck,
   onSwitch,
+  resetCastData,
 }: ChartProps) => {
   const d3Container = useRef<SVGSVGElement | null>(null);
-  const [xBrushEnd, setXBrushEnd] = useState<number[]>(reset ? [0, 0] : xBrushValue);
+  const [xBrushEnd, setXBrushEnd] = useState<number[]>(reset || !onSwitch ? [0, 0] : xBrushValue);
   const [yBrushEnd, setYBrushEnd] = useState<number[]>(reset ? [0, 0] : yBrushValue);
 
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   useEffect(() => {
-    if (reset) setXBrushEnd([0, 0]);
+    if (reset || !onSwitch) setXBrushEnd([0, 0]);
   }, []);
 
   const setupScales = (data: DataPoint[], boundsWidth: number) => {
-    const [xMin, xMax]: (number | undefined)[] = d3.extent(data, (d) => Number(d.value.replace(",", ".")));
+    const [xMin, xMax]: (number | undefined)[] = d3.extent(data, (d) => Number(d?.value));
     const xEnd = reset ? [0, 0] : xBrushEnd;
     const yEnd = reset ? [0, 0] : yBrushEnd;
     const xScale = d3
@@ -211,6 +211,20 @@ const CastChart = ({
     drawSegment(svg, i_up, i_up_end, upcastColor, xScale, yScale); // Upcast
   };
 
+  const initReset = (svg: d3.Selection<SVGGElement, unknown, null, undefined>) => {
+    //reset
+    svg.on("dblclick", (event) => {
+      setXBrushEnd([0, 0]);
+      setYBrushEnd([0, 0]);
+      setResetCastChart(true);
+      resetCastData();
+    });
+
+    svg.on("contextmenu", (event) => {
+      event.preventDefault();
+    });
+  };
+
   useEffect(() => {
     if (data && d3Container.current) {
       const svg = d3
@@ -253,6 +267,7 @@ const CastChart = ({
         .attr("y", 0);
 
       addAxisLabels(svg, title, boundsWidth);
+      initReset(svg);
       createBrushes(chartBrushBody, xScale, yScale);
     }
   }, [data, i_down, i_down_end, i_up, i_up_end, width, title, xBrushEnd, yBrushEnd, onCheck, onSwitch]);

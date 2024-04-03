@@ -22,10 +22,14 @@ interface ChartLayoutProps {
   setCastData: (castData: { [key: string]: CastData }) => void;
   width: number;
   brushValue: number[];
-  handleBrushEnd: (x0: number, x1: number) => void;
+  handleBrushEnd: (x0: number, x1: number, brushSync: boolean) => void;
   setResetCastChart: (resetCastChart: boolean) => void;
+  setDefaultCastData: (castData: { [key: string]: CastData }) => void;
   dataLoading: boolean;
+  treshold: number;
+  windowHalfSize: number;
   setDataLoading: (dataLoading: boolean) => void;
+  brushSync: boolean;
 }
 
 const ChartLayout = ({
@@ -39,6 +43,10 @@ const ChartLayout = ({
   setResetCastChart,
   dataLoading,
   setDataLoading,
+  treshold,
+  windowHalfSize,
+  setDefaultCastData,
+  brushSync,
 }: ChartLayoutProps) => {
   const upAndDownCastCalculationService: UpAndDownCastCalculationService = new UpAndDownCastCalculationService(0.2, 5);
   const [completeParameterData, setCompleteParameterData] = useState<ParameterDataForDeployment[]>(parameterData);
@@ -84,7 +92,7 @@ const ChartLayout = ({
           return { ...pressureObj, parameter: "pressure", value: pressureObj.pressure };
         });
         const completeData = { ...newData, pressure: pressureArray };
-        setCastData(castDataObj);
+        setDefaultCastData(castDataObj);
         setResetCastChart(true);
         setDiagramData((prevDiagramData) => ({
           ...prevDiagramData,
@@ -98,6 +106,27 @@ const ChartLayout = ({
         setDataLoading(false);
       });
   }, [parameterData]);
+
+  const changeCastData = () => {
+    upAndDownCastCalculationService.threshold = treshold;
+    upAndDownCastCalculationService.windowHalfSize = windowHalfSize;
+
+    setDataLoading(true);
+    if (!parameterData) return;
+    let castDataObj: { [key: string]: CastData } = {};
+    parameterData.map(async (obj: ParameterDataForDeployment) => {
+      const tmp = upAndDownCastCalculationService.execute(diagramData[obj.parameter] as unknown as DataPoint[]);
+      castDataObj[obj.parameter] = tmp;
+    });
+
+    setCastData(castDataObj);
+    setResetCastChart(true);
+    setDataLoading(false);
+  };
+
+  useEffect(() => {
+    changeCastData();
+  }, [treshold, windowHalfSize]);
 
   return (
     <div className="flex flex-wrap">
@@ -119,6 +148,7 @@ const ChartLayout = ({
                   yAxisTitle={obj.unit}
                   title={obj.parameter}
                   brushValue={brushValue}
+                  brushSync={brushSync}
                 />
               )}
             </ChartWrapper>

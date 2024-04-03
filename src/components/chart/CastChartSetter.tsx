@@ -1,21 +1,30 @@
 import Switch from "../table/Switch";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Checkbox from "../basic/Checkbox";
 import Button from "../basic/Button";
 import "../../../styles/colorindicators.css";
 
 interface CastChartSetterProps {
-  setAppliedData: (checkboxes: { [key: string]: boolean }, activeSwitch: boolean) => void;
+  setAppliedData: (
+    checkboxes: { [key: string]: boolean },
+    activeSwitch: boolean,
+    treshold: number,
+    windowHalfSize: number
+  ) => void;
+  treshold: number;
+  windowHalfSize: number;
 }
 
-const CastChartSetter = ({ setAppliedData }: CastChartSetterProps) => {
-  const [switchState, setSwitchState] = useState<boolean>(false);
-
-  const [checkboxes, setCheckboxes] = useState<{ [key: string]: boolean }>({
+const CastChartSetter = ({ setAppliedData, treshold, windowHalfSize }: CastChartSetterProps) => {
+  const defaultCheckbox = {
     checkbox1: true,
     checkbox2: true,
     checkbox3: true,
-  });
+  };
+  const [windowHalfSizeVal, setWindowHalfSize] = useState<number>(windowHalfSize);
+  const [tresholdVal, setTreshold] = useState<number>(treshold);
+  const [switchState, setSwitchState] = useState<boolean>(false);
+  const [checkboxes, setCheckboxes] = useState<{ [key: string]: boolean }>(defaultCheckbox);
 
   const handleCheckboxChange = (checkboxName: string, isChecked: boolean) => {
     setCheckboxes((prevState) => ({
@@ -25,8 +34,12 @@ const CastChartSetter = ({ setAppliedData }: CastChartSetterProps) => {
   };
 
   const onApplyClick = () => {
-    setAppliedData(checkboxes, switchState);
+    setAppliedData(checkboxes, switchState, tresholdVal, windowHalfSizeVal);
   };
+
+  useEffect(() => {
+    if (!switchState) setCheckboxes(defaultCheckbox);
+  }, [switchState]);
 
   return (
     <div className=" flex-grow flex justify-center ">
@@ -65,11 +78,26 @@ const CastChartSetter = ({ setAppliedData }: CastChartSetterProps) => {
         <div className="py-4">
           <p className="font-semibold pt-2">Change sensitivity</p>
           <input
+            onChange={(e) => setWindowHalfSize(Number(e.target.value))}
+            defaultValue={windowHalfSize}
             type="text"
-            className="w-full my-5 px-2 py-2 h-10 border placeholder-danube-900 rounded-lg border-danube-200"
-            placeholder="Sensitivity value"
+            className={`w-full mb-5 mt-2 px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
+              isNaN(windowHalfSizeVal) ? "border-red-custom" : "border-danube-200"
+            }`}
+            placeholder="Window half size"
           />
-          <Button text="Apply" onClick={onApplyClick} />
+          <input
+            defaultValue={treshold}
+            onChange={(e) => {
+              setTreshold(Number(e.target.value));
+            }}
+            type="text"
+            className={`w-full mb-5 mt-2 px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
+              isNaN(tresholdVal) ? "border-red-custom" : "border-danube-200"
+            }`}
+            placeholder="Treshold"
+          />
+          <Button text="Apply" onClick={onApplyClick} disabled={isNaN(tresholdVal) || isNaN(windowHalfSizeVal)} />
         </div>
       </div>
     </div>

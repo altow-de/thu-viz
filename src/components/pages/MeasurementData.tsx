@@ -16,9 +16,12 @@ import { ParameterDataForDeployment, TrackData } from "@/backend/services/Proces
 import CastChartLayout from "../chart/CastChartLayout";
 import { CastData } from "@/frontend/services/UpAndDownCastCalculationService";
 import { convertChartToPNG, createAndDownloadZip } from "@/frontend/utils";
+import { brushX } from "d3";
 
 const MeasurementData = () => {
   const { data: dataStore } = useStore();
+  const [windowHalfSize, setWindowHalfSize] = useState<number>(5);
+  const [treshold, setTreshold] = useState<number>(0.2);
   const [deployment, setDeployment] = useState<number>(dataStore.selectedColumn.deployment_id || -1);
   const [logger, setLogger] = useState<number>(dataStore.selectedColumn.logger_id || -1);
   const [tableData, setTableData] = useState<DeploymentTableData | undefined>();
@@ -41,6 +44,11 @@ const MeasurementData = () => {
 
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
   const processedValueService: ProcessedValueService = new ProcessedValueService(dataStore);
+
+  const setSensitivityValues = (treshold: number, windowHalfSize: number) => {
+    setTreshold(treshold);
+    setWindowHalfSize(windowHalfSize);
+  };
 
   const exportMap = () => {
     let blobs: any[] = [];
@@ -112,9 +120,12 @@ const MeasurementData = () => {
     getDeploymentById();
   }, [getDeploymentById]);
 
-  const handleBrushEnd = (x0: number = 0, x1: number = 0) => {
+  const handleBrushEnd = (x0: number = 0, x1: number = 0, brushSync: boolean) => {
+    console.log("here", brushSync);
+
     setBrush([x0, x1]);
-    if (x0 === 0 && x1 === 0) {
+
+    if ((x0 === 0 && x1 === 0) || !brushSync) {
       setResetCastChart(true);
       setCastData(defaultCastData);
       return;
@@ -134,6 +145,25 @@ const MeasurementData = () => {
     setCastData(filteredData);
     setResetCastChart(true);
   };
+
+  // useEffect(() => {
+  //   console.log(brushSync);
+
+  //   if (!brushSync) {
+  //     resetCastData();
+  //   }
+  // }, [brushSync]);
+
+  const handleBrushSync = (brushSync: boolean) => {
+    console.log("handleBrushSync", brushSync);
+    setBrushSync(brushSync);
+  };
+
+  const resetCastData = () => {
+    setResetCastChart(true);
+    setCastData(defaultCastData);
+  };
+
   return (
     <div className="flex flex-col">
       <AnkerMenu ankers={MeasurementAnkerTitles} />
@@ -151,13 +181,17 @@ const MeasurementData = () => {
           parameterData={parameterDataForDeployment as ParameterDataForDeployment[]}
           logger={logger}
           deployment={deployment}
-          setCastData={setDefaultCastData}
+          setDefaultCastData={setDefaultCastData}
+          setCastData={setCastData}
           width={chartWidth}
           brushValue={brush}
           handleBrushEnd={handleBrushEnd}
           setResetCastChart={setResetCastChart}
           dataLoading={dataLoading}
           setDataLoading={setDataLoading}
+          treshold={treshold}
+          windowHalfSize={windowHalfSize}
+          brushSync={brushSync}
         ></ChartLayout>
       </CardWraper>
       <CardWraper text="Parameter over depths" hasMap={false} id={MeasurementAnkers.ParameterOverDepth}>
@@ -169,6 +203,11 @@ const MeasurementData = () => {
           brushSync={brushSync}
           resetCastChart={resetCastChart}
           setResetCastChart={setResetCastChart}
+          treshold={treshold}
+          windowHalfSize={windowHalfSize}
+          setSensitivityValues={setSensitivityValues}
+          resetCastData={resetCastData}
+          handleBrushSync={handleBrushSync}
         ></CastChartLayout>
       </CardWraper>
       <CardWraper text={"Tracks"} hasMap={true} id={MeasurementAnkers.Track}>

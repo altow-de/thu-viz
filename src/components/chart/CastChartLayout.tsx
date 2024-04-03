@@ -15,6 +15,11 @@ interface CastChartLayoutProps {
   brushSync: boolean;
   resetCastChart: boolean;
   setResetCastChart: (resetCastChart: boolean) => void;
+  treshold: number;
+  windowHalfSize: number;
+  setSensitivityValues: (treshold: number, windowHalfSize: number) => void;
+  resetCastData: () => void;
+  handleBrushSync: (brushSync: boolean) => void;
 }
 
 const CastChartLayout = ({
@@ -26,13 +31,19 @@ const CastChartLayout = ({
   brushSync,
   resetCastChart,
   setResetCastChart,
+  windowHalfSize,
+  treshold,
+  setSensitivityValues,
+  resetCastData,
+  handleBrushSync,
 }: CastChartLayoutProps) => {
-  const [onSwitch, setOnSwitch] = useState<boolean>(false);
-  const [activeGraph, setActiveGraph] = useState<{ [key: string]: boolean }>({
+  const defaultCheckbox = {
     checkbox1: true,
     checkbox2: true,
     checkbox3: true,
-  });
+  };
+  const [onSwitch, setOnSwitch] = useState<boolean>(false);
+  const [activeGraph, setActiveGraph] = useState<{ [key: string]: boolean }>(defaultCheckbox);
   const [xCastBrush, setXCastBrush] = useState<number[]>([0, 0]);
 
   const syncCastCharts = (x1: number, x2: number) => {
@@ -41,27 +52,27 @@ const CastChartLayout = ({
 
   const setAppliedData = (
     checkboxes: { [key: string]: boolean },
-    activeSwitch: boolean
+    activeSwitch: boolean,
+    treshold: number,
+    windowHalfSize: number
   ) => {
-    setActiveGraph(checkboxes);
+    if (activeSwitch) setActiveGraph(defaultCheckbox);
+    else setActiveGraph(checkboxes);
     setOnSwitch(activeSwitch);
+    handleBrushSync(activeSwitch);
+    setSensitivityValues(treshold, windowHalfSize);
   };
 
   return (
     <div className="flex flex-row max-[600px]:flex-wrap">
       <div className="flex flex-1 flex-wrap">
-        {(!parameterData || parameterData?.length === 0 || !castData) && (
-          <NoDiagramData />
-        )}
+        {(!parameterData || parameterData?.length === 0 || !castData) && <NoDiagramData />}
         {parameterData && parameterData?.length > 0 && castData && (
-          <CastChartSetter setAppliedData={setAppliedData} />
+          <CastChartSetter setAppliedData={setAppliedData} treshold={treshold} windowHalfSize={windowHalfSize} />
         )}
         {parameterData?.map((obj: ParameterDataForDeployment) => {
           return (
-            <div
-              key={obj.parameter}
-              className=" flex-grow flex justify-center "
-            >
+            <div key={obj.parameter} className=" flex-grow flex justify-center ">
               <ChartWrapper dataLoading={dataLoading} width={width}>
                 {castData[obj.parameter] && (
                   <CastChart
@@ -72,13 +83,14 @@ const CastChartLayout = ({
                     i_up_end={castData[obj.parameter].upEndIndex}
                     width={width}
                     title={obj.parameter}
-                    xBrushValue={brushSync ? brushValue : xCastBrush}
-                    brushSync={brushSync}
+                    xBrushValue={xCastBrush}
                     syncCastCharts={syncCastCharts}
                     reset={resetCastChart}
                     setResetCastChart={setResetCastChart}
                     onCheck={activeGraph}
                     onSwitch={onSwitch}
+                    resetCastData={resetCastData}
+                    yBrushValue={[]}
                   />
                 )}
               </ChartWrapper>

@@ -66,16 +66,16 @@ export class UpAndDownCastCalculationService {
     for (let i = 0; i < this.data.length; i++) {
       const iBegin = Math.max(i - this.windowHalfSize, 0);
       const iEnd = Math.min(i + this.windowHalfSize, this.data.length - 1);
-      const endDepth = getDepthFromPressure(Number(this.data[iEnd].pressure)).val;
-      const beginDepth = getDepthFromPressure(Number(this.data[iBegin].pressure)).val;
+      const endDepth = getDepthFromPressure(Number(this.data[iEnd]?.pressure)).val;
+      const beginDepth = getDepthFromPressure(Number(this.data[iBegin]?.pressure)).val;
       const dDepth = Number(endDepth) - Number(beginDepth);
 
       const dt =
-        (new Date(this.data[iEnd].measuring_time).getTime() - new Date(this.data[iBegin].measuring_time).getTime()) /
+        (new Date(this.data[iEnd]?.measuring_time).getTime() - new Date(this.data[iBegin]?.measuring_time).getTime()) /
         1000; // Umwandlung in Sekunden
 
       this.data[i].speed_down_av = dt > 0 ? dDepth / dt : 0; // Vermeiden Sie Division durch Null
-      this.data[i].depth = Number(getDepthFromPressure(this.data[i].pressure).val);
+      this.data[i].depth = Number(getDepthFromPressure(this.data[i]?.pressure).val);
     }
   }
 
@@ -121,7 +121,7 @@ export class UpAndDownCastCalculationService {
         if (currentLength > maxLength) {
           maxLength = currentLength;
           endIndex = cast?.[i - 1]?.index; // Ende der längsten Sequenz
-          startIndex = cast?.[i - currentLength].index; // Anfang der längsten Sequenz
+          startIndex = cast?.[i - currentLength]?.index; // Anfang der längsten Sequenz
         }
         // Starte die Zählung einer neuen Sequenz
         currentLength = 1;
@@ -139,25 +139,25 @@ export class UpAndDownCastCalculationService {
 
   private findAllConsecutiveCasts(casts: Cast[]): IndexRange[] {
     const sequences: IndexRange[] = [];
-    let currentStartIndex = casts.length > 0 ? casts[0].index : 0;
+    let currentStartIndex = casts.length > 0 ? casts[0]?.index : 0;
     let currentLength = casts.length > 0 ? 1 : 0;
 
     // Starte von dem zweiten Element, da wir das aktuelle Element mit dem vorherigen vergleichen
     for (let i = 1; i < casts.length; i++) {
       // Überprüfe, ob die aktuelle Sequenz fortgesetzt wird
-      if (casts[i].index - casts[i - 1].index === 1) {
+      if (casts[i]?.index - casts[i - 1]?.index === 1) {
         currentLength++;
       } else {
         // Speichere die aktuelle Sequenz, wenn sie beendet ist
         if (currentLength > 0) {
           sequences.push({
-            start: casts[i - currentLength].index,
-            end: casts[i - 1].index,
+            start: casts[i - currentLength]?.index,
+            end: casts[i - 1]?.index,
             length: currentLength,
           });
         }
         // Starte die Zählung einer neuen Sequenz
-        currentStartIndex = casts[i].index;
+        currentStartIndex = casts[i]?.index;
         currentLength = 1;
       }
     }
@@ -165,8 +165,8 @@ export class UpAndDownCastCalculationService {
     // Überprüfe am Ende noch einmal, ob eine Sequenz im Gang ist
     if (currentLength > 0) {
       sequences.push({
-        start: casts[casts.length - currentLength].index,
-        end: casts[casts.length - 1].index,
+        start: casts[casts.length - currentLength]?.index,
+        end: casts[casts.length - 1]?.index,
         length: currentLength,
       });
     }
@@ -211,9 +211,9 @@ export class UpAndDownCastCalculationService {
       const iBegin = Math.max(i - this.windowHalfSize, 0);
       const iEnd = Math.min(i + this.windowHalfSize, this.data.length - 1);
 
-      const dDepth = this.data[iEnd].pressure - this.data[iBegin].pressure;
+      const dDepth = this.data[iEnd]?.pressure - this.data[iBegin]?.pressure;
       const dt =
-        (new Date(this.data[iEnd].measuring_time).getTime() - new Date(this.data[iBegin].measuring_time).getTime()) /
+        (new Date(this.data[iEnd]?.measuring_time).getTime() - new Date(this.data[iBegin]?.measuring_time).getTime()) /
         1000; // Umwandlung in Sekunden
 
       this.data[i].speed_down_av = dt > 0 ? dDepth / dt : 0; // Vermeiden Sie Division durch Null
@@ -223,9 +223,10 @@ export class UpAndDownCastCalculationService {
   private calculateVerticalSpeed(): void {
     for (let i = 0; i < this.data.length - 1; i++) {
       // Beachte, dass wir hier bis length - 1 gehen
-      const dDepth = this.data[i + 1].pressure - this.data[i].pressure;
+      const dDepth = this.data[i + 1]?.pressure - this.data[i]?.pressure;
       const dt =
-        (new Date(this.data[i + 1].measuring_time).getTime() - new Date(this.data[i].measuring_time).getTime()) / 1000;
+        (new Date(this.data[i + 1]?.measuring_time).getTime() - new Date(this.data[i]?.measuring_time).getTime()) /
+        1000;
 
       this.data[i].speed_down = dt > 0 ? dDepth / dt : 0; // Vermeiden Sie Division durch Null
     }

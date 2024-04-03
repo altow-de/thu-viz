@@ -8,7 +8,7 @@ import {
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
 
 interface ChartProps {
-  onXBrushEnd: (x0: number, x1: number) => void;
+  onXBrushEnd: (x0: number, x1: number, brushSync: boolean) => void;
   onLoggerChange: ParameterDataForDeployment[];
   brushValue: number[];
   data: DiagramDataForParameterAndDeployment[];
@@ -17,6 +17,7 @@ interface ChartProps {
   xAxisTitle: string; // x and y props to define the key used from the data
   yAxisTitle: string | null;
   dataObj: ParameterDataForDeployment;
+  brushSync: boolean;
 }
 
 const Chart = ({
@@ -29,6 +30,7 @@ const Chart = ({
   brushValue,
   dataObj,
   onLoggerChange,
+  brushSync,
 }: ChartProps) => {
   const [xBrushEnd, setXBrushEnd] = useState<number[]>([brushValue[0], brushValue[1]]);
   const [yBrushEnd, setYBrushEnd] = useState<number[]>([]);
@@ -43,7 +45,7 @@ const Chart = ({
   }, [brushValue[0], brushValue[1]]);
 
   useEffect(() => {
-    onXBrushEnd(0, 0);
+    onXBrushEnd(0, 0, brushSync);
     setYBrushEnd([]);
   }, [onLoggerChange]);
 
@@ -199,7 +201,7 @@ const Chart = ({
         const [x0, x1] = event.selection.map(xScale.invert);
         const filteredData = data.filter((d) => d.measuring_time >= x0 && d.measuring_time <= x1);
         if (filteredData.length === 0) return;
-        onXBrushEnd(x0, x1);
+        onXBrushEnd(x0, x1, brushSync);
         selectionRef.current.push([x0, x1]);
       });
 
@@ -245,7 +247,7 @@ const Chart = ({
 
     //reset
     svgElement.on("dblclick", (event) => {
-      onXBrushEnd(0, 0);
+      onXBrushEnd(0, 0, brushSync);
       setYBrushEnd([]);
       selectionRef.current = [];
     });
@@ -269,9 +271,9 @@ const Chart = ({
         } else {
           const lastXZoom = selectionRef.current.findLast((item) => typeof item[0] !== "number");
           if (lastXZoom) {
-            onXBrushEnd(lastXZoom[0], lastXZoom[1]);
+            onXBrushEnd(lastXZoom[0], lastXZoom[1], brushSync);
           } else {
-            onXBrushEnd(0, 0);
+            onXBrushEnd(0, 0, brushSync);
           }
         }
       }
@@ -313,7 +315,7 @@ const Chart = ({
       .attr("font-size", 10)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
-  }, [xBrushEnd, yBrushEnd]);
+  }, [xBrushEnd, yBrushEnd, brushSync]);
 
   return (
     <div id="chartContainer" className="flex-auto inline-block">

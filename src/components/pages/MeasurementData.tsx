@@ -30,7 +30,8 @@ const MeasurementData = () => {
   const [defaultCastData, setDefaultCastData] = useState<{
     [key: string]: CastData;
   }>({});
-  const [brush, setBrush] = useState<number[]>([0, 0]);
+  const [xBrush, setXBrush] = useState<number[]>([0, 0]);
+  const [yBrush, setYBrush] = useState<number[]>([0, 0]);
   const [brushSync, setBrushSync] = useState<boolean>(false);
   const [dataLoading, setDataLoading] = useState<boolean>(false);
   const [resetCastChart, setResetCastChart] = useState<boolean>(false);
@@ -120,10 +121,8 @@ const MeasurementData = () => {
     getDeploymentById();
   }, [getDeploymentById]);
 
-  const handleBrushEnd = (x0: number = 0, x1: number = 0, brushSync: boolean) => {
-    console.log("here", brushSync);
-
-    setBrush([x0, x1]);
+  const handleXBrushEnd = (x0: number = 0, x1: number = 0, brushSync: boolean) => {
+    setXBrush([x0, x1]);
 
     if ((x0 === 0 && x1 === 0) || !brushSync) {
       setResetCastChart(true);
@@ -145,17 +144,11 @@ const MeasurementData = () => {
     setCastData(filteredData);
     setResetCastChart(true);
   };
-
-  // useEffect(() => {
-  //   console.log(brushSync);
-
-  //   if (!brushSync) {
-  //     resetCastData();
-  //   }
-  // }, [brushSync]);
+  const handleYBrushEnd = (y1: number = 0, y0: number = 0) => {
+    setYBrush([y1, y0]);
+  };
 
   const handleBrushSync = (brushSync: boolean) => {
-    console.log("handleBrushSync", brushSync);
     setBrushSync(brushSync);
   };
 
@@ -184,8 +177,8 @@ const MeasurementData = () => {
           setDefaultCastData={setDefaultCastData}
           setCastData={setCastData}
           width={chartWidth}
-          brushValue={brush}
-          handleBrushEnd={handleBrushEnd}
+          brushValue={xBrush}
+          handleBrushEnd={handleXBrushEnd}
           setResetCastChart={setResetCastChart}
           dataLoading={dataLoading}
           setDataLoading={setDataLoading}
@@ -200,7 +193,6 @@ const MeasurementData = () => {
           width={chartWidth}
           dataLoading={dataLoading}
           castData={castData}
-          brushSync={brushSync}
           resetCastChart={resetCastChart}
           setResetCastChart={setResetCastChart}
           treshold={treshold}
@@ -208,6 +200,8 @@ const MeasurementData = () => {
           setSensitivityValues={setSensitivityValues}
           resetCastData={resetCastData}
           handleBrushSync={handleBrushSync}
+          yBrushValue={yBrush}
+          handleYBrushEnd={handleYBrushEnd}
         ></CastChartLayout>
       </CardWraper>
       <CardWraper text={"Tracks"} hasMap={true} id={MeasurementAnkers.Track}>

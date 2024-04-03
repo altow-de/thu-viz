@@ -11,8 +11,8 @@ interface CastChartLayoutProps {
   width: number;
   dataLoading: boolean;
   parameterData: ParameterDataForDeployment[];
-  brushValue?: number[];
-  brushSync: boolean;
+  xBrushValue?: number[];
+  yBrushValue: number[];
   resetCastChart: boolean;
   setResetCastChart: (resetCastChart: boolean) => void;
   treshold: number;
@@ -20,6 +20,7 @@ interface CastChartLayoutProps {
   setSensitivityValues: (treshold: number, windowHalfSize: number) => void;
   resetCastData: () => void;
   handleBrushSync: (brushSync: boolean) => void;
+  handleYBrushEnd: (y1: number, y0: number) => void;
 }
 
 const CastChartLayout = ({
@@ -27,8 +28,6 @@ const CastChartLayout = ({
   dataLoading,
   width,
   parameterData,
-  brushValue,
-  brushSync,
   resetCastChart,
   setResetCastChart,
   windowHalfSize,
@@ -36,6 +35,8 @@ const CastChartLayout = ({
   setSensitivityValues,
   resetCastData,
   handleBrushSync,
+  yBrushValue,
+  handleYBrushEnd,
 }: CastChartLayoutProps) => {
   const defaultCheckbox = {
     checkbox1: true,
@@ -90,7 +91,8 @@ const CastChartLayout = ({
                     onCheck={activeGraph}
                     onSwitch={onSwitch}
                     resetCastData={resetCastData}
-                    yBrushValue={[]}
+                    yBrushValue={yBrushValue}
+                    handleYBrushEnd={handleYBrushEnd}
                   />
                 )}
               </ChartWrapper>

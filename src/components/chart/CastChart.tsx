@@ -19,6 +19,7 @@ interface ChartProps {
   onCheck: any;
   onSwitch: boolean;
   resetCastData: () => void;
+  handleYBrushEnd: (y1: number, y0: number) => void;
 }
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
@@ -38,6 +39,7 @@ const CastChart = ({
   onCheck,
   onSwitch,
   resetCastData,
+  handleYBrushEnd,
 }: ChartProps) => {
   const d3Container = useRef<SVGSVGElement | null>(null);
   const [xBrushEnd, setXBrushEnd] = useState<number[]>(reset || !onSwitch ? [0, 0] : xBrushValue);
@@ -47,6 +49,10 @@ const CastChart = ({
   useEffect(() => {
     if (reset || !onSwitch) setXBrushEnd([0, 0]);
   }, []);
+
+  useEffect(() => {
+    setYBrushEnd([yBrushValue[0], yBrushValue[1]]);
+  }, [yBrushValue[0], yBrushValue[1]]);
 
   const setupScales = (data: DataPoint[], boundsWidth: number) => {
     const [xMin, xMax]: (number | undefined)[] = d3.extent(data, (d) => Number(d?.value));
@@ -149,6 +155,7 @@ const CastChart = ({
         if (!event.selection) return;
         const [y0, y1] = event.selection.map(yScale.invert);
         setYBrushEnd([y1, y0]);
+        handleYBrushEnd(y1, y0);
         setResetCastChart(false);
       });
 
@@ -216,6 +223,7 @@ const CastChart = ({
     svg.on("dblclick", (event) => {
       setXBrushEnd([0, 0]);
       setYBrushEnd([0, 0]);
+      handleYBrushEnd(0, 0);
       setResetCastChart(true);
       resetCastData();
     });

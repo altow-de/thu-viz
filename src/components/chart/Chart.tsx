@@ -94,7 +94,7 @@ const Chart = ({
     const maxTickWidth = 50;
     const numberOfTicksX = Math.floor(boundsWidth / maxTickWidth);
     // x axis generator
-    const xAxisGenerator = d3.axisBottom(xScale).ticks(numberOfTicksX);
+    const xAxisGenerator = d3.axisBottom(xScale).ticks(6);
     svgElement
       .append("g")
       .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top + boundsHeight})`)

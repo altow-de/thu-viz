@@ -40,8 +40,12 @@ const CastChart = ({
   onSwitch,
 }: ChartProps) => {
   const d3Container = useRef<SVGSVGElement | null>(null);
-  const [xBrushEnd, setXBrushEnd] = useState<number[]>(reset ? [0, 0] : xBrushValue);
-  const [yBrushEnd, setYBrushEnd] = useState<number[]>(reset ? [0, 0] : yBrushValue);
+  const [xBrushEnd, setXBrushEnd] = useState<number[]>(
+    reset ? [0, 0] : xBrushValue
+  );
+  const [yBrushEnd, setYBrushEnd] = useState<number[]>(
+    reset ? [0, 0] : yBrushValue
+  );
 
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   useEffect(() => {
@@ -49,7 +53,9 @@ const CastChart = ({
   }, []);
 
   const setupScales = (data: DataPoint[], boundsWidth: number) => {
-    const [xMin, xMax]: (number | undefined)[] = d3.extent(data, (d) => Number(d.value.replace(",", ".")));
+    const [xMin, xMax]: (number | undefined)[] = d3.extent(data, (d) =>
+      Number(d.value.replace(",", "."))
+    );
     const xEnd = reset ? [0, 0] : xBrushEnd;
     const yEnd = reset ? [0, 0] : yBrushEnd;
     const xScale = d3
@@ -58,10 +64,14 @@ const CastChart = ({
       .range([0, boundsWidth]);
 
     const filteredData = data.filter(
-      (d) => Number(d.value) >= xScale.domain()[0] && Number(d.value) <= xScale.domain()[1]
+      (d) =>
+        Number(d.value) >= xScale.domain()[0] &&
+        Number(d.value) <= xScale.domain()[1]
     );
     const yData = filteredData?.length > 0 || yEnd[0] > 0 ? filteredData : data;
-    const [yMin, yMax]: (number | undefined)[] = d3.extent(yData, (d) => Number(d.depth));
+    const [yMin, yMax]: (number | undefined)[] = d3.extent(yData, (d) =>
+      Number(d.depth)
+    );
 
     const yScale = d3
       .scaleLinear()
@@ -106,7 +116,11 @@ const CastChart = ({
     xScale: d3.ScaleLinear<number, number, never>,
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
-    const xBrushGroup = svg.attr("id", "xBrushGroup").append("g").attr("clip-path", "url(#clipCharts)").append("g");
+    const xBrushGroup = svg
+      .attr("id", "xBrushGroup")
+      .append("g")
+      .attr("clip-path", "url(#clipCharts)")
+      .append("g");
 
     const yBrushGroup = svg
       .attr("id", "yBrushGroup")
@@ -188,6 +202,7 @@ const CastChart = ({
   ) => {
     svg
       .append("text")
+      .attr("id", "x-axis")
       .attr("text-anchor", "end")
       .attr("x", boundsWidth / 2)
       .attr("y", height + MARGIN.bottom - 5)
@@ -255,12 +270,28 @@ const CastChart = ({
       addAxisLabels(svg, title, boundsWidth);
       createBrushes(chartBrushBody, xScale, yScale);
     }
-  }, [data, i_down, i_down_end, i_up, i_up_end, width, title, xBrushEnd, yBrushEnd, onCheck, onSwitch]);
+  }, [
+    data,
+    i_down,
+    i_down_end,
+    i_up,
+    i_up_end,
+    width,
+    title,
+    xBrushEnd,
+    yBrushEnd,
+    onCheck,
+    onSwitch,
+  ]);
 
   return (
     <div id="chartContainer" className="flex-auto inline-block">
       <div className="pl-7 text-sm text-danube-600 font-semibold">{title}</div>
-      <svg id={title + "-cast_chart"} ref={d3Container} style={{ display: "block", margin: "auto" }}></svg>
+      <svg
+        id={title + "-cast_chart"}
+        ref={d3Container}
+        style={{ display: "block", margin: "auto" }}
+      ></svg>
     </div>
   );
 };

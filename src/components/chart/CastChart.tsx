@@ -85,10 +85,13 @@ const CastChart = ({
     xScale: d3.ScaleLinear<number, number, never>,
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
+    const maxTickWidth = 50;
+    const numberOfTicksX = Math.floor(boundsWidth / maxTickWidth);
+
     svg
       .append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(xScale).ticks(5))
+      .call(d3.axisBottom(xScale).ticks(numberOfTicksX))
       .attr("stroke-opacity", 0)
       .attr("font-size", 10)
       .attr("color", "#8c9192");

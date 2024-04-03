@@ -23,7 +23,7 @@ const ZoomLegend = () => {
           onClick={handleOnClick}
           className="flex flex-col w-fit p-1 mb-5 border-2 rounded-md border-danube-500 text-xs text-danube-900 cursor-pointer"
         >
-          <div>
+          <div className="hidden  md:inline-block">
             <span className="font-semibold text-danube-600 mr-1">
               X-Axis Zoom:
             </span>
@@ -35,7 +35,7 @@ const ZoomLegend = () => {
             />
             cursor appears, hold left-click to brush
           </div>
-          <div>
+          <div className="hidden md:inline-block">
             <span className="font-semibold text-danube-600 mr-1">
               Y-Axis Zoom:
             </span>
@@ -47,7 +47,7 @@ const ZoomLegend = () => {
             />
             cursor appears, hold left-click to brush
           </div>
-          <div>
+          <div className="hidden md:inline-block">
             <span className="font-semibold text-danube-600 mr-1 inline-block">
               Reset Chart:
             </span>
@@ -63,7 +63,7 @@ const ZoomLegend = () => {
             <span className="font-semibold text-danube-600 mr-1 inline-block">
               Reset Chart:
             </span>
-            <span className="inline-block">
+            <span>
               double finger-tap on the chart to set it to its initial state
             </span>
           </div>

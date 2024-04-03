@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { DataPoint } from "@/frontend/services/UpAndDownCastCalculationService";
 import "../../../styles/chart.css";
+import { ChartUnits } from "@/frontend/constants";
 
 interface ChartProps {
   data: DataPoint[];
@@ -19,6 +20,7 @@ interface ChartProps {
   setResetCastChart: (resetCastChart: boolean) => void;
   onCheck: any;
   onSwitch: boolean;
+  unit: string;
 }
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
@@ -38,6 +40,7 @@ const CastChart = ({
   setResetCastChart,
   onCheck,
   onSwitch,
+  unit,
 }: ChartProps) => {
   const d3Container = useRef<SVGSVGElement | null>(null);
   const [xBrushEnd, setXBrushEnd] = useState<number[]>(
@@ -202,11 +205,25 @@ const CastChart = ({
   ) => {
     svg
       .append("text")
-      .attr("id", "x-axis")
-      .attr("text-anchor", "end")
-      .attr("x", boundsWidth / 2)
-      .attr("y", height + MARGIN.bottom - 5)
-      .text(title);
+      .attr("id", "xAnchor-" + title)
+      .attr("text-anchor", "start")
+      .attr("y", 222)
+      .attr("x", boundsWidth)
+      .text(ChartUnits[unit]) //name of the x axis
+      .attr("font-size", 8)
+      .attr("font-weight", 600)
+      .attr("fill", "#4883c8");
+
+    svg
+      .append("text")
+      .attr("id", "yAnchor-" + title)
+      .attr("text-anchor", "start")
+      .attr("y", -38 + MARGIN.top)
+      .attr("x", -80 + MARGIN.left)
+      .text("depth") //name of the y axis
+      .attr("font-size", 8)
+      .attr("font-weight", 600)
+      .attr("fill", "#4883c8");
   };
 
   const draw = (
@@ -286,7 +303,7 @@ const CastChart = ({
 
   return (
     <div id="chartContainer" className="flex-auto inline-block">
-      <div className="pl-7 text-sm text-danube-600 font-semibold">{title}</div>
+      <div className="pl-1 text-sm text-danube-600 font-semibold">{title}</div>
       <svg
         id={title + "-cast_chart"}
         ref={d3Container}

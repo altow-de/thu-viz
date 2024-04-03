@@ -54,7 +54,7 @@ const CastChartLayout = ({
           <NoDiagramData />
         )}
         {parameterData && parameterData?.length > 0 && castData && (
-          <CastChartSetter setAppliedData={setAppliedData} />
+          <CastChartSetter setAppliedData={setAppliedData} width={width} />
         )}
         {parameterData?.map((obj: ParameterDataForDeployment) => {
           return (
@@ -70,6 +70,7 @@ const CastChartLayout = ({
                     i_down_end={castData[obj.parameter].downEndIndex}
                     i_up={castData[obj.parameter].upStartIndex}
                     i_up_end={castData[obj.parameter].upEndIndex}
+                    unit={obj.unit}
                     width={width}
                     title={obj.parameter}
                     xBrushValue={brushSync ? brushValue : xCastBrush}

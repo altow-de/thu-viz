@@ -42,6 +42,7 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
     getLoggersWithDeployments();
     resetDeployments();
     setAppliedData(-1, -1);
+    dataStore.setSelectedColumn(-1, -1);
   };
 
   const resetDeployments = () => {

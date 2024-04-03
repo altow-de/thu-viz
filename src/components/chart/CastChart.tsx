@@ -203,18 +203,18 @@ const CastChart = ({
       .attr("y", 222)
       .attr("x", boundsWidth)
       .text(ChartUnits[unit]) //name of the x axis
-      .attr("font-size", 8)
+      .attr("font-size", 9)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
 
     svg
       .append("text")
-      .attr("id", "yAnchor-" + title)
-      .attr("text-anchor", "start")
-      .attr("y", -38 + MARGIN.top)
-      .attr("x", -80 + MARGIN.left)
+      .attr("id", "yAnchor-depth")
+      .attr("text-anchor", "end")
+      .attr("y", 0)
+      .attr("x", 0)
       .text("depth") //name of the y axis
-      .attr("font-size", 8)
+      .attr("font-size", 9)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
   };

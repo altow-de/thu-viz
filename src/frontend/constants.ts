@@ -61,14 +61,11 @@ export const DateTimeLocaleOptions: Intl.DateTimeFormatOptions = {
 
 export const ChartUnits: { [key: string]: string } = {
   mbar: "mbar",
-  "mS_cm-1": "µS/cm",
-  "mS_cm-": "µS/cm",
+  "mS_cm-1": "mS/cm",
+  "uS_cm-1": "µS/cm",
+  "mg_L-1": "mg/l",
   degree_C: "°C",
   degree_: "°C",
 };
 
-export const EmptyDatabaseResult = new DatabaseError(
-  406,
-  "Database error occurred. Result is empty.",
-  []
-);
+export const EmptyDatabaseResult = new DatabaseError(406, "Database error occurred. Result is empty.", []);

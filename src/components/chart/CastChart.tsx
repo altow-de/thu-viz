@@ -134,7 +134,6 @@ const CastChart = ({
         xBrushGroup.select(".overlay").attr("cursor", "none");
       })
       .on("end", (event) => {
-        if (!event.selection) return;
         const [x0, x1] = event.selection.map(xScale.invert);
         setXBrushEnd([x0, x1]);
         setResetCastChart(false);
@@ -211,7 +210,7 @@ const CastChart = ({
       .append("text")
       .attr("id", "yAnchor-depth")
       .attr("text-anchor", "end")
-      .attr("y", 0)
+      .attr("y", -10)
       .attr("x", 0)
       .text("depth") //name of the y axis
       .attr("font-size", 9)

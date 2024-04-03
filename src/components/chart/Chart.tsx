@@ -214,7 +214,6 @@ const Chart = ({
         [boundsWidth, boundsHeight],
       ])
       .on("brush", (event) => {
-        const [x, y] = d3.pointer(event, xBrushGroup.node());
         yBrushGroup
           .selectAll(".handle--n, .handle--s")
           .style("fill", "steelblue")

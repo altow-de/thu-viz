@@ -5,18 +5,14 @@ import Button from "../basic/Button";
 import "../../../styles/colorindicators.css";
 
 interface CastChartSetterProps {
-  setAppliedData: (
-    checkboxes: { [key: string]: boolean },
-    activeSwitch: boolean,
-    treshold: number,
-    windowHalfSize: number
-  ) => void;
+  setAppliedData: (treshold: number, windowHalfSize: number) => void;
   treshold: number;
   windowHalfSize: number;
   width: number;
+  handleChanges: (checkboxes: { [key: string]: boolean }, activeSwitch: boolean) => void;
 }
 
-const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold }: CastChartSetterProps) => {
+const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold, handleChanges }: CastChartSetterProps) => {
   const defaultCheckbox = { checkbox1: true, checkbox2: true, checkbox3: true };
 
   const [windowHalfSizeVal, setWindowHalfSize] = useState<number>(windowHalfSize);
@@ -26,18 +22,18 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold }: Ca
   const [sensitivityVisible, setSensitivityVisible] = useState<boolean>(false);
 
   const handleCheckboxChange = (checkboxName: string, isChecked: boolean) => {
-    setCheckboxes((prevState) => ({
-      ...prevState,
-      [checkboxName]: isChecked,
-    }));
+    const newCheckboxes = { ...checkboxes, [checkboxName]: isChecked };
+    setCheckboxes(newCheckboxes);
+    handleChanges(newCheckboxes, switchState);
   };
 
   const onApplyClick = () => {
-    setAppliedData(checkboxes, switchState, tresholdVal, windowHalfSizeVal);
+    setAppliedData(tresholdVal, windowHalfSizeVal);
   };
 
   useEffect(() => {
     if (!switchState) setCheckboxes(defaultCheckbox);
+    handleChanges(defaultCheckbox, switchState);
   }, [switchState]);
 
   return (

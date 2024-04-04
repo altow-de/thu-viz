@@ -51,16 +51,13 @@ const CastChartLayout = ({
     setXCastBrush([x1, x2]);
   };
 
-  const setAppliedData = (
-    checkboxes: { [key: string]: boolean },
-    activeSwitch: boolean,
-    treshold: number,
-    windowHalfSize: number
-  ) => {
+  const handleChanges = (checkboxes: { [key: string]: boolean }, activeSwitch: boolean) => {
     if (activeSwitch) setActiveGraph(defaultCheckbox);
     else setActiveGraph(checkboxes);
     setOnSwitch(activeSwitch);
     handleBrushSync(activeSwitch);
+  };
+  const setAppliedData = (treshold: number, windowHalfSize: number) => {
     setSensitivityValues(treshold, windowHalfSize);
   };
 
@@ -74,6 +71,7 @@ const CastChartLayout = ({
             treshold={treshold}
             windowHalfSize={windowHalfSize}
             width={width}
+            handleChanges={handleChanges}
           />
         )}
         {parameterData?.map((obj: ParameterDataForDeployment) => {

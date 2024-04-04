@@ -230,8 +230,8 @@ const CastChart = ({
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
     const downcastColor = onCheck.checkbox1 || onSwitch ? "#7B00F6" : "";
-    const bottomcastColor = onCheck.checkbox2 || onSwitch ? "#BF39D5" : "";
-    const upcastColor = onCheck.checkbox3 || onSwitch ? "#cae2f3" : "";
+    const bottomcastColor = onCheck.checkbox2 || onSwitch ? "#cae2f3" : "";
+    const upcastColor = onCheck.checkbox3 || onSwitch ? "#BF39D5" : "";
     drawSegment(svg, 0, i_down, downcastColor, xScale, yScale); // Downcast
     drawSegment(svg, i_down, i_down_end, bottomcastColor, xScale, yScale); // Bottomcast
     drawSegment(svg, i_up, i_up_end, upcastColor, xScale, yScale); // Upcast

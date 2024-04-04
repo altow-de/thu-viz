@@ -40,10 +40,10 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold }: Ca
   }, [switchState]);
 
   return (
-    <div className=" flex-grow flex justify-center ">
-      <div className={`flex flex-col w-[${width}px] h-full divide-y divide-danube-200 text-sm text-danube-900`}>
-        <div className="py-4 group">
-          <div className=" absolute bg-danube-200 shadow-md -translate-y-20  w-72 h-18 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition duration-300">
+    <div className="flex-grow flex justify-center ">
+      <div className={`flex flex-col w-[${width}px] h-full divide-y divide-danube-200 text-sm text-danube-900 `}>
+        <div className="group relative my-2">
+          <div className="absolute bg-danube-200 shadow-md -translate-y-20 w-72 h-18 p-1 rounded-lg hidden group-hover:block transition duration-300 ">
             If deactivated, the plotted data will be reduced according to the time zoom in above diagramms.
           </div>
           <Switch style={"inline-block"} type={"cast"} onSwitch={setSwitchState} />

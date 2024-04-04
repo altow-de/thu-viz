@@ -191,6 +191,7 @@ const MeasurementData = () => {
         ></ChartLayout>
       </CardWraper>
       <CardWraper text="Parameter over depths" hasMap={false} id={MeasurementAnkers.ParameterOverDepth}>
+        {parameterDataForDeployment && !dataLoading && parameterDataForDeployment.length !== 0 && <ZoomLegend />}
         <CastChartLayout
           parameterData={parameterDataForDeployment as ParameterDataForDeployment[]}
           width={chartWidth}

@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Button from "../basic/Button";
 import CardWrapper from "../wrapper/CardWrapper";
 import Table from "./Table";
 import { OverviewAnkers } from "@/frontend/enum";
-import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
+import { SwitchTableData } from "@/frontend/types";
+import { observer } from "mobx-react-lite";
+import { useStore } from "@/frontend/store";
 
 interface TableWrapperProps {
   setPopUpVisible: (visible: boolean) => void;
-  tableData: OverviewDeploymentTrackData[];
+  tableData: SwitchTableData[];
 }
 
 const TableWrapper = ({ setPopUpVisible, tableData }: TableWrapperProps) => {
@@ -28,4 +30,4 @@ const TableWrapper = ({ setPopUpVisible, tableData }: TableWrapperProps) => {
   );
 };
 
-export default TableWrapper;
+export default observer(TableWrapper);

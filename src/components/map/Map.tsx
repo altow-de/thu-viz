@@ -81,6 +81,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
     }
     return { name: deploymentTrackDataObj.name };
   };
+
   const trackData =
     data && data.length > 0
       ? data?.map((trackObj: TrackData | OverviewDeploymentTrackData) => {

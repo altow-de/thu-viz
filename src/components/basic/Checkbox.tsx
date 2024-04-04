@@ -9,8 +9,6 @@ interface CheckboxProps {
 const Checkbox = ({ activeSwitch, label, checkbox, handleCheckboxChange, id }: CheckboxProps) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked: boolean = event.target.checked;
-    console.log("a");
-
     handleCheckboxChange(id, isChecked);
   };
 

@@ -6,24 +6,24 @@ import convert from "convert";
 import { getDepthFromPressure, getTimeObjectForSort } from "@/frontend/utils";
 import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 import { useStore } from "@/frontend/store";
+import { SwitchTableData } from "@/frontend/types";
+import { observer } from "mobx-react-lite";
 
 interface TableProps {
-  data: OverviewDeploymentTrackData[];
+  data: SwitchTableData[];
   maxHeight?: string;
   textSize?: string;
 }
 
 const Table = ({ data, maxHeight, textSize }: TableProps) => {
-  const [tableData, setTableData] = useState<OverviewDeploymentTrackData[]>(data);
+  const [tableData, setTableData] = useState<SwitchTableData[]>(data);
   const [sorted, setSorted] = useState<boolean>(false);
-  const [switchState, setSwitchState] = useState<boolean>();
   const { data: dataStore } = useStore();
-
   useEffect(() => {
     setTableData(data);
   }, [data]);
 
-  const formatColVal = (colObj: OverviewDeploymentTrackData, colKey: string) => {
+  const formatColVal = (colObj: SwitchTableData, colKey: string) => {
     const value = Object(colObj)[colKey];
 
     switch (colKey) {
@@ -48,11 +48,11 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
    * @param {string} column_key - The key of the column to be sorted.
    */
   const sort = (direction: string, column_key: string) => {
-    const type = typeof data.find((item) => item[column_key as keyof OverviewDeploymentTrackData] !== null)?.[
-      column_key as keyof OverviewDeploymentTrackData
+    const type = typeof data.find((item) => item[column_key as keyof SwitchTableData] !== null)?.[
+      column_key as keyof SwitchTableData
     ];
 
-    let sortedData: OverviewDeploymentTrackData[] = [];
+    let sortedData: SwitchTableData[] = [];
     if (type === "number" && direction === "down") {
       sortedData = data.sort((a, b) => {
         const numA: number = Number(Object(a)[column_key]);
@@ -172,7 +172,10 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         return strA.localeCompare(strB);
       });
     }
+    console.log(sortedData[0]);
+
     setTableData(sortedData);
+    dataStore.setTableData(sortedData);
     setSorted(!sorted);
   };
 
@@ -189,7 +192,7 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
             index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"
           } py-3 px-2 self-center h-full underline font-bold cursor-pointer hover:text-danube-700`}
         >
-          {formatColVal(row as OverviewDeploymentTrackData, titleKey)}
+          {formatColVal(row as SwitchTableData, titleKey)}
         </div>
       );
     }
@@ -199,7 +202,7 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         key={"col-" + i}
         className={` ${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-3 px-2 self-center h-full`}
       >
-        {formatColVal(row as OverviewDeploymentTrackData, titleKey)}
+        {formatColVal(row as SwitchTableData, titleKey)}
       </div>
     );
   };
@@ -217,23 +220,28 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         >
           <TableHeader titles={TableTitle} sort={sort} textSize={textSize} />
           <div className={`bg-white ${maxHeight}`}>
-            {tableData?.map((row, index) => (
-              <div
-                key={index}
-                className={`text-center text-danube-900  ${index !== data.length - 1 ? "border-white border-b-2" : ""}`}
-              >
-                <div className={`grid grid-cols-7 gap-0.5 bg-white ${maxHeight}`}>
-                  {Object.keys(TableTitle).map((titleKey, i) => {
-                    return createColumn(index, i, row, titleKey);
-                  })}
-                  <Switch
-                    style={`${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-3 px-2 text-danube-900`}
-                    type={"table"}
-                    onSwitch={setSwitchState}
-                  />
+            {tableData?.map((row, index) => {
+              return (
+                <div
+                  key={index}
+                  className={`text-center text-danube-900  ${
+                    index !== data.length - 1 ? "border-white border-b-2" : ""
+                  }`}
+                >
+                  <div className={`grid grid-cols-7 gap-0.5 bg-white ${maxHeight}`}>
+                    {Object.keys(TableTitle).map((titleKey, i) => {
+                      return createColumn(index, i, row, titleKey);
+                    })}
+                    <Switch
+                      style={`${index % 2 === 0 ? "bg-danube-100" : "bg-danube-50"} py-3 px-2 text-danube-900`}
+                      type={"table"}
+                      dataIndex={index}
+                      selected={tableData[index].showInMap}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -241,4 +249,4 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
   );
 };
 
-export default Table;
+export default observer(Table);

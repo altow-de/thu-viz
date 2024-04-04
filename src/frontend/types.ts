@@ -1,4 +1,5 @@
 import { Deployment, Logger, Platform, Vessel } from "@/backend/entities";
+import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 
 import { PlatformsCombinedWithVessels } from "@/backend/services/PlatformService";
 
@@ -22,3 +23,6 @@ export interface DatabaseErrorType {
   _message: string;
   _dbResponse: any;
 }
+
+export type Switch = { showInMap: boolean };
+export type SwitchTableData = OverviewDeploymentTrackData & Switch;

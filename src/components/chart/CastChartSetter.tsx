@@ -23,6 +23,7 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold }: Ca
   const [tresholdVal, setTreshold] = useState<number>(treshold);
   const [switchState, setSwitchState] = useState<boolean>(false);
   const [checkboxes, setCheckboxes] = useState<{ [key: string]: boolean }>(defaultCheckbox);
+  const [sensitivityVisible, setSensitivityVisible] = useState<boolean>(false);
 
   const handleCheckboxChange = (checkboxName: string, isChecked: boolean) => {
     setCheckboxes((prevState) => ({
@@ -40,7 +41,7 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold }: Ca
   }, [switchState]);
 
   return (
-    <div className="flex-grow flex justify-center ">
+    <div className={`flex justify-center flex-grow w-[${width}px]`}>
       <div className={`flex flex-col w-[${width}px] h-full divide-y divide-danube-200 text-sm text-danube-900 `}>
         <div className="group relative my-2">
           <div className="absolute bg-danube-200 shadow-md -translate-y-20 w-72 h-18 p-1 rounded-lg hidden group-hover:block transition duration-300 ">
@@ -73,41 +74,60 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold }: Ca
             label={"Upcast"}
           />
         </div>
-        <div className="py-4">
-          <p className="font-semibold pt-2">Change sensitivity</p>
-          <div className="mt-2 ">
-            <input
-              name="window-half-size"
-              onChange={(e) => setWindowHalfSize(Number(e.target.value))}
-              defaultValue={windowHalfSize}
-              type="text"
-              className={`w-full px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
-                isNaN(windowHalfSizeVal) ? "border-red-custom" : "border-danube-200"
-              }`}
-              placeholder="Window half size"
-            />
-            <label className="text-danube-600 text-[10px] relative -top-1  left-1" htmlFor={"treshold"}>
-              Window half size
-            </label>
-          </div>
-          <div className="mb-5">
-            <input
-              name={"treshold"}
-              defaultValue={treshold}
-              onChange={(e) => {
-                setTreshold(Number(e.target.value));
-              }}
-              type="text"
-              className={`w-full  px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
-                isNaN(tresholdVal) ? "border-red-custom" : "border-danube-200"
-              }`}
-              placeholder="Treshold"
-            />
-            <label className="text-danube-600  text-[10px] relative -top-1 left-1" htmlFor={"treshold"}>
-              Treshold
-            </label>
-          </div>
-          <Button text="Apply" onClick={onApplyClick} disabled={isNaN(tresholdVal) || isNaN(windowHalfSizeVal)} />
+        <div
+          className={`py-4 w-full ${
+            !sensitivityVisible ? "underline underline-offset-[5px] decoration-danube-200" : ""
+          }`}
+        >
+          <p
+            className={`font-semibold pt-2 relative cursor-pointer`}
+            onClick={() => setSensitivityVisible(!sensitivityVisible)}
+          >
+            Change sensitivity
+            {sensitivityVisible && (
+              <div className=" w-0 h-0 border-l-[5px] border-l-transparent  border-b-[6px] border-r-[5px] border-r-transparent right-0 bottom-[13px] mb-[3px] absolute top-3.5 bottom-0 border-b-danube-800"></div>
+            )}
+            {!sensitivityVisible && (
+              <div className="w-0 h-0 border-l-[5px] border-l-transparent border-t-[6px] border-r-[5px] border-r-transparent right-0 bottom-[2px] mt-[2px] absolute top-3.5 border-t-danube-800"></div>
+            )}
+          </p>
+          {sensitivityVisible && (
+            <div>
+              <div className="mt-2 ">
+                <input
+                  name="window-half-size"
+                  onChange={(e) => setWindowHalfSize(Number(e.target.value))}
+                  defaultValue={windowHalfSize}
+                  type="text"
+                  className={`w-full px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
+                    isNaN(windowHalfSizeVal) ? "border-red-custom" : "border-danube-200"
+                  }`}
+                  placeholder="Window half size"
+                />
+                <label className="text-danube-600 text-[10px] relative -top-1  left-1" htmlFor={"treshold"}>
+                  Window half size
+                </label>
+              </div>
+              <div className="mb-5">
+                <input
+                  name={"treshold"}
+                  defaultValue={treshold}
+                  onChange={(e) => {
+                    setTreshold(Number(e.target.value));
+                  }}
+                  type="text"
+                  className={`w-full  px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
+                    isNaN(tresholdVal) ? "border-red-custom" : "border-danube-200"
+                  }`}
+                  placeholder="Treshold"
+                />
+                <label className="text-danube-600  text-[10px] relative -top-1 left-1" htmlFor={"treshold"}>
+                  Treshold
+                </label>
+              </div>
+              <Button text="Apply" onClick={onApplyClick} disabled={isNaN(tresholdVal) || isNaN(windowHalfSizeVal)} />
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -9,6 +9,8 @@ interface CheckboxProps {
 const Checkbox = ({ activeSwitch, label, checkbox, handleCheckboxChange, id }: CheckboxProps) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked: boolean = event.target.checked;
+    console.log("a");
+
     handleCheckboxChange(id, isChecked);
   };
 
@@ -19,18 +21,18 @@ const Checkbox = ({ activeSwitch, label, checkbox, handleCheckboxChange, id }: C
         type="checkbox"
         value=""
         className={`w-4 h-4 ${
-          activeSwitch
+          !activeSwitch
             ? ""
             : `form-checkbox text-danube-600  border-danube-200 rounded focus:ring-danube-500 dark:focus:ring-danube-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600`
         }`}
-        disabled={activeSwitch}
-        checked={activeSwitch ? true : checkbox}
+        disabled={!activeSwitch}
+        checked={!activeSwitch ? true : checkbox}
         onChange={handleChange}
       />
       <label
         htmlFor={"link-checkbox" + label}
         className={`ms-2 text-sm text-danube-900 dark:text-gray-300  ${
-          activeSwitch ? "" : "group-hover:text-danube-700 dark:group-hover:text-danube-300 cursor-pointer"
+          !activeSwitch ? "" : "group-hover:text-danube-700 dark:group-hover:text-danube-300 cursor-pointer"
         }  transition-colors duration-200`}
       >
         {label}

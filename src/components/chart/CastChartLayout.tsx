@@ -52,10 +52,10 @@ const CastChartLayout = ({
   };
 
   const handleChanges = (checkboxes: { [key: string]: boolean }, activeSwitch: boolean) => {
-    if (activeSwitch) setActiveGraph(defaultCheckbox);
+    if (!activeSwitch) setActiveGraph(defaultCheckbox);
     else setActiveGraph(checkboxes);
-    setOnSwitch(activeSwitch);
-    handleBrushSync(activeSwitch);
+    setOnSwitch(!activeSwitch);
+    handleBrushSync(!activeSwitch);
   };
   const setAppliedData = (treshold: number, windowHalfSize: number) => {
     setSensitivityValues(treshold, windowHalfSize);

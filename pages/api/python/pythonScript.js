@@ -2,8 +2,9 @@ import { spawn } from "child_process";
 
 export default function handler(req, res) {
   const { measurements } = req.body;
+  const path = process.env.PYTHON_FILE_PATH;
 
-  const pythonProcess = spawn("python3", ["pages/scripts/salinity_psu.py"]);
+  const pythonProcess = spawn("python3", [path]);
 
   let stdoutData = "";
   let stderrData = "";

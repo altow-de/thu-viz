@@ -15,9 +15,9 @@ interface CastChartLayoutProps {
   yBrushValue: number[];
   resetCastChart: boolean;
   setResetCastChart: (resetCastChart: boolean) => void;
-  treshold: number;
+  threshold: number;
   windowHalfSize: number;
-  setSensitivityValues: (treshold: number, windowHalfSize: number) => void;
+  setSensitivityValues: (threshold: number, windowHalfSize: number) => void;
   resetCastData: () => void;
   handleBrushSync: (brushSync: boolean) => void;
   handleYBrushEnd: (y1: number, y0: number) => void;
@@ -31,7 +31,7 @@ const CastChartLayout = ({
   resetCastChart,
   setResetCastChart,
   windowHalfSize,
-  treshold,
+  threshold,
   setSensitivityValues,
   resetCastData,
   handleBrushSync,
@@ -57,8 +57,8 @@ const CastChartLayout = ({
     setOnSwitch(!activeSwitch);
     handleBrushSync(!activeSwitch);
   };
-  const setAppliedData = (treshold: number, windowHalfSize: number) => {
-    setSensitivityValues(treshold, windowHalfSize);
+  const setAppliedData = (threshold: number, windowHalfSize: number) => {
+    setSensitivityValues(threshold, windowHalfSize);
   };
 
   return (
@@ -68,7 +68,7 @@ const CastChartLayout = ({
         {parameterData && parameterData?.length > 0 && castData && (
           <CastChartSetter
             setAppliedData={setAppliedData}
-            treshold={treshold}
+            threshold={threshold}
             windowHalfSize={windowHalfSize}
             width={width}
             handleChanges={handleChanges}

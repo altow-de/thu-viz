@@ -5,18 +5,18 @@ import Button from "../basic/Button";
 import "../../../styles/colorindicators.css";
 
 interface CastChartSetterProps {
-  setAppliedData: (treshold: number, windowHalfSize: number) => void;
-  treshold: number;
+  setAppliedData: (threshold: number, windowHalfSize: number) => void;
+  threshold: number;
   windowHalfSize: number;
   width: number;
   handleChanges: (checkboxes: { [key: string]: boolean }, activeSwitch: boolean) => void;
 }
 
-const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold, handleChanges }: CastChartSetterProps) => {
+const CastChartSetter = ({ setAppliedData, width, windowHalfSize, threshold, handleChanges }: CastChartSetterProps) => {
   const defaultCheckbox = { checkbox1: true, checkbox2: true, checkbox3: true };
 
   const [windowHalfSizeVal, setWindowHalfSize] = useState<number>(windowHalfSize);
-  const [tresholdVal, setTreshold] = useState<number>(treshold);
+  const [thresholdVal, setThreshold] = useState<number>(threshold);
   const [switchState, setSwitchState] = useState<boolean>(false);
   const [checkboxes, setCheckboxes] = useState<{ [key: string]: boolean }>(defaultCheckbox);
   const [sensitivityVisible, setSensitivityVisible] = useState<boolean>(false);
@@ -28,7 +28,7 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold, hand
   };
 
   const onApplyClick = () => {
-    setAppliedData(tresholdVal, windowHalfSizeVal);
+    setAppliedData(thresholdVal, windowHalfSizeVal);
   };
 
   useEffect(() => {
@@ -100,28 +100,28 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold, hand
                   }`}
                   placeholder="Window half size"
                 />
-                <label className="text-danube-600 text-[10px] relative -top-1  left-1" htmlFor={"treshold"}>
+                <label className="text-danube-600 text-[10px] relative -top-1  left-1" htmlFor={"threshold"}>
                   Window half size
                 </label>
               </div>
               <div className="mb-5">
                 <input
-                  name={"treshold"}
-                  defaultValue={treshold}
+                  name={"threshold"}
+                  defaultValue={threshold}
                   onChange={(e) => {
-                    setTreshold(Number(e.target.value));
+                    setThreshold(Number(e.target.value));
                   }}
                   type="text"
                   className={`w-full  px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
-                    isNaN(tresholdVal) ? "border-red-custom" : "border-danube-200"
+                    isNaN(thresholdVal) ? "border-red-custom" : "border-danube-200"
                   }`}
-                  placeholder="Treshold"
+                  placeholder="threshold"
                 />
-                <label className="text-danube-600  text-[10px] relative -top-1 left-1" htmlFor={"treshold"}>
-                  Treshold
+                <label className="text-danube-600  text-[10px] relative -top-1 left-1" htmlFor={"threshold"}>
+                  threshold
                 </label>
               </div>
-              <Button text="Apply" onClick={onApplyClick} disabled={isNaN(tresholdVal) || isNaN(windowHalfSizeVal)} />
+              <Button text="Apply" onClick={onApplyClick} disabled={isNaN(thresholdVal) || isNaN(windowHalfSizeVal)} />
             </div>
           )}
         </div>

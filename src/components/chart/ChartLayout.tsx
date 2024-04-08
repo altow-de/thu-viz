@@ -13,7 +13,7 @@ import {
 } from "@/frontend/services/UpAndDownCastCalculationService";
 import ChartWrapper from "./ChartWrapper";
 import NoDiagramData from "./NoDiagramData";
-import { findLongestArray } from "@/frontend/utils";
+import { findLongestArray, o2ptoO2c } from "@/frontend/utils";
 import { PythonService } from "@/frontend/services/PythonService";
 
 interface ChartLayoutProps {
@@ -27,7 +27,7 @@ interface ChartLayoutProps {
   setResetCastChart: (resetCastChart: boolean) => void;
   setDefaultCastData: (castData: { [key: string]: CastData }) => void;
   dataLoading: boolean;
-  treshold: number;
+  threshold: number;
   windowHalfSize: number;
   setDataLoading: (dataLoading: boolean) => void;
   brushSync: boolean;
@@ -44,7 +44,7 @@ const ChartLayout = ({
   setResetCastChart,
   dataLoading,
   setDataLoading,
-  treshold,
+  threshold,
   windowHalfSize,
   setDefaultCastData,
   brushSync,
@@ -63,8 +63,6 @@ const ChartLayout = ({
   useEffect(() => {
     setDataLoading(true);
     const getSalinity = async (measurements: any[]) => {
-      console.log(measurements);
-
       return pythonService.callPythonScript(measurements).then((res) => {
         return res;
       });
@@ -103,15 +101,29 @@ const ChartLayout = ({
 
         if (newData.oxygen && newData.temperature && newData.conductivity) {
           let maxSanity = 0;
+          let maxOxygen = 0;
           const measurements = newData.temperature.map((temp: any, index: number) => {
             return [newData.oxygen[index].value, temp.value, pressureArray[index].value];
           });
-          // const pressure = pressureArray.map((press) => press.value);
-          // const oxygen = newData.oxygen.map((oxy) => oxy.value);
           getSalinity(measurements).then((res) => {
             const salinityData = res.data.map((salinity: number, index: number) => {
               maxSanity = Number(salinity) > maxSanity ? Number(salinity) : maxSanity;
               return { parameter: "salinity", value: salinity, measuring_time: newData.oxygen[index].measuring_time };
+            });
+
+            const oxygenData = res.data.map((salinity: number, index: number) => {
+              const oxy = o2ptoO2c(
+                newData.oxygen[index].value,
+                newData.temperature[index].value,
+                salinity,
+                pressureArray[index].value
+              );
+              maxOxygen = Number(oxy) > maxOxygen ? Number(oxy) : maxOxygen;
+              return {
+                parameter: "oxygen_per_liter",
+                value: oxy,
+                measuring_time: newData.oxygen[index].measuring_time,
+              };
             });
             const salinityObj = {
               ...pressureObj,
@@ -119,11 +131,24 @@ const ChartLayout = ({
               value: maxSanity,
               unit: "PSO",
             };
+            const oxygenObj = {
+              ...pressureObj,
+              parameter: "oxygen_per_liter",
+              value: maxOxygen,
+              unit: "ml/L",
+            };
+
             const salinityArray = [{ ...salinityObj }];
-            const parameter = parameterWithPressureData.concat(salinityArray);
+            const oxygenArray = [{ ...oxygenObj }];
+            const parameter = parameterWithPressureData.concat(salinityArray).concat(oxygenArray);
             setCompleteParameterData(parameter);
 
-            const completeData = { ...newData, salinity: salinityData, pressure: pressureArray };
+            const completeData = {
+              ...newData,
+              salinity: salinityData,
+              pressure: pressureArray,
+              oxygen_per_liter: oxygenData,
+            };
 
             setDiagramData((prevDiagramData) => ({
               ...prevDiagramData,
@@ -153,7 +178,7 @@ const ChartLayout = ({
   }, [parameterData]);
 
   const changeCastData = () => {
-    upAndDownCastCalculationService.threshold = treshold;
+    upAndDownCastCalculationService.threshold = threshold;
     upAndDownCastCalculationService.windowHalfSize = windowHalfSize;
 
     setDataLoading(true);
@@ -171,7 +196,7 @@ const ChartLayout = ({
 
   useEffect(() => {
     changeCastData();
-  }, [treshold, windowHalfSize]);
+  }, [threshold, windowHalfSize]);
 
   return (
     <div className="flex flex-wrap">

@@ -69,3 +69,12 @@ export const ChartUnits: { [key: string]: string } = {
 };
 
 export const EmptyDatabaseResult = new DatabaseError(406, "Database error occurred. Result is empty.", []);
+
+export const ChartTitle: { [key: string]: string } = {
+  oxygen_per_liter: "Oxygen",
+  salinity: "Salinity",
+  temperature: "Temperature",
+  oxygen: "Oxygen partial pressure",
+  conductivity: "Conductivity",
+  pressure: "Pressure",
+};

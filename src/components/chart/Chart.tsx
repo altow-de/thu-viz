@@ -4,7 +4,7 @@ import {
   DiagramDataForParameterAndDeployment,
   ParameterDataForDeployment,
 } from "@/backend/services/ProcessedValueService";
-import { ChartUnits } from "@/frontend/constants";
+import { ChartTitle, ChartUnits } from "@/frontend/constants";
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
 
@@ -148,7 +148,7 @@ const Chart = ({
     const areaBuilder = d3
       .area()
       .x((d) => xScale(d.measuring_time))
-      .y0(yScale(1))
+      .y0(yScale(1) < 0 ? -yScale(1) : yScale(1))
       .y1((d) => yScale(d.value))
       .curve(d3.curveBasis);
 
@@ -321,7 +321,7 @@ const Chart = ({
 
   return (
     <div id="chartContainer" className="flex-auto inline-block">
-      <div className="pl-1 text-sm text-danube-600 font-semibold">{title}</div>
+      <div className="pl-1 text-sm text-danube-600 font-semibold">{ChartTitle[title]}</div>
       <svg
         id={title + "-chart"}
         ref={axesRef}

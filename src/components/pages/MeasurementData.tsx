@@ -21,7 +21,7 @@ import ZoomLegend from "../chart/ZoomLegend";
 const MeasurementData = () => {
   const { data: dataStore } = useStore();
   const [windowHalfSize, setWindowHalfSize] = useState<number>(5);
-  const [treshold, setTreshold] = useState<number>(0.2);
+  const [threshold, setThreshold] = useState<number>(0.2);
   const [deployment, setDeployment] = useState<number>(dataStore.selectedColumn.deployment_id || -1);
   const [logger, setLogger] = useState<number>(dataStore.selectedColumn.logger_id || -1);
   const [tableData, setTableData] = useState<DeploymentTableData | undefined>();
@@ -46,8 +46,8 @@ const MeasurementData = () => {
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
   const processedValueService: ProcessedValueService = new ProcessedValueService(dataStore);
 
-  const setSensitivityValues = (treshold: number, windowHalfSize: number) => {
-    setTreshold(treshold);
+  const setSensitivityValues = (threshold: number, windowHalfSize: number) => {
+    setThreshold(threshold);
     setWindowHalfSize(windowHalfSize);
   };
 
@@ -185,7 +185,7 @@ const MeasurementData = () => {
           setResetCastChart={setResetCastChart}
           dataLoading={dataLoading}
           setDataLoading={setDataLoading}
-          treshold={treshold}
+          threshold={threshold}
           windowHalfSize={windowHalfSize}
           brushSync={brushSync}
         ></ChartLayout>
@@ -199,7 +199,7 @@ const MeasurementData = () => {
           castData={castData}
           resetCastChart={resetCastChart}
           setResetCastChart={setResetCastChart}
-          treshold={treshold}
+          threshold={threshold}
           windowHalfSize={windowHalfSize}
           setSensitivityValues={setSensitivityValues}
           resetCastData={resetCastData}

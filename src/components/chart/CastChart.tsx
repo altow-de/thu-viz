@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { DataPoint } from "@/frontend/services/UpAndDownCastCalculationService";
 import "../../../styles/chart.css";
-import { ChartUnits } from "@/frontend/constants";
+import { ChartTitle, ChartUnits } from "@/frontend/constants";
 
 interface ChartProps {
   data: DataPoint[];
@@ -298,7 +298,7 @@ const CastChart = ({
 
   return (
     <div id="chartContainer" className="flex-auto inline-block">
-      <div className="pl-1 text-sm text-danube-600 font-semibold">{title}</div>
+      <div className="pl-1 text-sm text-danube-600 font-semibold">{ChartTitle[title]}</div>
       <svg id={title + "-cast_chart"} ref={d3Container} style={{ display: "block", margin: "auto" }}></svg>
     </div>
   );

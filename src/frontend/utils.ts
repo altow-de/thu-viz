@@ -99,3 +99,34 @@ export const createAndDownloadZip = (blobs: any[]) => {
     document.body.removeChild(downloadLink); // Entfernt den temporären Link
   });
 };
+
+export const o2ptoO2c = (pO2: number, T: number, S: number, P = 0) => {
+  const xO2 = 0.20946; // mole fraction of O2 in dry air
+  const pH2Osat =
+    1013.25 * Math.exp(24.4543 - 67.4509 * (100 / (T + 273.15)) - 4.8489 * Math.log((273.15 + T) / 100) - 0.000544 * S);
+  const sca_T = Math.log((298.15 - T) / (273.15 + T));
+  const TCorr =
+    44.6596 *
+    Math.exp(
+      2.00907 +
+        3.22014 * sca_T +
+        4.0501 * Math.pow(sca_T, 2) +
+        4.94457 * Math.pow(sca_T, 3) -
+        2.56847e-1 * Math.pow(sca_T, 4) +
+        3.88767 * Math.pow(sca_T, 5)
+    );
+
+  const Scorr = Math.exp(
+    S * (-6.24523e-3 - 7.37614e-3 * sca_T - 1.0341e-2 * Math.pow(sca_T, 2) - 8.17083e-3 * Math.pow(sca_T, 3)) -
+      4.88682e-7 * S * S
+  );
+  const Vm = 0.317; // molar volume of O2 in m3 mol-1 Pa dbar-1
+  const R = 8.314; // universal gas constant in J mol-1 K-1
+
+  const O2conc_umolL =
+    ((pO2 / (xO2 * (1013.25 - pH2Osat))) * (TCorr * Scorr)) / Math.exp((Vm * P) / (R * (T + 273.15)));
+
+  const O2conc_mlL = O2conc_umolL / 44.6596;
+
+  return O2conc_mlL;
+};

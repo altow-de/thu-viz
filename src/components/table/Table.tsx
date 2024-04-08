@@ -172,7 +172,6 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         return strA.localeCompare(strB);
       });
     }
-    console.log(sortedData[0]);
 
     setTableData(sortedData);
     dataStore.setTableData(sortedData);

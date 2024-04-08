@@ -1,22 +1,30 @@
 import { useStore } from "@/frontend/store";
 import { observer } from "mobx-react-lite";
+import { useState } from "react";
 
 interface SwitchProps {
   style: string;
   type: string;
-  dataIndex: number;
+  dataIndex?: number;
   selected: boolean;
+  onSwitch?: (trigger: boolean) => void;
 }
 const colorObj: Record<string, string> = {
   table: "bg-danube-600 ring-danube-600",
   cast: "bg-green-castcheck ring-green-castcheck",
 };
-const Switch = ({ style, type, dataIndex, selected }: SwitchProps) => {
+const Switch = ({ style, type, dataIndex, selected, onSwitch }: SwitchProps) => {
   const { data: dataStore } = useStore();
+  const [trigger, setTrigger] = useState<boolean>(false);
 
   const onTrigger = () => {
-    dataStore.tableData[dataIndex].showInMap = !dataStore.tableData[dataIndex].showInMap;
-    dataStore.setDataChanged(!dataStore.dataChanged);
+    if (dataIndex) {
+      dataStore.tableData[dataIndex].showInMap = !dataStore.tableData[dataIndex].showInMap;
+      dataStore.setDataChanged(!dataStore.dataChanged);
+    }
+
+    setTrigger(!trigger);
+    if (onSwitch) onSwitch(!trigger);
   };
 
   return (

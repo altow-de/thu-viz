@@ -43,7 +43,7 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold, hand
           <div className="absolute bg-danube-200 shadow-md -translate-y-20 w-72 h-18 p-1 rounded-lg hidden group-hover:block transition duration-300 ">
             If deactivated, the plotted data will be reduced according to the time zoom in above diagramms.
           </div>
-          <Switch style={"inline-block"} type={"cast"} onSwitch={setSwitchState} />
+          <Switch style={"inline-block"} type={"cast"} onSwitch={setSwitchState} selected={!switchState} />
           <div className="px-2 -translate-y-[3px] inline-block">Automatic Cast Detection</div>
         </div>
         <div className="py-4">
@@ -75,7 +75,7 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold, hand
             !sensitivityVisible ? "underline underline-offset-[5px] decoration-danube-200" : ""
           }`}
         >
-          <p
+          <div
             className={`font-semibold pt-2 relative cursor-pointer`}
             onClick={() => setSensitivityVisible(!sensitivityVisible)}
           >
@@ -86,7 +86,7 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, treshold, hand
             {!sensitivityVisible && (
               <div className="w-0 h-0 border-l-[5px] border-l-transparent border-t-[6px] border-r-[5px] border-r-transparent right-0 bottom-[2px] mt-[2px] absolute top-3.5 border-t-danube-800"></div>
             )}
-          </p>
+          </div>
           {sensitivityVisible && (
             <div>
               <div className="mt-2 ">

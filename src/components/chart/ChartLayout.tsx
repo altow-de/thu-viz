@@ -3,7 +3,7 @@ import {
   ParameterDataForDeployment,
 } from "@/backend/services/ProcessedValueService";
 import Chart from "./Chart";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useStore } from "@/frontend/store";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 import {
@@ -14,6 +14,7 @@ import {
 import ChartWrapper from "./ChartWrapper";
 import NoDiagramData from "./NoDiagramData";
 import { findLongestArray } from "@/frontend/utils";
+import { PythonService } from "@/frontend/services/PythonService";
 
 interface ChartLayoutProps {
   parameterData: ParameterDataForDeployment[];
@@ -50,6 +51,7 @@ const ChartLayout = ({
 }: ChartLayoutProps) => {
   const upAndDownCastCalculationService: UpAndDownCastCalculationService = new UpAndDownCastCalculationService(0.2, 5);
   const [completeParameterData, setCompleteParameterData] = useState<ParameterDataForDeployment[]>(parameterData);
+  const pythonService: PythonService = new PythonService();
 
   const [diagramData, setDiagramData] = useState<{
     [key: string]: DiagramDataForParameterAndDeployment[];
@@ -60,6 +62,13 @@ const ChartLayout = ({
 
   useEffect(() => {
     setDataLoading(true);
+    const getSalinity = async (measurements: any[]) => {
+      console.log(measurements);
+
+      return pythonService.callPythonScript(measurements).then((res) => {
+        return res;
+      });
+    };
     if (!parameterData) return;
     let castDataObj: { [key: string]: CastData } = {};
     Promise.all(
@@ -80,24 +89,60 @@ const ChartLayout = ({
       })
     )
       .then((results) => {
-        const newData: {} = Object.fromEntries(parameterData.map((obj, index) => [obj.parameter, results[index]]));
+        const newData: any = Object.fromEntries(parameterData.map((obj, index) => [obj.parameter, results[index]]));
         const longestArray = findLongestArray(results);
 
         const pressureObj = parameterData.find((parameterObj) => parameterObj.parameter === longestArray[0].parameter);
-        const parameterWithPressureData = [{ ...pressureObj, parameter: "pressure", unit: "mbar" }].concat(
-          parameterData
-        ) as ParameterDataForDeployment[];
-        setCompleteParameterData(parameterWithPressureData);
         const pressureArray = longestArray.map((pressureObj: DiagramDataForParameterAndDeployment) => {
           return { ...pressureObj, parameter: "pressure", value: pressureObj.pressure };
         });
-        const completeData = { ...newData, pressure: pressureArray };
+        const parameterWithPressureData = [{ ...pressureObj, parameter: "pressure", unit: "mbar" }].concat(
+          parameterData
+        ) as ParameterDataForDeployment[];
+        //we have to calculate data for two extra diagrams
+
+        if (newData.oxygen && newData.temperature && newData.conductivity) {
+          let maxSanity = 0;
+          const measurements = newData.temperature.map((temp: any, index: number) => {
+            return [newData.oxygen[index].value, temp.value, pressureArray[index].value];
+          });
+          // const pressure = pressureArray.map((press) => press.value);
+          // const oxygen = newData.oxygen.map((oxy) => oxy.value);
+          getSalinity(measurements).then((res) => {
+            const salinityData = res.data.map((salinity: number, index: number) => {
+              maxSanity = Number(salinity) > maxSanity ? Number(salinity) : maxSanity;
+              return { parameter: "salinity", value: salinity, measuring_time: newData.oxygen[index].measuring_time };
+            });
+            const salinityObj = {
+              ...pressureObj,
+              parameter: "salinity",
+              value: maxSanity,
+              unit: "PSO",
+            };
+            const salinityArray = [{ ...salinityObj }];
+            const parameter = parameterWithPressureData.concat(salinityArray);
+            setCompleteParameterData(parameter);
+
+            const completeData = { ...newData, salinity: salinityData, pressure: pressureArray };
+
+            setDiagramData((prevDiagramData) => ({
+              ...prevDiagramData,
+              ...completeData,
+            }));
+          });
+        } else {
+          setCompleteParameterData(parameterWithPressureData);
+          const completeData = { ...newData, pressure: pressureArray };
+
+          setDiagramData((prevDiagramData) => ({
+            ...prevDiagramData,
+            ...completeData,
+          }));
+        }
+
         setDefaultCastData(castDataObj);
         setResetCastChart(true);
-        setDiagramData((prevDiagramData) => ({
-          ...prevDiagramData,
-          ...completeData,
-        }));
+
         setDataLoading(false);
       })
       .catch((error) => {

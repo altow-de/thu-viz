@@ -26,3 +26,5 @@ export interface DatabaseErrorType {
 
 export type Switch = { showInMap: boolean };
 export type SwitchTableData = OverviewDeploymentTrackData & Switch;
+
+export type Salinity = { Salinity_psu: number };

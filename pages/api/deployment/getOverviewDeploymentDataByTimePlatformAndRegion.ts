@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { DatabaseError } from "@/backend/services/DatabaseError";
-import { DeploymentService, OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
-import { Region } from "@/frontend/types";
+import { DeploymentService } from "@/backend/services/DeploymentService";
+import { OverviewDeploymentTrackData, Region } from "@/frontend/types";
 
 const deploymentService = new DeploymentService();
 /**
@@ -32,7 +32,7 @@ export default async function handler(
       region as Region
     );
 
-    res.status(200).json(dpResponse);
+    res.status(200).json(dpResponse as OverviewDeploymentTrackData[]);
   } catch (error) {
     res.status(500).json(error as DatabaseError);
   }

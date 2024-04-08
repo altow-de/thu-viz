@@ -69,19 +69,21 @@ export const svgToCanvas = (
   canvas.style.height = svgElement.clientHeight.toString();
 
   const ctxt = canvas.getContext("2d");
-  ctxt.fillStyle = "white";
-  ctxt.fillRect(0, 0, canvas.width, canvas.height);
+  if (ctxt) {
+    ctxt.fillStyle = "white";
+    ctxt.fillRect(0, 0, canvas.width, canvas.height);
 
-  const img = document.createElement("img");
+    const img = document.createElement("img");
 
-  img.setAttribute("src", "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData))));
-  img.onload = () => {
-    ctxt.drawImage(img, 0, 0);
-    canvas.toBlob((blob) => {
-      const filename = svgElement.id + ".png"; // Oder generieren Sie einen dynamischen Namen nach Bedarf
-      callback({ blob, filename });
-    }, "image/png");
-  };
+    img.setAttribute("src", "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData))));
+    img.onload = () => {
+      ctxt.drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        const filename = svgElement.id + ".png"; // Oder generieren Sie einen dynamischen Namen nach Bedarf
+        callback({ blob, filename });
+      }, "image/png");
+    };
+  }
 };
 export const createAndDownloadZip = (blobs: any[]) => {
   const zip = new JSZip();

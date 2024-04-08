@@ -138,8 +138,8 @@ const ChartLayout = ({
               unit: "ml/L",
             };
 
-            const salinityArray = [{ ...salinityObj }];
-            const oxygenArray = [{ ...oxygenObj }];
+            const salinityArray = [{ ...salinityObj }] as any[];
+            const oxygenArray = [{ ...oxygenObj }] as any[];
             const parameter = parameterWithPressureData.concat(salinityArray).concat(oxygenArray);
             setCompleteParameterData(parameter);
 

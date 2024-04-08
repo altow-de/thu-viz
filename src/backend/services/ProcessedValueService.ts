@@ -49,9 +49,11 @@ export class ProcessedValueService extends BackendDbService {
         "ProcessedValue.processed_value_id"
       )
       .innerJoin(latestProcessingTimesSubquery, (join) =>
-        join.onRef("lpt.raw_value_id", "=", "ProcessedValueHasRawValue.raw_value_id")
+        join
+          .onRef("lpt.raw_value_id", "=", "ProcessedValueHasRawValue.raw_value_id")
+          .on(sql`ProcessedValue.processing_time = lpt.latest_processing_time`)
       )
-      .where(({ ref, eb }) => eb("ProcessedValue.processing_time", "=", ref("lpt.latest_processing_time")))
+
       .where("ProcessedValue.valid", "=", 1)
       .select([
         "ProcessedValueHasRawValue.raw_value_id",

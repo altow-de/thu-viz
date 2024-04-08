@@ -1,6 +1,4 @@
 import { Deployment, Logger, Platform, Vessel } from "@/backend/entities";
-import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
-
 import { PlatformsCombinedWithVessels } from "@/backend/services/PlatformService";
 
 export type Option = PlatformsCombinedWithVessels | Region | Logger | Deployment;
@@ -23,6 +21,16 @@ export interface DatabaseErrorType {
   _message: string;
   _dbResponse: any;
 }
+
+export type OverviewDeploymentTrackData = {
+  deployment_id: number;
+  logger_id: number;
+  name: number;
+  time_start: number;
+  deepest: number;
+  time_end: number;
+  position_start: { x: number; y: number };
+};
 
 export type Switch = { showInMap: boolean };
 export type SwitchTableData = OverviewDeploymentTrackData & Switch;

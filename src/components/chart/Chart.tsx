@@ -146,10 +146,10 @@ const Chart = ({
 
     //building area
     const areaBuilder = d3
-      .area()
+      .area<DiagramDataForParameterAndDeployment>()
       .x((d) => xScale(d.measuring_time))
       .y0(yScale(1) < 0 ? -yScale(1) : yScale(1))
-      .y1((d) => yScale(d.value))
+      .y1((d) => yScale(Number(d.value)))
       .curve(d3.curveBasis);
 
     const areaPath = graphGroup

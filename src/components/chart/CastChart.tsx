@@ -177,19 +177,18 @@ const CastChart = ({
     xScale: d3.ScaleLinear<number, number, never>,
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
+    const lineGenerator = d3
+      .line<DataPoint>()
+      .x((d) => xScale(Number(d.value)))
+      .y((d) => yScale(Number(d.depth)));
+
     svg
       .append("path")
-      .datum(data.slice(start, end))
+      .datum(data.slice(start, end)) // Verwenden Sie die geschnittene Datenliste als Datengrundlage für den Pfad.
       .attr("fill", "none")
       .attr("stroke", color)
       .attr("stroke-width", 2)
-      .attr(
-        "d",
-        d3
-          .line()
-          .x((d) => xScale(Number(d.value)))
-          .y((d) => yScale(Number(d.depth)))
-      );
+      .attr("d", lineGenerator); // Verwenden Sie die lineGenerator-Funktion direkt.
   };
 
   const addAxisLabels = (

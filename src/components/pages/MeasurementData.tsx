@@ -53,24 +53,26 @@ const MeasurementData = () => {
 
   const exportMap = () => {
     let blobs: any[] = [];
-    oceanMapRef.current.exportMapAsPNG((blob: any) => {
-      blobs.push({ blob, filename: "map.png" });
-      exportChartIDs.forEach((chartId, index) => {
-        const svgElement = document.getElementById(chartId);
-        if (svgElement) {
-          const serializer = new XMLSerializer();
-          const svgString = serializer.serializeToString(svgElement);
-          const blob = new Blob([svgString], {
-            type: "image/svg+xml;charset=utf-8",
+    if (oceanMapRef.current) {
+      (oceanMapRef.current as any).exportMapAsPNG((blob: any) => {
+        blobs.push({ blob, filename: "map.png" });
+        exportChartIDs.forEach((chartId, index) => {
+          const svgElement = document.getElementById(chartId);
+          if (svgElement) {
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgElement);
+            const blob = new Blob([svgString], {
+              type: "image/svg+xml;charset=utf-8",
+            });
+            blobs.push({ blob, filename: `${chartId}.svg` });
+          }
+          convertChartToPNG(chartId, (blb) => {
+            blobs.push(blb);
+            if (blobs.length === exportChartIDs.length * 2 + 1) createAndDownloadZip(blobs);
           });
-          blobs.push({ blob, filename: `${chartId}.svg` });
-        }
-        convertChartToPNG(chartId, (blb) => {
-          blobs.push(blb);
-          if (blobs.length === exportChartIDs.length * 2 + 1) createAndDownloadZip(blobs);
         });
       });
-    });
+    }
   };
 
   useEffect(() => {

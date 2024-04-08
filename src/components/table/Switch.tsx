@@ -18,7 +18,7 @@ const Switch = ({ style, type, dataIndex, selected, onSwitch }: SwitchProps) => 
   const [trigger, setTrigger] = useState<boolean>(false);
 
   const onTrigger = () => {
-    if (dataIndex) {
+    if (dataIndex !== undefined && Number(dataIndex) > -1) {
       dataStore.tableData[dataIndex].showInMap = !dataStore.tableData[dataIndex].showInMap;
       dataStore.setDataChanged(!dataStore.dataChanged);
     }

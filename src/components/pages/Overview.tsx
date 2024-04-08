@@ -8,10 +8,9 @@ import AnkerMenu from "../navigation/AnkerMenu";
 import { OverviewAnkerTitles } from "@/frontend/constants";
 import PopUpWrapper from "../wrapper/PopUpWrapper";
 import Table from "../table/Table";
-import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { useStore } from "@/frontend/store";
-import { Region, SwitchTableData } from "@/frontend/types";
+import { OverviewDeploymentTrackData, Region, SwitchTableData } from "@/frontend/types";
 import { observer } from "mobx-react-lite";
 
 const Overview = () => {

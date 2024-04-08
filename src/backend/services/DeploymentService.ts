@@ -127,7 +127,3 @@ export class DeploymentService extends BackendDbService {
     return result;
   }
 }
-
-export type OverviewDeploymentTrackData = Awaited<
-  ReturnType<DeploymentService["getOverviewDeploymentDataByTimePlatformAndRegion"]>
->[number];

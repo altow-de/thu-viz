@@ -4,9 +4,8 @@ import Switch from "./Switch";
 import { DateTimeLocaleOptions, TableTitle } from "@/frontend/constants";
 import convert from "convert";
 import { getDepthFromPressure, getTimeObjectForSort } from "@/frontend/utils";
-import { OverviewDeploymentTrackData } from "@/backend/services/DeploymentService";
 import { useStore } from "@/frontend/store";
-import { SwitchTableData } from "@/frontend/types";
+import { OverviewDeploymentTrackData, SwitchTableData } from "@/frontend/types";
 import { observer } from "mobx-react-lite";
 
 interface TableProps {

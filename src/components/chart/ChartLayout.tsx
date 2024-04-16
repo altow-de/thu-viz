@@ -103,7 +103,7 @@ const ChartLayout = ({
           let maxSanity = 0;
           let maxOxygen = 0;
           const measurements = newData.temperature.map((temp: any, index: number) => {
-            return [newData.oxygen[index].value, temp.value, pressureArray[index].value];
+            return [newData.conductivity[index].value, temp.value, pressureArray[index].value];
           });
           getSalinity(measurements).then((res) => {
             const salinityData = res.data.map((salinity: number, index: number) => {

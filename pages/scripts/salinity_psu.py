@@ -7,7 +7,7 @@ def calculate_salinity(measurements):
     salinity_psu = []
     for measurement in measurements:
         conductivity, temperature, pressure = measurement
-        pressure_gsw = float(pressure) / 100 - 10.1325
+        pressure_gsw = (float(pressure) - 1013) / 100
         sp = gsw.conversions.SP_from_C(float(conductivity),float(temperature), pressure_gsw)
         salinity_psu.append(sp)
     return salinity_psu

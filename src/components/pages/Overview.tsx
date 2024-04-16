@@ -78,7 +78,7 @@ const Overview = () => {
           {!popUpVisible && <TableWrapper setPopUpVisible={setPopUpVisible} tableData={overviewDeploymentTrackData} />}
         </div>
         <CardWrapper
-          text={"Position of Deployments (Startposition)"}
+          text={"Measurement locations (start positions of deployments)"}
           hasMap={true}
           id={OverviewAnkers.PositionOfDeployments}
         >

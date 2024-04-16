@@ -19,7 +19,7 @@ export const OverviewAnkerTitles: Anker[] = [
   { id: OverviewAnkers.OverviewDeployments, title: "Overview of selected measurement data" },
   {
     id: OverviewAnkers.PositionOfDeployments,
-    title: "Position of Deployments (Startposition)",
+    title: "Measurement locations (start positions of deployments)",
   },
 ];
 

@@ -16,7 +16,7 @@ export const OverviewAnkerTitles: Anker[] = [
     id: OverviewAnkers.MeasurementSelection,
     title: "Selection of measurement data",
   },
-  { id: OverviewAnkers.OverviewDeployments, title: "Overview Deployment" },
+  { id: OverviewAnkers.OverviewDeployments, title: "Overview of selected measurement data" },
   {
     id: OverviewAnkers.PositionOfDeployments,
     title: "Position of Deployments (Startposition)",

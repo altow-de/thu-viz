@@ -60,7 +60,7 @@ const Overview = () => {
   return (
     <div>
       {popUpVisible && (
-        <PopUpWrapper title={"Overview Deployment"} onClick={() => setPopUpVisible(false)}>
+        <PopUpWrapper title={"Overview of selected measurement data"} onClick={() => setPopUpVisible(false)}>
           <Table data={overviewDeploymentTrackData} maxHeight={"max-h-96"} />
         </PopUpWrapper>
       )}

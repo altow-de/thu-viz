@@ -202,7 +202,7 @@ const CastChart = ({
       .attr("text-anchor", "start")
       .attr("y", 222)
       .attr("x", boundsWidth)
-      .text(ChartUnits[unit]) //name of the x axis
+      .text(ChartUnits[unit] ? ChartUnits[unit] : unit) //name of the x axis
       .attr("font-size", 9)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");

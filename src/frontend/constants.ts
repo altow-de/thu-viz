@@ -78,3 +78,11 @@ export const ChartTitle: { [key: string]: string } = {
   conductivity: "Conductivity",
   pressure: "Pressure",
 };
+
+export const HoverInfoKeys: { [key: string]: string } = {
+  depth: "Depth ",
+  measuring_time: "",
+  name: "Vessel ",
+  logger_id: "Logger ",
+  deployment_id: "Deployment ",
+};

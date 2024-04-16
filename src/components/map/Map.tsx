@@ -8,10 +8,9 @@ import {
   Popup,
   LngLat,
   GeoJSONSource,
-  Feature,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { LayerZoom, MapStyles } from "@/frontend/constants";
+import { HoverInfoKeys, LayerZoom, MapStyles } from "@/frontend/constants";
 import { MapType } from "@/frontend/enum";
 import { TrackData } from "@/backend/services/ProcessedValueService";
 import { OverviewDeploymentTrackData, Region } from "@/frontend/types";
@@ -30,9 +29,8 @@ type TrackObj = {
     depth?: number;
     deployment_id?: number;
     logger_id?: number;
-    value?: number;
     name?: string;
-    parameter?: string;
+    measuring_time?: Date;
   };
 };
 
@@ -44,7 +42,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
   const initialState = {
     lat: 54.1767,
     lng: 12.08402,
-    zoom: 11,
+    zoom: 10,
   };
   const extractCoordinates = (obj: TrackData | OverviewDeploymentTrackData) => {
     // Versuch, die Koordinaten aus dem ersten Datenelement zu extrahieren
@@ -74,13 +72,16 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
       const depthObj = getDepthFromPressure(Number(trackDataObj.pressure)).val;
       return {
         depth: depthObj.toString(),
-        deployment_id: trackDataObj.deployment_id,
-        logger_id: trackDataObj.logger_id,
-        parameter: trackDataObj.parameter,
-        value: trackDataObj.value,
+        measuring_time: new Date(trackDataObj.measuring_time)?.toLocaleString("de"),
       };
     }
-    return { name: deploymentTrackDataObj.name };
+
+    return {
+      logger_id: deploymentTrackDataObj.logger_id,
+      deployment_id: deploymentTrackDataObj.deployment_id,
+      name: deploymentTrackDataObj.name,
+      measuring_time: new Date(deploymentTrackDataObj.time_start)?.toLocaleString("de"),
+    };
   };
 
   const trackData =
@@ -134,7 +135,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
         const jsonObj = JSON.parse(feature.properties.info);
 
         const htmlString = Object.keys(jsonObj).map((jsonKey) => {
-          return `<div>${jsonKey} : ${jsonObj[jsonKey]}</div>`;
+          return `<div>${HoverInfoKeys[jsonKey]} ${jsonObj[jsonKey]}</div>`;
         });
 
         const html = `<div>Hover info</div><div>${htmlString.join("")}</div>`;
@@ -317,7 +318,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
         ...LayerZoom,
         source: "region-source",
         paint: {
-          "fill-color": "#963748",
+          "fill-color": "#399d73",
           "fill-opacity": 0.2,
         },
       });
@@ -347,6 +348,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
       addPointLayer("location");
     }
   };
+
   useImperativeHandle(ref, () => ({
     exportMapAsPNG,
   }));
@@ -354,17 +356,15 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
   const exportMapAsPNG = (callback: (blob: any) => void) => {
     if (!map.current) return;
 
-    // Stellen Sie sicher, dass die Karte geladen ist
     if (map.current.isStyleLoaded()) {
-      // Zugriff auf das Canvas-Element der Maplibre-Karte
       const canvas = map.current.getCanvas();
       map.current.redraw();
-      // Verwenden Sie die toBlob Methode, um den Canvas Inhalt in ein Blob umzuwandeln
+
       canvas.toBlob((blob) => {
         if (callback && typeof callback === "function") {
-          callback(blob); // Rufen Sie die Callback-Funktion mit dem Blob auf
+          callback(blob);
         }
-      }, "ocean-map/png"); // Stellen Sie sicher, dass der MIME-Typ korrekt ist
+      }, "ocean-map/png");
     }
   };
 
@@ -376,7 +376,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
         const { lng, lat } = extractCoordinates(data[0]);
         map.current.setCenter([lng, lat]);
       }
-      map.current.setZoom(15);
+      map.current.setZoom(10);
 
       //initializing
       handleImages();
@@ -398,7 +398,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
           process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN
         }`,
         center: [lng, lat],
-        zoom: 15,
+        zoom: 10,
       });
       map.current.on("load", async function () {
         handleImages();

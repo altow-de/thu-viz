@@ -91,7 +91,7 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
             setSelectedDate={setDateTo}
           />
         </div>
-        <Headline text={"Choose platform"} />
+        <Headline text={"Choose vessel"} />
         <DropwDown options={platforms} option_keys={["platform_id", "name"]} setSelection={selectPlatform} />
 
         <Headline text={"Choose region"} />

@@ -33,7 +33,7 @@ const Overview = () => {
       endDate || undefined
     );
     const completeArray = res.map((obj: OverviewDeploymentTrackData) => {
-      return { ...obj, showInMap: false };
+      return { ...obj, showInMap: true };
     });
     setOverviewDeploymentTrackData(completeArray);
     dataStore.setTableData(completeArray);

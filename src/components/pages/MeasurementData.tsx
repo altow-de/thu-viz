@@ -192,7 +192,7 @@ const MeasurementData = () => {
           brushSync={brushSync}
         ></ChartLayout>
       </CardWraper>
-      <CardWraper text="Parameter over depths" hasMap={false} id={MeasurementAnkers.ParameterOverDepth}>
+      <CardWraper text="Parameter over depth" hasMap={false} id={MeasurementAnkers.ParameterOverDepth}>
         {parameterDataForDeployment && !dataLoading && parameterDataForDeployment.length !== 0 && <ZoomLegend />}
         <CastChartLayout
           parameterData={parameterDataForDeployment as ParameterDataForDeployment[]}
@@ -210,7 +210,7 @@ const MeasurementData = () => {
           handleYBrushEnd={handleYBrushEnd}
         ></CastChartLayout>
       </CardWraper>
-      <CardWraper text={"Tracks"} hasMap={true} id={MeasurementAnkers.Track}>
+      <CardWraper text={"Track"} hasMap={true} id={MeasurementAnkers.Track}>
         <OceanMap ref={oceanMapRef} type={MapType.route} data={trackData} />
       </CardWraper>
       <div className="flex justify-center">

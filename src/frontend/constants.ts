@@ -30,7 +30,7 @@ export const MeasurementAnkerTitles: Anker[] = [
   },
   { id: MeasurementAnkers.Metadata, title: "Metadata (short selection)" },
   { id: MeasurementAnkers.ParameterOverTime, title: "Parameter over time" },
-  { id: MeasurementAnkers.ParameterOverDepth, title: "Parameter over depths" },
+  { id: MeasurementAnkers.ParameterOverDepth, title: "Parameter over depth" },
   { id: MeasurementAnkers.Track, title: "Track" },
 ];
 

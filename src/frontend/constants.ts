@@ -28,7 +28,7 @@ export const MeasurementAnkerTitles: Anker[] = [
     id: MeasurementAnkers.SelectionSingleDeployment,
     title: "Selection of single deployment",
   },
-  { id: MeasurementAnkers.Metadata, title: "Metadata" },
+  { id: MeasurementAnkers.Metadata, title: "Metadata (short selection)" },
   { id: MeasurementAnkers.ParameterOverTime, title: "Parameter over time" },
   { id: MeasurementAnkers.ParameterOverDepth, title: "Parameter over depths" },
   { id: MeasurementAnkers.Track, title: "Track" },

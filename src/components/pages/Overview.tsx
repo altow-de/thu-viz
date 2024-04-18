@@ -18,14 +18,16 @@ const Overview = () => {
   const [overviewDeploymentTrackData, setOverviewDeploymentTrackData] = useState<SwitchTableData[]>([]);
   const { data: dataStore } = useStore();
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
   const [region, setRegion] = useState<Region>();
   const [platform, setPlatform] = useState<number>(-1);
   const [applyClicked, setApplyClicked] = useState<boolean>(false);
   const [trackData, setTrackData] = useState<OverviewDeploymentTrackData[]>([]);
 
   const getOverviewDeploymentDataByTimePlatformAndRegion = useCallback(async () => {
+    console.log(startDate, endDate);
+
     const res = await deploymentService.getOverviewDeploymentDataByTimePlatformAndRegion(
       region || undefined,
       platform || undefined,

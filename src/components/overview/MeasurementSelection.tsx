@@ -14,8 +14,8 @@ import { useStore } from "@/frontend/store";
 import { regions } from "@/frontend/regions";
 
 interface MeasurementSelectionProps {
-  setStartDate: (time_start: Date) => void;
-  setEndDate: (time_end: Date) => void;
+  setStartDate: (time_start: Date | undefined) => void;
+  setEndDate: (time_end: Date | undefined) => void;
   setRegion: (region: Region) => void;
   setPlatform: (platform_id: number) => void;
   setApplyClicked: (clicked: boolean) => void;
@@ -35,6 +35,7 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
   const [platforms, setPlatforms] = useState<PlatformsCombinedWithVessels[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState<number>(-1);
   const [selectedRegion, setSelectedRegion] = useState<number>(-1);
+  const [resetTriggered, setResetTriggered] = useState<boolean>(false);
 
   const selectRegion = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = Number(e.target.value);
@@ -66,9 +67,20 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
   });
 
   const onApplyClicked = () => {
-    if (dateFrom?.startDate) setStartDate(new Date(dateFrom?.startDate.toLocaleString("de-DE")));
-    if (dateTo?.endDate) setEndDate(new Date(dateTo?.endDate.toLocaleString("de-DE")));
-
+    if (dateFrom?.startDate) {
+      const date = new Date(dateFrom?.startDate);
+      date.setHours(0, 0, 0, 0);
+      setStartDate(date);
+    } else {
+      setStartDate(undefined);
+    }
+    if (dateTo?.endDate) {
+      const date = new Date(dateTo?.endDate);
+      date.setHours(23, 59, 59, 999);
+      setEndDate(date);
+    } else {
+      setEndDate(undefined);
+    }
     setPlatform(Number(platforms[selectedPlatform]?.platform_id));
     setRegion(regions[selectedRegion]);
     setApplyClicked(!applyClicked);
@@ -83,12 +95,15 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
             startDate={startDate}
             selectedDate={dateFrom}
             setSelectedDate={setDateFrom}
+            setResetTriggered={setResetTriggered}
           />
           <DatePicker
             placeholder={"Date to"}
             startDate={dateFrom?.endDate ? new Date(dateFrom?.endDate?.toString()) : null}
             selectedDate={dateTo}
             setSelectedDate={setDateTo}
+            setResetTriggered={setResetTriggered}
+            resetTriggered={resetTriggered}
           />
         </div>
         <Headline text={"Choose vessel"} />

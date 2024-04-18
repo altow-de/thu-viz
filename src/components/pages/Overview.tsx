@@ -26,8 +26,6 @@ const Overview = () => {
   const [trackData, setTrackData] = useState<OverviewDeploymentTrackData[]>([]);
 
   const getOverviewDeploymentDataByTimePlatformAndRegion = useCallback(async () => {
-    console.log(startDate, endDate);
-
     const res = await deploymentService.getOverviewDeploymentDataByTimePlatformAndRegion(
       region || undefined,
       platform || undefined,

@@ -99,7 +99,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
 
     map.current?.setStyle(`${mapUrl}`, { diff: false });
 
-    map.current?.on("styledata", function () {
+    map.current?.on("load", function () {
       handleImages();
       handleSource();
       handleRegionLayer();
@@ -371,14 +371,13 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
   // Effect to initialize the map
   useEffect(() => {
     if (!mapContainer?.current) return;
-    if (map.current && map.current.loaded()) {
+    if (map?.current && map?.current?.loaded()) {
       if (data?.[0]) {
         const { lng, lat } = extractCoordinates(data[0]);
         map.current.setCenter([lng, lat]);
       }
       map.current.setZoom(10);
 
-      //initializing
       handleImages();
       handleRegionLayer();
       handleSource();
@@ -389,17 +388,33 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
         initialState.lng,
         initialState.lat,
       ];
-      map.current = new Map({
-        container: mapContainer.current,
-        style: `${
-          "https://api.maptiler.com/maps/" +
-          mapStyle +
-          "/style.json?key=" +
-          process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN
-        }`,
-        center: [lng, lat],
-        zoom: 10,
-      });
+      const center = map.current?.getCenter();
+      const zoom = map.current?.getZoom();
+      if (center && zoom) {
+        map.current = new Map({
+          container: mapContainer.current,
+          style: `${
+            "https://api.maptiler.com/maps/" +
+            mapStyle +
+            "/style.json?key=" +
+            process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN
+          }`,
+          center: center,
+          zoom: zoom,
+        });
+      } else {
+        map.current = new Map({
+          container: mapContainer.current,
+          style: `${
+            "https://api.maptiler.com/maps/" +
+            mapStyle +
+            "/style.json?key=" +
+            process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN
+          }`,
+          center: [lng, lat],
+          zoom: 10,
+        });
+      }
       map.current.on("load", async function () {
         handleImages();
         handleRegionLayer();

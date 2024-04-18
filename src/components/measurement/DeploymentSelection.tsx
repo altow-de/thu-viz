@@ -52,12 +52,12 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
 
   const selectLogger = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = Number(e.target.value);
-    setSelectedLogger(loggers[selected].logger_id);
+    setSelectedLogger(selected > -1 ? loggers[selected].logger_id : -1);
   };
 
   const selectDeployment = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = Number(e.target.value);
-    setSelectedDeployment(deployments[selected].deployment_id);
+    setSelectedDeployment(selected > -1 ? deployments[selected].deployment_id : -1);
   };
 
   const getLoggersWithDeployments = useCallback(async () => {
@@ -93,15 +93,17 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
         {loggers.length > 0 && (
           <DropwDown
             options={loggers}
-            option_keys={["logger_id", "Comment"]}
+            option_keys={["logger_id"]}
             setSelection={selectLogger}
             defaultValue={logger}
+            emptyDefaultRow={true}
           />
         )}
         {(loggers.length === 0 || !loggers) && <EmptyDropdown />}
         <Headline text={"Choose deployment"} />
         {deployments?.length > 0 && (
           <DropwDown
+            emptyDefaultRow={true}
             options={deployments}
             option_keys={["deployment_id"]}
             disabled={selectedLogger === -1}

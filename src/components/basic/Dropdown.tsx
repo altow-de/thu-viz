@@ -8,9 +8,17 @@ interface DropwDownProps {
   option_keys: string[];
   setSelection: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   defaultValue?: number;
+  emptyDefaultRow?: boolean;
 }
 
-const DropwDown: React.FC<DropwDownProps> = ({ options, option_keys, setSelection, disabled, defaultValue }) => {
+const DropwDown: React.FC<DropwDownProps> = ({
+  options,
+  option_keys,
+  setSelection,
+  disabled,
+  defaultValue,
+  emptyDefaultRow,
+}) => {
   const createValue = (option_keys: string[], option: Option) => {
     return option_keys
       .map((option_key) => {
@@ -19,7 +27,6 @@ const DropwDown: React.FC<DropwDownProps> = ({ options, option_keys, setSelectio
       })
       .join("");
   };
-
   const defaultIndex = options?.findIndex((opt: any) => opt[option_keys[0]] === defaultValue);
 
   return (
@@ -30,7 +37,7 @@ const DropwDown: React.FC<DropwDownProps> = ({ options, option_keys, setSelectio
       disabled={disabled}
     >
       <option className="text-danube-900" key={-1} value={-1}>
-        All
+        {!emptyDefaultRow && !disabled ? "All" : ""}
       </option>
       {options &&
         options.length > 0 &&

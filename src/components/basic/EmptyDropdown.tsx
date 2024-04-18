@@ -5,9 +5,7 @@ const EmptyDropdown = () => {
       defaultValue={-1}
       disabled={true}
     >
-      <option className="text-danube-900" key={-1} value={-1}>
-        All
-      </option>
+      <option className="text-danube-900" key={-1} value={-1}></option>
     </select>
   );
 };

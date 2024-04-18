@@ -73,10 +73,11 @@ export const svgToCanvas = (
 ) => {
   const svgData = new XMLSerializer().serializeToString(svgElement);
   const canvas = document.createElement("canvas");
+  const scale = 3;
 
   //Resize can break shadows
-  canvas.width = svgElement.clientWidth;
-  canvas.height = svgElement.clientHeight;
+  canvas.width = svgElement.clientWidth * scale;
+  canvas.height = svgElement.clientHeight * scale;
   canvas.style.width = svgElement.clientWidth.toString();
   canvas.style.height = svgElement.clientHeight.toString();
 
@@ -84,6 +85,7 @@ export const svgToCanvas = (
   if (ctxt) {
     ctxt.fillStyle = "white";
     ctxt.fillRect(0, 0, canvas.width, canvas.height);
+    ctxt.scale(scale, scale);
 
     const img = document.createElement("img");
 

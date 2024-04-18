@@ -44,6 +44,18 @@ export const findLongestArray = (obj: any) => {
   return longestArray; // Das längste Array zurückgeben
 };
 
+export const findShortestArray = (obj: any) => {
+  let shortestArray = obj[0]; // Anfangszustand: leeres Array
+  for (let key in obj) {
+    if (Array.isArray(obj[key]) && obj[key].length < shortestArray.length && obj[key].length > 0) {
+      // Prüfen, ob es ein Array ist und ob es länger als das bisher längste Array ist
+      shortestArray = obj[key];
+    }
+  }
+
+  return shortestArray; // Das längste Array zurückgeben
+};
+
 export const convertChartToPNG = (
   chartId: string,
   callback: (result: { blob: Blob | null; filename: string }) => void

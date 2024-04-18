@@ -13,7 +13,7 @@ import {
 } from "@/frontend/services/UpAndDownCastCalculationService";
 import ChartWrapper from "./ChartWrapper";
 import NoDiagramData from "./NoDiagramData";
-import { findLongestArray, o2ptoO2c } from "@/frontend/utils";
+import { findLongestArray, findShortestArray, o2ptoO2c } from "@/frontend/utils";
 import { PythonService } from "@/frontend/services/PythonService";
 
 interface ChartLayoutProps {
@@ -89,6 +89,7 @@ const ChartLayout = ({
       .then((results) => {
         const newData: any = Object.fromEntries(parameterData.map((obj, index) => [obj.parameter, results[index]]));
         const longestArray = findLongestArray(results);
+        const shortestArray = findShortestArray(results);
 
         const pressureObj = parameterData.find((parameterObj) => parameterObj.parameter === longestArray[0].parameter);
         const pressureArray = longestArray.map((pressureObj: DiagramDataForParameterAndDeployment) => {
@@ -102,27 +103,36 @@ const ChartLayout = ({
         if (newData.oxygen && newData.temperature && newData.conductivity) {
           let maxSanity = 0;
           let maxOxygen = 0;
-          const measurements = newData.temperature.map((temp: any, index: number) => {
-            return [newData.conductivity[index].value, temp.value, pressureArray[index].value];
+          const measurements = shortestArray.map((item: any) => {
+            const time = new Date(item.measuring_time).getTime();
+            const temp = newData.temperature.find(
+              (tempObj: any) => new Date(tempObj.measuring_time).getTime() === time
+            );
+            const conductivity = newData.conductivity.find(
+              (tempObj: any) => new Date(tempObj.measuring_time).getTime() === time
+            );
+            const pressure = pressureArray.find((tempObj: any) => new Date(tempObj.measuring_time).getTime() === time);
+            return [conductivity.value, temp.value, pressure.value];
           });
+
           getSalinity(measurements).then((res) => {
             const salinityData = res.data.map((salinity: number, index: number) => {
               maxSanity = Number(salinity) > maxSanity ? Number(salinity) : maxSanity;
-              return { parameter: "salinity", value: salinity, measuring_time: newData.oxygen[index].measuring_time };
+              return { parameter: "salinity", value: salinity, measuring_time: newData.oxygen[index]?.measuring_time };
             });
 
             const oxygenData = res.data.map((salinity: number, index: number) => {
               const oxy = o2ptoO2c(
-                newData.oxygen[index].value,
-                newData.temperature[index].value,
+                newData.oxygen[index]?.value,
+                newData.temperature[index]?.value,
                 salinity,
-                pressureArray[index].value
+                pressureArray[index]?.value
               );
               maxOxygen = Number(oxy) > maxOxygen ? Number(oxy) : maxOxygen;
               return {
                 parameter: "oxygen_per_liter",
                 value: oxy,
-                measuring_time: newData.oxygen[index].measuring_time,
+                measuring_time: newData.oxygen[index]?.measuring_time,
               };
             });
             const salinityObj = {

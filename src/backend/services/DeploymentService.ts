@@ -60,18 +60,18 @@ export class DeploymentService extends BackendDbService {
       .leftJoin("ProcessedValueHasRawValue as dataLink", (join) =>
         join.onRef("processedData.processed_value_id", "=", "dataLink.processed_value_id")
       )
+      .innerJoin(sensorDataAggregation.as("aggregatedData"), (join) =>
+        join
+          .onRef("processedData.processing_time", "=", "aggregatedData.latest_processing_time")
+          .onRef("dataLink.sensor_id", "=", "aggregatedData.sensor_id")
+          .onRef("dataLink.raw_value_id", "=", "aggregatedData.raw_value_id")
+      )
       .leftJoin("RawValue as sensorData", (join) =>
         join
           .onRef("sensorData.raw_value_id", "=", "dataLink.raw_value_id")
           .onRef("sensorData.deployment_id", "=", "dataLink.deployment_id")
           .onRef("sensorData.logger_id", "=", "dataLink.logger_id")
           .onRef("sensorData.sensor_id", "=", "dataLink.sensor_id")
-      )
-      .innerJoin(sensorDataAggregation.as("aggregatedData"), (join) =>
-        join
-          .onRef("processedData.processing_time", "=", "aggregatedData.latest_processing_time")
-          .onRef("dataLink.sensor_id", "=", "aggregatedData.sensor_id")
-          .onRef("dataLink.raw_value_id", "=", "aggregatedData.raw_value_id")
       )
       .where("processedData.valid", "=", 1)
       .where(sql`ST_AsText(sensorData.measuring_location)`, "!=", "POINT(-999 -999)")

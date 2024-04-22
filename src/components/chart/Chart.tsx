@@ -302,7 +302,7 @@ const Chart = ({
       .attr("text-anchor", "end")
       .attr("y", -15 + MARGIN.top)
       .attr("x", -10 + MARGIN.left)
-      .text(ChartUnits[yAxisTitle]) //name of the y axis
+      .text(ChartUnits[yAxisTitle] ? ChartUnits[yAxisTitle] : yAxisTitle) //name of the y axis
       .attr("font-size", 9)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");

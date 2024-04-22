@@ -32,7 +32,7 @@ export default async function handler(
       region as Region
     );
 
-    res.status(200).json(dpResponse as OverviewDeploymentTrackData[]);
+    res.status(200).json(dpResponse as unknown as OverviewDeploymentTrackData[]);
   } catch (error) {
     res.status(500).json(error as DatabaseError);
   }

@@ -18,8 +18,8 @@ const Overview = () => {
   const [overviewDeploymentTrackData, setOverviewDeploymentTrackData] = useState<SwitchTableData[]>([]);
   const { data: dataStore } = useStore();
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
   const [region, setRegion] = useState<Region>();
   const [platform, setPlatform] = useState<number>(-1);
   const [applyClicked, setApplyClicked] = useState<boolean>(false);
@@ -33,7 +33,7 @@ const Overview = () => {
       endDate || undefined
     );
     const completeArray = res.map((obj: OverviewDeploymentTrackData) => {
-      return { ...obj, showInMap: false };
+      return { ...obj, showInMap: true };
     });
     setOverviewDeploymentTrackData(completeArray);
     dataStore.setTableData(completeArray);
@@ -60,7 +60,7 @@ const Overview = () => {
   return (
     <div>
       {popUpVisible && (
-        <PopUpWrapper title={"Overview Deployment"} onClick={() => setPopUpVisible(false)}>
+        <PopUpWrapper title={"Overview of selected measurement data"} onClick={() => setPopUpVisible(false)}>
           <Table data={overviewDeploymentTrackData} maxHeight={"max-h-96"} />
         </PopUpWrapper>
       )}
@@ -78,7 +78,7 @@ const Overview = () => {
           {!popUpVisible && <TableWrapper setPopUpVisible={setPopUpVisible} tableData={overviewDeploymentTrackData} />}
         </div>
         <CardWrapper
-          text={"Position of Deployments (Startposition)"}
+          text={"Measurement locations (start positions of deployments)"}
           hasMap={true}
           id={OverviewAnkers.PositionOfDeployments}
         >

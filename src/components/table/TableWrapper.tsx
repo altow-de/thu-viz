@@ -15,7 +15,11 @@ interface TableWrapperProps {
 const TableWrapper = ({ setPopUpVisible, tableData }: TableWrapperProps) => {
   return (
     <div className="basis-full overflow-x-auto sm:basis-2/3 ">
-      <CardWrapper text={"Overview Deployment"} hasMap={false} id={OverviewAnkers.OverviewDeployments}>
+      <CardWrapper
+        text={"Overview of selected measurement data"}
+        hasMap={false}
+        id={OverviewAnkers.OverviewDeployments}
+      >
         <Table data={tableData} maxHeight={"max-h-64"} />
         <div className="mt-4 flex justify-center">
           <Button

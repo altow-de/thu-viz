@@ -71,34 +71,83 @@ export class ProcessedValueService extends BackendDbService {
 
   async getDiagramDataForParameterAndDeployment(logger_id: number, deployment_id: number, parameter: string) {
     try {
-      const rawValues = await this.getRawValues(logger_id, deployment_id);
-      const validRawValues = await this.getValidRawValues(rawValues);
+      // First retrieve sensor IDs associated with the parameter to optimize the query execution speed.
+      const sensors = await db
+        .selectFrom("SensorType")
+        .innerJoin("Sensor", "SensorType.sensor_type_id", "SensorType.sensor_type_id")
+        .where("SensorType.parameter", "=", parameter)
+        .select("Sensor.sensor_id")
+        .groupBy("Sensor.sensor_id")
+        .execute();
+      const sensor_ids = sensors.map((sensor) => sensor.sensor_id);
 
-      if (!rawValues || !validRawValues) {
-        throw EmptyDatabaseResult;
-      }
-      const validRawValueIDs = validRawValues.map((rawValue: any) => rawValue.processed_value_id);
-
-      const result = await db
-        .selectFrom("ProcessedValueHasRawValue")
-        .where("ProcessedValueHasRawValue.processed_value_id", "in", validRawValueIDs)
-        .innerJoin(
-          "ProcessedValue",
-          "ProcessedValue.processed_value_id",
-          "ProcessedValueHasRawValue.processed_value_id"
+      const sensorDataAggregation = db
+        .selectFrom("RawValue as rawValue")
+        .leftJoin("ProcessedValueHasRawValue as linkTable", (join) =>
+          join
+            .onRef("rawValue.raw_value_id", "=", "linkTable.raw_value_id")
+            .onRef("rawValue.deployment_id", "=", "linkTable.deployment_id")
+            .onRef("rawValue.logger_id", "=", "linkTable.logger_id")
+            .onRef("rawValue.sensor_id", "=", "linkTable.sensor_id")
         )
-        .innerJoin("Deployment", "Deployment.deployment_id", "ProcessedValueHasRawValue.deployment_id")
-        .innerJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
+        .where("rawValue.logger_id", "=", logger_id)
+        .where("rawValue.deployment_id", "=", deployment_id)
+        .where("rawValue.sensor_id", "in", sensor_ids)
+        .leftJoin(
+          "ProcessedValue as processedValue",
+          "linkTable.processed_value_id",
+          "processedValue.processed_value_id"
+        )
+        .where("processedValue.valid", "=", 1)
+        .select([
+          "processedValue.processed_value_id",
+          "processedValue.measuring_time",
+          sql`MAX(processedValue.processing_time)`.as("latest_processing_time"),
+          "processedValue.pressure",
+          "processedValue.value",
+          "processedValue.position",
+          "rawValue.sensor_id",
+          "rawValue.raw_value_id",
+          "rawValue.logger_id",
+        ])
+        .groupBy(["rawValue.sensor_id", "rawValue.raw_value_id", "rawValue.logger_id", "rawValue.deployment_id"]);
+
+      // Main query with better naming and join logic
+      const result = await db
+        .selectFrom("ProcessedValue as processedData")
+        .leftJoin("ProcessedValueHasRawValue as dataLink", (join) =>
+          join.onRef("processedData.processed_value_id", "=", "dataLink.processed_value_id")
+        )
+        .leftJoin("RawValue as sensorData", (join) =>
+          join
+            .onRef("sensorData.raw_value_id", "=", "dataLink.raw_value_id")
+            .onRef("sensorData.deployment_id", "=", "dataLink.deployment_id")
+            .onRef("sensorData.logger_id", "=", "dataLink.logger_id")
+            .onRef("sensorData.sensor_id", "=", "dataLink.sensor_id")
+        )
+        .innerJoin(sensorDataAggregation.as("aggregatedData"), (join) =>
+          join
+            .onRef("processedData.processing_time", "=", "aggregatedData.latest_processing_time")
+            .onRef("dataLink.sensor_id", "=", "aggregatedData.sensor_id")
+            .onRef("dataLink.raw_value_id", "=", "aggregatedData.raw_value_id")
+        )
+        .where("processedData.valid", "=", 1)
+        .innerJoin("Deployment", (join) =>
+          join
+            .onRef("Deployment.deployment_id", "=", "sensorData.deployment_id")
+            .onRef("Deployment.logger_id", "=", "sensorData.logger_id")
+        )
+        .innerJoin("Sensor", "Sensor.sensor_id", "dataLink.sensor_id")
         .innerJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
         .where("SensorType.parameter", "=", parameter)
         .select([
           "SensorType.parameter",
-          "ProcessedValue.value",
-          "ProcessedValue.measuring_time",
-          "ProcessedValue.processed_value_id",
-          "ProcessedValue.pressure",
+          "processedData.value",
+          "processedData.measuring_time",
+          "processedData.processed_value_id",
+          "processedData.pressure",
         ])
-        .groupBy("ProcessedValue.processed_value_id")
+        .groupBy("processedData.processed_value_id")
         .execute();
 
       return result;
@@ -109,39 +158,76 @@ export class ProcessedValueService extends BackendDbService {
 
   async getParameterDataForDeployment(logger_id: number, deployment_id: number) {
     try {
-      const rawValues = await this.getRawValues(logger_id, deployment_id);
-      const validRawValues = await this.getValidRawValues(rawValues);
-
-      if (!rawValues || !validRawValues) {
-        throw EmptyDatabaseResult;
-      }
-      const validRawValueIDs = validRawValues.map((rawValue: any) => rawValue.processed_value_id);
-
-      const result = await db
-        .selectFrom("ProcessedValueHasRawValue")
-        .where("ProcessedValueHasRawValue.processed_value_id", "in", validRawValueIDs)
-        .innerJoin(
-          "ProcessedValue",
-          "ProcessedValue.processed_value_id",
-          "ProcessedValueHasRawValue.processed_value_id"
+      const sensorDataAggregation = db
+        .selectFrom("RawValue as rawValue")
+        .leftJoin("ProcessedValueHasRawValue as linkTable", (join) =>
+          join
+            .onRef("rawValue.raw_value_id", "=", "linkTable.raw_value_id")
+            .onRef("rawValue.deployment_id", "=", "linkTable.deployment_id")
+            .onRef("rawValue.logger_id", "=", "linkTable.logger_id")
+            .onRef("rawValue.sensor_id", "=", "linkTable.sensor_id")
         )
-        .innerJoin("Deployment", "Deployment.deployment_id", "ProcessedValueHasRawValue.deployment_id")
-        .where("Deployment.deployment_id", "=", deployment_id)
-        .innerJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
+        .where("rawValue.logger_id", "=", logger_id)
+        .where("rawValue.deployment_id", "=", deployment_id)
+        .leftJoin(
+          "ProcessedValue as processedValue",
+          "linkTable.processed_value_id",
+          "processedValue.processed_value_id"
+        )
+        .where("processedValue.valid", "=", 1)
+        .select([
+          "processedValue.processed_value_id",
+          "processedValue.measuring_time",
+          sql`MAX(processedValue.processing_time)`.as("latest_processing_time"),
+          "processedValue.pressure",
+          "processedValue.value",
+          "processedValue.position",
+          "rawValue.sensor_id",
+          "rawValue.raw_value_id",
+          "rawValue.logger_id",
+        ])
+        .groupBy(["rawValue.sensor_id", "rawValue.raw_value_id", "rawValue.logger_id", "rawValue.deployment_id"]);
+
+      // Main query with better naming and join logic
+      const result = await db
+        .selectFrom("ProcessedValue as processedData")
+        .leftJoin("ProcessedValueHasRawValue as dataLink", (join) =>
+          join.onRef("processedData.processed_value_id", "=", "dataLink.processed_value_id")
+        )
+        .innerJoin(sensorDataAggregation.as("aggregatedData"), (join) =>
+          join
+            .onRef("processedData.processing_time", "=", "aggregatedData.latest_processing_time")
+            .onRef("dataLink.sensor_id", "=", "aggregatedData.sensor_id")
+            .onRef("dataLink.raw_value_id", "=", "aggregatedData.raw_value_id")
+        )
+        .leftJoin("RawValue as sensorData", (join) =>
+          join
+            .onRef("sensorData.raw_value_id", "=", "dataLink.raw_value_id")
+            .onRef("sensorData.deployment_id", "=", "dataLink.deployment_id")
+            .onRef("sensorData.logger_id", "=", "dataLink.logger_id")
+            .onRef("sensorData.sensor_id", "=", "dataLink.sensor_id")
+        )
+        .where("processedData.valid", "=", 1)
+        .innerJoin("Deployment", (join) =>
+          join
+            .onRef("Deployment.deployment_id", "=", "sensorData.deployment_id")
+            .onRef("Deployment.logger_id", "=", "sensorData.logger_id")
+        )
+        .innerJoin("Sensor", "Sensor.sensor_id", "dataLink.sensor_id")
         .innerJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
         .innerJoin("Unit", "Unit.unit_id", "SensorType.unit_id")
         .groupBy("SensorType.parameter")
         .select(({ fn }) => [
           "Deployment.deployment_id",
-          "ProcessedValueHasRawValue.processed_value_id",
+          "dataLink.processed_value_id",
           "SensorType.parameter",
           "SensorType.sensor_type_id",
           "Unit.unit",
           "Deployment.time_end",
           "Deployment.time_start",
-          fn.max("ProcessedValue.value").as("value"),
+          fn.max("processedData.value").as("value"),
         ])
-        .having(({ fn, eb, ref }) => eb(ref("value"), "=", fn.max("ProcessedValue.value")))
+        .having(({ fn, eb, ref }) => eb(ref("value"), "=", fn.max("processedData.value")))
         .execute();
 
       return result;

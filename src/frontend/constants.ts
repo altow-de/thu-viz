@@ -16,10 +16,10 @@ export const OverviewAnkerTitles: Anker[] = [
     id: OverviewAnkers.MeasurementSelection,
     title: "Selection of measurement data",
   },
-  { id: OverviewAnkers.OverviewDeployments, title: "Overview Deployment" },
+  { id: OverviewAnkers.OverviewDeployments, title: "Overview of selected measurement data" },
   {
     id: OverviewAnkers.PositionOfDeployments,
-    title: "Position of Deployments (Startposition)",
+    title: "Measurement locations (start positions of deployments)",
   },
 ];
 
@@ -28,9 +28,9 @@ export const MeasurementAnkerTitles: Anker[] = [
     id: MeasurementAnkers.SelectionSingleDeployment,
     title: "Selection of single deployment",
   },
-  { id: MeasurementAnkers.Metadata, title: "Metadata" },
+  { id: MeasurementAnkers.Metadata, title: "Metadata (short selection)" },
   { id: MeasurementAnkers.ParameterOverTime, title: "Parameter over time" },
-  { id: MeasurementAnkers.ParameterOverDepth, title: "Parameter over depths" },
+  { id: MeasurementAnkers.ParameterOverDepth, title: "Parameter over depth" },
   { id: MeasurementAnkers.Track, title: "Track" },
 ];
 
@@ -77,4 +77,12 @@ export const ChartTitle: { [key: string]: string } = {
   oxygen: "Oxygen partial pressure",
   conductivity: "Conductivity",
   pressure: "Pressure",
+};
+
+export const HoverInfoKeys: { [key: string]: string } = {
+  depth: "Depth ",
+  measuring_time: "",
+  name: "Vessel ",
+  logger_id: "Logger ",
+  deployment_id: "Deployment ",
 };

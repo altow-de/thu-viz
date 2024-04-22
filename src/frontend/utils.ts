@@ -44,6 +44,18 @@ export const findLongestArray = (obj: any) => {
   return longestArray; // Das längste Array zurückgeben
 };
 
+export const findShortestArray = (obj: any) => {
+  let shortestArray = obj[0]; // Anfangszustand: leeres Array
+  for (let key in obj) {
+    if (Array.isArray(obj[key]) && obj[key].length < shortestArray.length && obj[key].length > 0) {
+      // Prüfen, ob es ein Array ist und ob es länger als das bisher längste Array ist
+      shortestArray = obj[key];
+    }
+  }
+
+  return shortestArray; // Das längste Array zurückgeben
+};
+
 export const convertChartToPNG = (
   chartId: string,
   callback: (result: { blob: Blob | null; filename: string }) => void
@@ -61,10 +73,11 @@ export const svgToCanvas = (
 ) => {
   const svgData = new XMLSerializer().serializeToString(svgElement);
   const canvas = document.createElement("canvas");
+  const scale = 3;
 
   //Resize can break shadows
-  canvas.width = svgElement.clientWidth;
-  canvas.height = svgElement.clientHeight;
+  canvas.width = svgElement.clientWidth * scale;
+  canvas.height = svgElement.clientHeight * scale;
   canvas.style.width = svgElement.clientWidth.toString();
   canvas.style.height = svgElement.clientHeight.toString();
 
@@ -72,6 +85,7 @@ export const svgToCanvas = (
   if (ctxt) {
     ctxt.fillStyle = "white";
     ctxt.fillRect(0, 0, canvas.width, canvas.height);
+    ctxt.scale(scale, scale);
 
     const img = document.createElement("img");
 

@@ -32,18 +32,20 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, threshold, han
   };
 
   useEffect(() => {
-    if (!switchState) setCheckboxes(defaultCheckbox);
+    if (switchState) setCheckboxes(defaultCheckbox);
     handleChanges(defaultCheckbox, switchState);
   }, [switchState]);
 
   return (
-    <div className={`flex justify-center flex-grow w-[${width}px]`}>
-      <div className={`flex flex-col w-[${width}px] h-full divide-y divide-danube-200 text-sm text-danube-900 `}>
+    <div className={`flex justify-center flex-none w-88`}>
+      <div
+        className={`inline-block w-[${width}px] flex-none  h-full divide-y divide-danube-200 text-sm text-danube-900 px-3 `}
+      >
         <div className="group relative my-2">
           <div className="absolute bg-danube-200 shadow-md -translate-y-20 w-72 h-18 p-1 rounded-lg hidden group-hover:block transition duration-300 ">
             If deactivated, the plotted data will be reduced according to the time zoom in above diagramms.
           </div>
-          <Switch style={"inline-block"} type={"cast"} onSwitch={setSwitchState} selected={!switchState} />
+          <Switch style={"inline-block"} type={"cast"} onSwitch={setSwitchState} selected={switchState} />
           <div className="px-2 -translate-y-[3px] inline-block">Automatic Cast Detection</div>
         </div>
         <div className="py-4">

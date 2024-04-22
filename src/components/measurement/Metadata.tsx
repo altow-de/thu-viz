@@ -5,7 +5,7 @@ import SmallTable, { SmallTableProps } from "../table/SmallTable";
 const Metadata = ({ tableData }: SmallTableProps) => {
   return (
     <div className="basis-full md:basis-2/3">
-      <CardWrapper text={"Metadata"} hasMap={false} id={MeasurementAnkers.Metadata}>
+      <CardWrapper text={"Metadata (short selection)"} hasMap={false} id={MeasurementAnkers.Metadata}>
         <SmallTable tableData={tableData} />
       </CardWrapper>
     </div>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
 
 interface DatePickerProps {
@@ -6,17 +6,32 @@ interface DatePickerProps {
   startDate: Date | null;
   selectedDate: DateValueType;
   setSelectedDate: (selectedDate: DateValueType) => void;
+  resetTriggered?: boolean;
+  setResetTriggered?: (resetTriggered: boolean) => void;
 }
 
-const DatePicker = ({ placeholder, startDate, selectedDate, setSelectedDate }: DatePickerProps) => {
+const DatePicker = ({
+  placeholder,
+  startDate,
+  selectedDate,
+  setSelectedDate,
+  resetTriggered,
+  setResetTriggered,
+}: DatePickerProps) => {
   const handleChange = (selectedDate: DateValueType, e?: HTMLInputElement | null | undefined) => {
     setSelectedDate(selectedDate);
+    if (setResetTriggered) setResetTriggered(!resetTriggered);
   };
+
+  useEffect(() => {
+    if (resetTriggered) {
+      setSelectedDate({ startDate: null, endDate: null });
+    }
+  }, [resetTriggered]);
 
   return (
     <div className="mb-4 w-full z-20">
       <Datepicker
-        showShortcuts={true}
         useRange={false}
         disabled={startDate === null}
         toggleClassName="absolute right-0 h-full  px-3 text-danube-900 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
@@ -28,6 +43,7 @@ const DatePicker = ({ placeholder, startDate, selectedDate, setSelectedDate }: D
         primaryColor={"sky"}
         asSingle={true}
         placeholder={placeholder}
+        popoverDirection="down"
       />
     </div>
   );

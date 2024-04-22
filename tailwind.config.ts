@@ -3,16 +3,12 @@ const colors = require("tailwindcss/colors");
 const config: Config = {
   relative: true,
   darkMode: "class",
-  content: [
-    "./node_modules/react-tailwindcss-datepicker/dist/index.esm.js",
-    "./src/**/*.{js,jsx,ts,tsx}",
-  ],
+  content: ["./node_modules/react-tailwindcss-datepicker/dist/index.esm.js", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
     },
 

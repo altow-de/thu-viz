@@ -38,6 +38,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
   const mapContainer = useRef(null);
   const map = useRef<Map | null>(null);
   const [mapStyle, setMapStyle] = useState(Object.keys(MapStyles)[0]);
+  const navControl = new NavigationControl();
 
   const initialState = {
     lat: 54.1767,
@@ -187,7 +188,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
    * @function
    */
   const handleSource = async () => {
-    if (!map.current?.getSource("openseamap-source")) {
+    if (!map.current?.getSource("openseamap-source") && map.current?.isStyleLoaded()) {
       map.current?.addSource("openseamap-source", {
         type: "raster",
         tiles: ["https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png"],
@@ -283,6 +284,10 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
           "icon-image": image,
         },
       });
+    } else {
+      if (map.current?.getLayer("route-point") && map.current?.getSource("route-point-source")) {
+        map.current?.getLayer("route-point")?.setLayoutProperty("icon-image", image);
+      }
     }
   };
 
@@ -330,7 +335,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
    * @function
    */
   const handleLayer = () => {
-    if (!map.current?.getLayer("openseamap")) {
+    if (!map.current?.getLayer("openseamap") && map.current?.isStyleLoaded()) {
       map.current?.addLayer({
         id: "openseamap",
         type: "raster",
@@ -371,7 +376,8 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
   // Effect to initialize the map
   useEffect(() => {
     if (!mapContainer?.current) return;
-    if (map?.current && map?.current?.loaded()) {
+
+    if (map?.current && map?.current?.loaded() && map?.current.isStyleLoaded()) {
       if (data?.[0]) {
         const { lng, lat } = extractCoordinates(data[0]);
         map.current.setCenter([lng, lat]);
@@ -422,7 +428,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
         handleLayer();
         handlePopUps();
       });
-      map.current.addControl(new NavigationControl(), "bottom-right");
+      if (!map.current?.hasControl(navControl)) map.current.addControl(navControl, "bottom-right");
     }
   }, [mapStyle, data, region]);
 

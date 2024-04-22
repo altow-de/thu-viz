@@ -97,16 +97,8 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
   const onMapStyleChange = (mapStyle: string) => {
     const mapUrl =
       "https://api.maptiler.com/maps/" + mapStyle + "/style.json?key=" + process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN;
-
     map.current?.setStyle(`${mapUrl}`, { diff: false });
 
-    map.current?.on("load", function () {
-      handleImages();
-      handleSource();
-      handleRegionLayer();
-      handleLayer();
-      handlePopUps();
-    });
     setMapStyle(mapStyle);
   };
 
@@ -188,7 +180,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
    * @function
    */
   const handleSource = async () => {
-    if (!map.current?.getSource("openseamap-source") && map.current?.isStyleLoaded()) {
+    if (!map.current?.getSource("openseamap-source")) {
       map.current?.addSource("openseamap-source", {
         type: "raster",
         tiles: ["https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png"],
@@ -335,7 +327,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
    * @function
    */
   const handleLayer = () => {
-    if (!map.current?.getLayer("openseamap") && map.current?.isStyleLoaded()) {
+    if (!map.current?.getLayer("openseamap")) {
       map.current?.addLayer({
         id: "openseamap",
         type: "raster",
@@ -428,6 +420,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
         handleLayer();
         handlePopUps();
       });
+
       if (!map.current?.hasControl(navControl)) map.current.addControl(navControl, "bottom-right");
     }
   }, [mapStyle, data, region]);

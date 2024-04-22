@@ -65,7 +65,7 @@ const TableHeader = ({ titles, sort, textSize, tableData, hasTableWrapper }: Tab
         </div>
         <div
           ref={ref}
-          className="flex-inital w-1 justify-self-end ml-1 flex flex-col mt-0.5 cursor-pointer"
+          className="flex-inital w-2 justify-self-end ml-1 flex flex-col mt-0.5 cursor-pointer"
           onClick={() => {
             setPopUpVisible(!popUpVisible);
           }}

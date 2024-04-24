@@ -213,7 +213,7 @@ const MeasurementData = () => {
       <CardWraper text={"Track"} hasMap={true} id={MeasurementAnkers.Track}>
         <OceanMap ref={oceanMapRef} type={MapType.route} data={trackData} />
       </CardWraper>
-      <div className="flex justify-center">
+      <div className="flex justify-center mb-4">
         <Button text={"Export plots"} onClick={exportMap} />
       </div>
     </div>

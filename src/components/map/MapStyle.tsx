@@ -1,6 +1,6 @@
 import { MapStyles } from "@/frontend/constants";
 import { useClickAway } from "@uidotdev/usehooks";
-import React, { LegacyRef, useEffect, useRef, useState } from "react";
+import React, { LegacyRef, useEffect, useState } from "react";
 import RadioButton from "../basic/RadioButton";
 import InfoIcon from "../icons/InfoIcon";
 
@@ -18,20 +18,22 @@ const MapStyle = ({ selectedStyle, setSelectedStyle }: MapStyleProps) => {
   }) as LegacyRef<HTMLDivElement>;
 
   const handleResize = () => {
-    const width = window.innerWidth;
+    const width = window?.innerWidth;
     setWindowWidth(width);
     setVisible(width >= 640);
   };
 
   useEffect(() => {
-    //initial after rendering
-    handleResize();
-    // add event listener for resize event
-    window.addEventListener("resize", handleResize);
-    // cleanup
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    if (typeof window !== "undefined") {
+      //initial after rendering
+      handleResize();
+      // add event listener for resize event
+      window?.addEventListener("resize", handleResize);
+      // cleanup
+      return () => {
+        window?.removeEventListener("resize", handleResize);
+      };
+    }
   }, []);
   return (
     <div

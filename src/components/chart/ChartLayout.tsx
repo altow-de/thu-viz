@@ -100,7 +100,13 @@ const ChartLayout = ({
         ) as ParameterDataForDeployment[];
         //we have to calculate data for two extra diagrams
 
-        if (newData.oxygen && newData.temperature && newData.conductivity) {
+        if (newData.temperature && newData.conductivity) {
+          const oxygenUnit = parameterData.find((parameterObj) => parameterObj.parameter === "oxygen")?.unit;
+          const conductivityUnit = parameterData.find(
+            (parameterObj) => parameterObj.parameter === "conductivity"
+          )?.unit;
+
+          console.log(conductivityUnit);
           let maxSanity = 0;
           let maxOxygen = 0;
           const measurements = shortestArray.map((item: any) => {
@@ -111,59 +117,79 @@ const ChartLayout = ({
             const conductivity = newData.conductivity.find(
               (tempObj: any) => new Date(tempObj.measuring_time).getTime() === time
             );
+            if (!conductivity || !temp) return false;
             const pressure = pressureArray.find((tempObj: any) => new Date(tempObj.measuring_time).getTime() === time);
             return [conductivity.value, temp.value, pressure.value];
           });
+          const filteredMeasurements = measurements.filter((measurement: any) => measurement !== false);
 
-          getSalinity(measurements).then((res) => {
+          getSalinity(filteredMeasurements).then((res) => {
             const salinityData = res.data.map((salinity: number, index: number) => {
               maxSanity = Number(salinity) > maxSanity ? Number(salinity) : maxSanity;
-              return { parameter: "salinity", value: salinity, measuring_time: newData.oxygen[index]?.measuring_time };
-            });
-
-            const oxygenData = res.data.map((salinity: number, index: number) => {
-              const oxy = o2ptoO2c(
-                newData.oxygen[index]?.value,
-                newData.temperature[index]?.value,
-                salinity,
-                pressureArray[index]?.value
-              );
-              maxOxygen = Number(oxy) > maxOxygen ? Number(oxy) : maxOxygen;
               return {
-                parameter: "oxygen_per_liter",
-                value: oxy,
-                measuring_time: newData.oxygen[index]?.measuring_time,
+                parameter: "salinity",
+                value: salinity,
+                measuring_time: newData.temperature[index]?.measuring_time,
               };
             });
             const salinityObj = {
               ...pressureObj,
               parameter: "salinity",
               value: maxSanity,
-              unit: "PSO",
+              unit: "PSU",
             };
-            const oxygenObj = {
-              ...pressureObj,
-              parameter: "oxygen_per_liter",
-              value: maxOxygen,
-              unit: "ml/L",
-            };
-
             const salinityArray = [{ ...salinityObj }] as any[];
-            const oxygenArray = [{ ...oxygenObj }] as any[];
-            const parameter = parameterWithPressureData.concat(salinityArray).concat(oxygenArray);
-            setCompleteParameterData(parameter);
+            if (newData.oxygen) {
+              const oxygenData = res.data.map((salinity: number, index: number) => {
+                const oxy = o2ptoO2c(
+                  newData.oxygen[index]?.value,
+                  newData.temperature[index]?.value,
+                  salinity,
+                  pressureArray[index]?.value
+                );
+                maxOxygen = Number(oxy) > maxOxygen ? Number(oxy) : maxOxygen;
+                return {
+                  parameter: "oxygen_per_liter",
+                  value: oxy,
+                  measuring_time: newData.oxygen[index]?.measuring_time,
+                };
+              });
 
-            const completeData = {
-              ...newData,
-              salinity: salinityData,
-              pressure: pressureArray,
-              oxygen_per_liter: oxygenData,
-            };
+              const oxygenObj = {
+                ...pressureObj,
+                parameter: "oxygen_per_liter",
+                value: maxOxygen,
+                unit: "ml/L",
+              };
+              const oxygenArray = [{ ...oxygenObj }] as any[];
+              const parameter = parameterWithPressureData.concat(salinityArray).concat(oxygenArray);
+              setCompleteParameterData(parameter);
 
-            setDiagramData((prevDiagramData) => ({
-              ...prevDiagramData,
-              ...completeData,
-            }));
+              const completeData = {
+                ...newData,
+                salinity: salinityData,
+                pressure: pressureArray,
+                oxygen_per_liter: oxygenData,
+              };
+
+              setDiagramData((prevDiagramData) => ({
+                ...prevDiagramData,
+                ...completeData,
+              }));
+            } else {
+              const parameter = parameterWithPressureData.concat(salinityArray);
+              setCompleteParameterData(parameter);
+              const completeData = {
+                ...newData,
+                salinity: salinityData,
+                pressure: pressureArray,
+              };
+
+              setDiagramData((prevDiagramData) => ({
+                ...prevDiagramData,
+                ...completeData,
+              }));
+            }
           });
         } else {
           setCompleteParameterData(parameterWithPressureData);

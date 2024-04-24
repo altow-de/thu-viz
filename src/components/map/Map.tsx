@@ -13,7 +13,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { HoverInfoKeys, LayerZoom, MapStyles } from "@/frontend/constants";
 import { MapType } from "@/frontend/enum";
 import { TrackData } from "@/backend/services/ProcessedValueService";
-import { OverviewDeploymentTrackData, Region } from "@/frontend/types";
+import { OverviewDeploymentTrackData, Region, SwitchTableData } from "@/frontend/types";
 import MapStyle from "./MapStyle";
 import { getDepthFromPressure } from "@/frontend/utils";
 
@@ -68,8 +68,9 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
   };
   const getTrackDataObj = (obj: TrackData | OverviewDeploymentTrackData) => {
     const trackDataObj = obj as TrackData;
-    const deploymentTrackDataObj = obj as OverviewDeploymentTrackData;
-    if (trackDataObj.pressure) {
+    const deploymentTrackDataObj = obj as SwitchTableData;
+
+    if (deploymentTrackDataObj.showInMap === undefined) {
       const depthObj = getDepthFromPressure(Number(trackDataObj.pressure)).val;
       return {
         depth: depthObj.toString(),
@@ -100,6 +101,13 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
     map.current?.setStyle(`${mapUrl}`, { diff: false });
 
     setMapStyle(mapStyle);
+
+    map.current?.on("style.load", async function () {
+      handleRegionLayer();
+      handleImages();
+      handleLayer();
+      handlePopUps();
+    });
   };
 
   const handlePopUps = () => {
@@ -157,22 +165,27 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
   };
 
   const handleImages = () => {
-    if (!map.current?.getImage("circle")) {
-      map.current?.loadImage("circle.png", (error, image) => {
-        if (error || !image) throw error;
-        if (!map.current?.getImage("circle")) {
-          map.current?.addImage("circle", image);
-        }
-      });
-    }
-    if (!map.current?.getImage("location")) {
-      map.current?.loadImage("location-small.png", (error, image) => {
-        if (error || !image) throw error;
-        if (!map.current?.getImage("location")) {
-          map.current?.addImage("location", image);
-        }
-      });
-    }
+    map.current?.loadImage("circle.png", (error, image) => {
+      if (error || !image) throw error;
+      if (!map.current?.hasImage("circle_point")) map.current?.addImage("circle_point", image);
+
+      if (type === MapType.route && trackData) {
+        handleSource();
+        handleLayer();
+        addRouteLayer();
+      }
+    });
+
+    map.current?.loadImage("location-small.png", (error, image) => {
+      if (error || !image) throw error;
+
+      if (!map.current?.hasImage("location-small")) map.current?.addImage("location-small", image);
+      if (type === MapType.point && trackData) {
+        handleSource();
+        handleLayer();
+        addPointLayer("location-small");
+      }
+    });
   };
 
   /**
@@ -263,9 +276,11 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
         },
       });
     }
-    addPointLayer("circle");
+    addPointLayer("circle_point");
   };
   const addPointLayer = (image: string) => {
+    console.log("addPointLayer", image);
+
     //Point Layer
     if (!map.current?.getLayer("route-point") && map.current?.getSource("route-point-source")) {
       map.current?.addLayer({
@@ -338,12 +353,6 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
         },
       });
     }
-    if (type === MapType.route && trackData) {
-      addRouteLayer();
-    }
-    if (type === MapType.point && trackData) {
-      addPointLayer("location");
-    }
   };
 
   useImperativeHandle(ref, () => ({
@@ -367,8 +376,9 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
 
   // Effect to initialize the map
   useEffect(() => {
-    if (!mapContainer?.current) return;
+    // Stellt sicher, dass Maplibre GL nur im Browser geladen und ausgeführt wird
 
+    if (!mapContainer?.current) return;
     if (map?.current && map?.current?.loaded() && map?.current.isStyleLoaded()) {
       if (data?.[0]) {
         const { lng, lat } = extractCoordinates(data[0]);
@@ -376,10 +386,8 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
       }
       map.current.setZoom(10);
 
-      handleImages();
       handleRegionLayer();
-      handleSource();
-      handleLayer();
+      handleImages();
       handlePopUps();
     } else {
       const { lng, lat } = extractCoordinates(data?.[0] as TrackData | OverviewDeploymentTrackData) || [
@@ -388,6 +396,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
       ];
       const center = map.current?.getCenter();
       const zoom = map.current?.getZoom();
+
       if (center && zoom) {
         map.current = new Map({
           container: mapContainer.current,
@@ -413,17 +422,20 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
           zoom: 10,
         });
       }
+
+      //workaround to prevent style is not done loading bug
       map.current.on("load", async function () {
-        handleImages();
         handleRegionLayer();
-        handleSource();
-        handleLayer();
+        handleImages();
         handlePopUps();
       });
 
-      if (!map.current?.hasControl(navControl)) map.current.addControl(navControl, "bottom-right");
+      //prevent duplication of navigation controls
+      if (!map.current?.hasControl(navControl)) {
+        map.current?.addControl(navControl, "bottom-right");
+      }
     }
-  }, [mapStyle, data, region]);
+  }, [data, region]);
 
   return (
     <div className="relative">

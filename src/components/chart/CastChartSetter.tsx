@@ -62,7 +62,7 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, threshold, han
             handleCheckboxChange={handleCheckboxChange}
             checkbox={checkboxes.checkbox2}
             activeSwitch={switchState}
-            label={"Bottom"}
+            label={"Rest"}
           />
           <Checkbox
             id="checkbox3"

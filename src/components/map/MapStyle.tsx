@@ -24,16 +24,14 @@ const MapStyle = ({ selectedStyle, setSelectedStyle }: MapStyleProps) => {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      //initial after rendering
-      handleResize();
-      // add event listener for resize event
-      window?.addEventListener("resize", handleResize);
-      // cleanup
-      return () => {
-        window?.removeEventListener("resize", handleResize);
-      };
-    }
+    //initial after rendering
+    handleResize();
+    // add event listener for resize event
+    window?.addEventListener("resize", handleResize);
+    // cleanup
+    return () => {
+      window?.removeEventListener("resize", handleResize);
+    };
   }, []);
   return (
     <div

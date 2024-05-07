@@ -16,17 +16,17 @@ import { TrackData } from "@/backend/services/ProcessedValueService";
 import { OverviewDeploymentTrackData, Region, SwitchTableData } from "@/frontend/types";
 import MapStyle from "./MapStyle";
 import { getDepthFromPressure } from "@/frontend/utils";
-
-interface OceanMapProps {
+export interface OceanMapProps {
   type: MapType;
   data?: TrackData[] | OverviewDeploymentTrackData[];
   region?: Region;
+  forwardedRef?: any;
 }
 
 type TrackObj = {
   coordinates: number[][];
   info: {
-    depth?: number;
+    deepest?: number;
     deployment_id?: number;
     logger_id?: number;
     name?: string;
@@ -34,7 +34,7 @@ type TrackObj = {
   };
 };
 
-const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
+const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
   const mapContainer = useRef(null);
   const map = useRef<Map | null>(null);
   const [mapStyle, setMapStyle] = useState(Object.keys(MapStyles)[0]);
@@ -71,9 +71,10 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
     const deploymentTrackDataObj = obj as SwitchTableData;
 
     if (deploymentTrackDataObj.showInMap === undefined) {
-      const depthObj = getDepthFromPressure(Number(trackDataObj.pressure)).val;
+      const depthObj = getDepthFromPressure(Number(trackDataObj.pressure));
+
       return {
-        depth: depthObj.toString(),
+        deepest: depthObj.val + depthObj.unit,
         measuring_time: new Date(trackDataObj.measuring_time)?.toLocaleString("de"),
       };
     }
@@ -105,7 +106,6 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
     map.current?.on("style.load", async function () {
       handleRegionLayer();
       handleImages();
-      handleLayer();
       handlePopUps();
     });
   };
@@ -139,7 +139,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
           return `<div>${HoverInfoKeys[jsonKey]} ${jsonObj[jsonKey]}</div>`;
         });
 
-        const html = `<div>Hover info</div><div>${htmlString.join("")}</div>`;
+        const html = `<div>${htmlString.join("")}</div>`;
 
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
@@ -178,7 +178,6 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
 
     map.current?.loadImage("location-small.png", (error, image) => {
       if (error || !image) throw error;
-
       if (!map.current?.hasImage("location-small")) map.current?.addImage("location-small", image);
       if (type === MapType.point && trackData) {
         handleSource();
@@ -279,9 +278,9 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
     addPointLayer("circle_point");
   };
   const addPointLayer = (image: string) => {
-    console.log("addPointLayer", image);
-
     //Point Layer
+
+    if (map.current?.getLayer("route-point")) map.current?.removeLayer("route-point");
     if (!map.current?.getLayer("route-point") && map.current?.getSource("route-point-source")) {
       map.current?.addLayer({
         id: "route-point",
@@ -291,10 +290,6 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
           "icon-image": image,
         },
       });
-    } else {
-      if (map.current?.getLayer("route-point") && map.current?.getSource("route-point-source")) {
-        map.current?.getLayer("route-point")?.setLayoutProperty("icon-image", image);
-      }
     }
   };
 
@@ -355,7 +350,7 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
     }
   };
 
-  useImperativeHandle(ref, () => ({
+  useImperativeHandle(forwardedRef, () => ({
     exportMapAsPNG,
   }));
 
@@ -376,8 +371,6 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
 
   // Effect to initialize the map
   useEffect(() => {
-    // Stellt sicher, dass Maplibre GL nur im Browser geladen und ausgeführt wird
-
     if (!mapContainer?.current) return;
     if (map?.current && map?.current?.loaded() && map?.current.isStyleLoaded()) {
       if (data?.[0]) {
@@ -425,9 +418,16 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
 
       //workaround to prevent style is not done loading bug
       map.current.on("load", async function () {
-        handleRegionLayer();
-        handleImages();
-        handlePopUps();
+        const waiting = () => {
+          if (!map.current?.isStyleLoaded() || !map?.current?.loaded() || !map.current._fullyLoaded) {
+            setTimeout(waiting, 500);
+          } else {
+            handleRegionLayer();
+            handleImages();
+            handlePopUps();
+          }
+        };
+        waiting();
       });
 
       //prevent duplication of navigation controls
@@ -443,5 +443,5 @@ const OceanMap = forwardRef(({ type, data, region }: OceanMapProps, ref) => {
       <div className="h-[320px] sm:h-[580px]" ref={mapContainer} />
     </div>
   );
-});
+};
 export default OceanMap;

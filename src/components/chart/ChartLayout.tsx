@@ -74,7 +74,7 @@ const ChartLayout = ({
         const data = (await processedValueService.getDiagramDataForParameterAndDeployment(
           deployment,
           logger,
-          obj.parameter
+          obj.sensor_type_id
         )) as DiagramDataForParameterAndDeployment[];
         const tmp = upAndDownCastCalculationService.execute(data as unknown as DataPoint[]);
         castDataObj[obj.parameter] = tmp;
@@ -95,18 +95,19 @@ const ChartLayout = ({
         const pressureArray = longestArray.map((pressureObj: DiagramDataForParameterAndDeployment) => {
           return { ...pressureObj, parameter: "pressure", value: pressureObj.pressure };
         });
-        const parameterWithPressureData = [{ ...pressureObj, parameter: "pressure", unit: "mbar" }].concat(
-          parameterData
-        ) as ParameterDataForDeployment[];
+        const parameterWithPressureData: ParameterDataForDeployment[] = [
+          { ...pressureObj, parameter: "pressure", unit: "mbar" },
+        ].concat(parameterData as any) as ParameterDataForDeployment[];
         //we have to calculate data for two extra diagrams
+        const temperatureUnit = parameterData.find((parameterObj) => parameterObj.parameter === "temperature")?.unit;
+        const conductivityUnit = parameterData.find((parameterObj) => parameterObj.parameter === "conductivity")?.unit;
 
-        if (newData.temperature && newData.conductivity) {
-          const oxygenUnit = parameterData.find((parameterObj) => parameterObj.parameter === "oxygen")?.unit;
-          const conductivityUnit = parameterData.find(
-            (parameterObj) => parameterObj.parameter === "conductivity"
-          )?.unit;
-
-          console.log(conductivityUnit);
+        if (
+          newData.temperature &&
+          temperatureUnit === "degree_C" &&
+          newData.conductivity &&
+          conductivityUnit === "mS_cm-1"
+        ) {
           let maxSanity = 0;
           let maxOxygen = 0;
           const measurements = shortestArray.map((item: any) => {
@@ -251,7 +252,7 @@ const ChartLayout = ({
                   onXBrushEnd={handleBrushEnd}
                   width={width}
                   xAxisTitle={"time"}
-                  yAxisTitle={obj.unit}
+                  yAxisTitle={obj.unit || ""}
                   title={obj.parameter}
                   brushValue={brushValue}
                   brushSync={brushSync}

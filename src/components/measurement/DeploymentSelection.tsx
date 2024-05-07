@@ -35,16 +35,6 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
     await setAppliedData(selectedDeployment, selectedLogger);
   };
 
-  const onResetClick = () => {
-    getDeploymentsByLogger();
-    setSelectedLogger(-1);
-    setLoggers([]);
-    getLoggersWithDeployments();
-    resetDeployments();
-    setAppliedData(-1, -1);
-    dataStore.setSelectedColumn(-1, -1);
-  };
-
   const resetDeployments = () => {
     setDeployments([]);
     setSelectedDeployment(-1);
@@ -114,7 +104,6 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
         {(deployments.length === 0 || !deployments) && <EmptyDropdown />}
         <div className="flex justify-center gap-2">
           <Button text="Apply" onClick={onApplyClick} disabled={selectedLogger === -1 || selectedDeployment === -1} />
-          <Button text="Reset" onClick={onResetClick} />
         </div>
       </CardWrapper>
     </div>

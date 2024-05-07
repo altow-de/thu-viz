@@ -80,7 +80,7 @@ export const ChartTitle: { [key: string]: string } = {
 };
 
 export const HoverInfoKeys: { [key: string]: string } = {
-  depth: "Depth ",
+  deepest: "Depth ",
   measuring_time: "",
   name: "Vessel ",
   logger_id: "Logger ",

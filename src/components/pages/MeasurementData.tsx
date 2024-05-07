@@ -1,7 +1,6 @@
 import { MapType, MeasurementAnkers } from "@/frontend/enum";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "../basic/Button";
-import OceanMap from "../map/Map";
 import CardWraper from "../wrapper/CardWrapper";
 import { MeasurementAnkerTitles } from "@/frontend/constants";
 import AnkerMenu from "../navigation/AnkerMenu";
@@ -17,6 +16,7 @@ import CastChartLayout from "../chart/CastChartLayout";
 import { CastData } from "@/frontend/services/UpAndDownCastCalculationService";
 import { convertChartToPNG, createAndDownloadZip } from "@/frontend/utils";
 import ZoomLegend from "../chart/ZoomLegend";
+import DynamicMapWrapper from "../map/DynamicMapWrapper";
 
 const MeasurementData = () => {
   const { data: dataStore } = useStore();
@@ -36,6 +36,7 @@ const MeasurementData = () => {
   const [dataLoading, setDataLoading] = useState<boolean>(false);
   const [resetCastChart, setResetCastChart] = useState<boolean>(false);
   const oceanMapRef = useRef(null);
+
   const [exportChartIDs, setExportChartIDs] = useState<string[]>([]);
 
   const [parameterDataForDeployment, setParameterDataForDeployment] = useState<
@@ -53,6 +54,7 @@ const MeasurementData = () => {
 
   const exportMap = () => {
     let blobs: any[] = [];
+
     if (oceanMapRef.current) {
       (oceanMapRef.current as any).exportMapAsPNG((blob: any) => {
         blobs.push({ blob, filename: "map.png" });
@@ -81,7 +83,6 @@ const MeasurementData = () => {
     };
 
     window.addEventListener("resize", handleResize);
-
     return () => {
       window.removeEventListener("resize", handleResize);
     };
@@ -97,11 +98,11 @@ const MeasurementData = () => {
 
         setParameterDataForDeployment(result as unknown as ParameterDataForDeployment[]);
         const exportIDs: string[] = ["pressure-chart"];
+
         (result as ParameterDataForDeployment[])?.map((res) => {
           exportIDs.push(res.parameter + "-chart");
           exportIDs.push(res.parameter + "-cast_chart");
         });
-
         setExportChartIDs(exportIDs);
       } else {
         setParameterDataForDeployment([]);
@@ -211,7 +212,7 @@ const MeasurementData = () => {
         ></CastChartLayout>
       </CardWraper>
       <CardWraper text={"Track"} hasMap={true} id={MeasurementAnkers.Track}>
-        <OceanMap ref={oceanMapRef} type={MapType.route} data={trackData} />
+        <DynamicMapWrapper ref={oceanMapRef} type={MapType.route} data={trackData} />
       </CardWraper>
       <div className="flex justify-center mb-4">
         <Button text={"Export plots"} onClick={exportMap} />

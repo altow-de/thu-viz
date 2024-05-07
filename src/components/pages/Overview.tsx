@@ -1,6 +1,6 @@
 import { MapType, OverviewAnkers } from "@/frontend/enum";
 import React, { useCallback, useEffect, useState } from "react";
-import OceanMap from "../map/Map";
+
 import MeasurementSelection from "../overview/MeasurementSelection";
 import TableWrapper from "../table/TableWrapper";
 import CardWrapper from "../wrapper/CardWrapper";
@@ -12,6 +12,10 @@ import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { useStore } from "@/frontend/store";
 import { OverviewDeploymentTrackData, Region, SwitchTableData } from "@/frontend/types";
 import { observer } from "mobx-react-lite";
+import dynamic from "next/dynamic";
+const OceanMap = dynamic(() => import("../map/Map"), {
+  ssr: false,
+});
 
 const Overview = () => {
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);

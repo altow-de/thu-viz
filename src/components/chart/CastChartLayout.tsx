@@ -54,6 +54,7 @@ const CastChartLayout = ({
   const handleChanges = (checkboxes: { [key: string]: boolean }, activeSwitch: boolean) => {
     if (!activeSwitch) setActiveGraph(defaultCheckbox);
     else setActiveGraph(checkboxes);
+    setResetCastChart(true);
     setOnSwitch(!activeSwitch);
     handleBrushSync(!activeSwitch);
   };
@@ -85,7 +86,7 @@ const CastChartLayout = ({
                     i_down_end={castData[obj.parameter].downEndIndex}
                     i_up={castData[obj.parameter].upStartIndex}
                     i_up_end={castData[obj.parameter].upEndIndex}
-                    unit={obj.unit}
+                    unit={obj.unit || ""}
                     width={width}
                     title={obj.parameter}
                     xBrushValue={xCastBrush}

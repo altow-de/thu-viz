@@ -50,7 +50,7 @@ const CastChart = ({
 
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   useEffect(() => {
-    if (reset || !onSwitch) setXBrushEnd([0, 0]);
+    if (reset) setXBrushEnd([0, 0]);
   }, []);
 
   useEffect(() => {

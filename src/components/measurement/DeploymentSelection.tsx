@@ -23,16 +23,18 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
   const [loggers, setLoggers] = useState<Logger[]>([]);
   const [deployments, setDeployments] = useState<Deployment[]>([]);
-  const [selectedLogger, setSelectedLogger] = useState<number>(logger || -1);
-  const [selectedDeployment, setSelectedDeployment] = useState<number>(deployment || -1);
+  const [selectedLogger, setSelectedLogger] = useState<number>(dataStore.selectedColumn.logger_id || -1);
+  const [selectedDeployment, setSelectedDeployment] = useState<number>(
+    dataStore.selectedColumn.logger_id && dataStore.selectedColumn.logger_id > -1 ? deployment || -1 : -1
+  );
   useEffect(() => {
     if (selectedLogger > -1 && selectedDeployment > -1) {
       setAppliedData(selectedDeployment, selectedLogger);
     }
   }, []);
 
-  const onApplyClick = async () => {
-    await setAppliedData(selectedDeployment, selectedLogger);
+  const onApplyClick = () => {
+    setAppliedData(selectedDeployment, selectedLogger);
   };
 
   const resetDeployments = () => {
@@ -41,6 +43,7 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
   };
 
   const selectLogger = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedDeployment(-1);
     const selected = Number(e.target.value);
     setSelectedLogger(selected > -1 ? loggers[selected].logger_id : -1);
   };
@@ -64,8 +67,10 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
     if (selectedLogger === -1) {
       return;
     }
+    setSelectedDeployment(-1);
     const data = await deploymentService.getDeploymentsByLogger(selectedLogger);
     setDeployments(data);
+    dataStore.setSelectedColumn(-1, -1);
   }, [selectedLogger]);
 
   useEffect(() => {

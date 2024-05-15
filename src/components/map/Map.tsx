@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
   GeoJSONFeature,
   Map,
@@ -73,10 +73,11 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     if (deploymentTrackDataObj.showInMap === undefined) {
       const depthObj = getDepthFromPressure(Number(trackDataObj.pressure));
 
-      return {
+      const obj = {
         deepest: depthObj.val + depthObj.unit,
         measuring_time: new Date(trackDataObj.measuring_time)?.toLocaleString("de"),
       };
+      return obj;
     }
 
     return {
@@ -112,12 +113,11 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
 
   const handlePopUps = () => {
     // Create a popup, but don't add it to the map yet.
+    if (!map.current) return;
     const popup = new Popup({
       closeButton: false,
       closeOnClick: false,
     });
-
-    if (!map.current) return;
     map.current.on(
       "mouseenter",
       "route-point",
@@ -158,9 +158,9 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     );
 
     map.current.on("mouseleave", "route-point", () => {
+      popup.remove();
       if (!map.current) return;
       map.current.getCanvas().style.cursor = "";
-      popup.remove();
     });
   };
 
@@ -170,7 +170,6 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
       if (!map.current?.hasImage("circle_point")) map.current?.addImage("circle_point", image);
 
       if (type === MapType.route && trackData) {
-        handleSource();
         handleLayer();
         addRouteLayer();
       }
@@ -180,7 +179,6 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
       if (error || !image) throw error;
       if (!map.current?.hasImage("location-small")) map.current?.addImage("location-small", image);
       if (type === MapType.point && trackData) {
-        handleSource();
         handleLayer();
         addPointLayer("location-small");
       }
@@ -199,7 +197,6 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
         tileSize: 256,
       });
     }
-
     if (type === MapType.route) {
       addRouteSource(trackData);
     }
@@ -258,8 +255,10 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
   };
 
   const addRouteLayer = () => {
+    if (map.current?.getLayer("route")) map.current?.removeLayer("route");
+
     //Route Layer
-    if (!map.current?.getLayer("route") && map.current?.getSource("route-source")) {
+    if (!map.current?.getLayer("route")) {
       map.current?.addLayer({
         ...LayerZoom,
         id: "route",
@@ -281,7 +280,7 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     //Point Layer
 
     if (map.current?.getLayer("route-point")) map.current?.removeLayer("route-point");
-    if (!map.current?.getLayer("route-point") && map.current?.getSource("route-point-source")) {
+    if (!map.current?.getLayer("route-point")) {
       map.current?.addLayer({
         id: "route-point",
         type: "symbol",
@@ -337,6 +336,7 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
    * @function
    */
   const handleLayer = () => {
+    handleSource();
     if (!map.current?.getLayer("openseamap")) {
       map.current?.addLayer({
         id: "openseamap",
@@ -372,16 +372,13 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
   // Effect to initialize the map
   useEffect(() => {
     if (!mapContainer?.current) return;
+
     if (map?.current && map?.current?.loaded() && map?.current.isStyleLoaded()) {
       if (data?.[0]) {
         const { lng, lat } = extractCoordinates(data[0]);
         map.current.setCenter([lng, lat]);
       }
       map.current.setZoom(10);
-
-      handleRegionLayer();
-      handleImages();
-      handlePopUps();
     } else {
       const { lng, lat } = extractCoordinates(data?.[0] as TrackData | OverviewDeploymentTrackData) || [
         initialState.lng,
@@ -415,27 +412,49 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
           zoom: 10,
         });
       }
-
-      //workaround to prevent style is not done loading bug
-      map.current.on("load", async function () {
-        const waiting = () => {
-          if (!map.current?.isStyleLoaded() || !map?.current?.loaded() || !map.current._fullyLoaded) {
-            setTimeout(waiting, 500);
-          } else {
-            handleRegionLayer();
-            handleImages();
-            handlePopUps();
-          }
-        };
-        waiting();
-      });
-
-      //prevent duplication of navigation controls
-      if (!map.current?.hasControl(navControl)) {
-        map.current?.addControl(navControl, "bottom-right");
-      }
     }
+    //workaround to prevent style is not done loading bug
+    map.current?.on("load", async function () {
+      const waiting = () => {
+        if (!map.current?.isStyleLoaded() || !map?.current?.loaded() || !map.current._fullyLoaded) {
+          setTimeout(waiting, 1000);
+        } else {
+          console.log("fffff");
+          handleRegionLayer();
+          handleImages();
+          handlePopUps();
+          if (data?.[0]) {
+            const { lng, lat } = extractCoordinates(data[0]);
+            map.current.setCenter([lng, lat]);
+          }
+        }
+      };
+      waiting();
+    });
   }, [data, region]);
+
+  // Effect to initialize the map
+  useEffect(() => {
+    map?.current?.on("load", async function () {
+      const waiting = () => {
+        if (!map.current?.isStyleLoaded() || !map?.current?.loaded() || !map.current._fullyLoaded) {
+          setTimeout(waiting, 1000);
+        } else {
+          console.log("adadada");
+
+          handleRegionLayer();
+          handleImages();
+          handlePopUps();
+          map?.current?.addControl(navControl, "bottom-right");
+          if (data?.[0]) {
+            const { lng, lat } = extractCoordinates(data[0]);
+            map.current.setCenter([lng, lat]);
+          }
+        }
+      };
+      waiting();
+    });
+  }, []);
 
   return (
     <div className="relative">

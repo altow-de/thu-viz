@@ -10,65 +10,6 @@ export class ProcessedValueService extends BackendDbService {
     super("ProcessedValue");
   }
 
-  private async getRawValues(logger_id: number, deployment_id: number) {
-    return await db
-      .selectFrom("ProcessedValueHasRawValue")
-      .where((eb) =>
-        eb.and({
-          deployment_id: deployment_id,
-          logger_id: logger_id,
-        })
-      )
-      .selectAll()
-      .execute();
-  }
-
-  private async getValidRawValues(rawValues: ProcessedValueHasRawValue[]): Promise<any> {
-    const rawValueIds = rawValues.map((obj) => obj.processed_value_id);
-    if (rawValueIds.length === 0) return undefined;
-
-    //Define the subquery to determine the latest processing_time for each raw_value_id
-    const latestProcessingTimesSubquery = db
-      .selectFrom("ProcessedValueHasRawValue")
-      .innerJoin("Sensor", "Sensor.sensor_id", "ProcessedValueHasRawValue.sensor_id")
-      .innerJoin("SensorType", "Sensor.sensor_type_id", "Sensor.sensor_type_id")
-      .innerJoin("ProcessedValue", "ProcessedValue.processed_value_id", "ProcessedValueHasRawValue.processed_value_id")
-      .select(["ProcessedValueHasRawValue.raw_value_id", "SensorType.parameter"])
-      .select(sql`MAX(ProcessedValue.processing_time)`.as("latest_processing_time"))
-      .where("ProcessedValueHasRawValue.processed_value_id", "in", rawValueIds)
-      .where("ProcessedValue.valid", "=", 1)
-      .groupBy("ProcessedValueHasRawValue.raw_value_id")
-      .as("lpt");
-
-    // Execute the main query to retrieve the latest valid ProcessedValue entries.
-    const result = await db
-      .selectFrom("ProcessedValue")
-      .innerJoin(
-        "ProcessedValueHasRawValue",
-        "ProcessedValueHasRawValue.processed_value_id",
-        "ProcessedValue.processed_value_id"
-      )
-      .innerJoin(latestProcessingTimesSubquery, (join) =>
-        join
-          .onRef("lpt.raw_value_id", "=", "ProcessedValueHasRawValue.raw_value_id")
-          .on(sql`ProcessedValue.processing_time = lpt.latest_processing_time`)
-      )
-
-      .where("ProcessedValue.valid", "=", 1)
-      .select([
-        "ProcessedValueHasRawValue.raw_value_id",
-        "ProcessedValue.processing_time",
-        "lpt.raw_value_id",
-        "lpt.latest_processing_time",
-        "ProcessedValueHasRawValue.processed_value_id",
-        "ProcessedValueHasRawValue.deployment_id",
-        "ProcessedValue.value",
-      ])
-      .execute();
-
-    return result;
-  }
-
   async getDiagramDataForParameterAndDeployment(logger_id: number, deployment_id: number, sensor_type_id: number) {
     try {
       // First retrieve sensor IDs associated with the parameter to optimize the query execution speed.
@@ -98,6 +39,7 @@ export class ProcessedValueService extends BackendDbService {
           "processedValue.processed_value_id"
         )
         .where("processedValue.valid", "=", 1)
+        .where("rawValue.deployment_id", "=", deployment_id)
         .select([
           "processedValue.processed_value_id",
           "processedValue.measuring_time",
@@ -124,6 +66,7 @@ export class ProcessedValueService extends BackendDbService {
             .onRef("sensorData.logger_id", "=", "dataLink.logger_id")
             .onRef("sensorData.sensor_id", "=", "dataLink.sensor_id")
         )
+        .where("sensorData.deployment_id", "=", deployment_id)
         .innerJoin(sensorDataAggregation.as("aggregatedData"), (join) =>
           join
             .onRef("processedData.processing_time", "=", "aggregatedData.latest_processing_time")
@@ -131,6 +74,7 @@ export class ProcessedValueService extends BackendDbService {
             .onRef("dataLink.raw_value_id", "=", "aggregatedData.raw_value_id")
         )
         .where("processedData.valid", "=", 1)
+        .where("sensorData.deployment_id", "=", deployment_id)
         .innerJoin("Deployment", (join) =>
           join
             .onRef("Deployment.deployment_id", "=", "sensorData.deployment_id")
@@ -145,6 +89,7 @@ export class ProcessedValueService extends BackendDbService {
           "processedData.measuring_time",
           "processedData.processed_value_id",
           "processedData.pressure",
+          "sensorData.sensor_id",
           "Deployment.deployment_id",
         ])
         .groupBy("processedData.processed_value_id")
@@ -158,7 +103,16 @@ export class ProcessedValueService extends BackendDbService {
 
   async getParameterDataForDeployment(logger_id: number, deployment_id: number) {
     try {
+      const sensors = await db
+        .selectFrom("SensorType")
+        .innerJoin("Sensor", "SensorType.sensor_type_id", "SensorType.sensor_type_id")
+        .select("Sensor.sensor_id")
+        .groupBy("Sensor.sensor_id")
+        .execute();
+      const sensor_ids = sensors.map((sensor) => sensor.sensor_id);
+
       const sensorDataAggregation = db
+
         .selectFrom("RawValue as rawValue")
         .leftJoin("ProcessedValueHasRawValue as linkTable", (join) =>
           join
@@ -169,12 +123,14 @@ export class ProcessedValueService extends BackendDbService {
         )
         .where("rawValue.logger_id", "=", logger_id)
         .where("rawValue.deployment_id", "=", deployment_id)
+        .where("rawValue.sensor_id", "in", sensor_ids)
         .leftJoin(
           "ProcessedValue as processedValue",
           "linkTable.processed_value_id",
           "processedValue.processed_value_id"
         )
         .where("processedValue.valid", "=", 1)
+        .where("rawValue.deployment_id", "=", deployment_id)
         .select([
           "processedValue.processed_value_id",
           "processedValue.measuring_time",
@@ -208,6 +164,7 @@ export class ProcessedValueService extends BackendDbService {
             .onRef("sensorData.sensor_id", "=", "dataLink.sensor_id")
         )
         .where("processedData.valid", "=", 1)
+        .where("sensorData.deployment_id", "=", deployment_id)
         .innerJoin("Deployment", (join) =>
           join
             .onRef("Deployment.deployment_id", "=", "sensorData.deployment_id")
@@ -215,13 +172,14 @@ export class ProcessedValueService extends BackendDbService {
         )
         .innerJoin("Sensor", "Sensor.sensor_id", "dataLink.sensor_id")
         .innerJoin("SensorType", "SensorType.sensor_type_id", "Sensor.sensor_type_id")
-        .leftJoin("Unit", "Unit.unit_id", "SensorType.unit_id")
+        .leftJoin("Unit", "Unit.unit_id", "processedData.unit_id")
         .groupBy("SensorType.sensor_type_id")
         .select(({ fn }) => [
           "Deployment.deployment_id",
           "dataLink.processed_value_id",
           "SensorType.parameter",
           "SensorType.sensor_type_id",
+          "sensorData.sensor_id",
           "Unit.unit",
           "Deployment.time_end",
           "Deployment.time_start",
@@ -238,7 +196,16 @@ export class ProcessedValueService extends BackendDbService {
 
   async getTrackDataByLoggerAndDeployment(logger_id: number, deployment_id: number) {
     try {
+      const sensors = await db
+        .selectFrom("SensorType")
+        .innerJoin("Sensor", "SensorType.sensor_type_id", "SensorType.sensor_type_id")
+        .select("Sensor.sensor_id")
+        .groupBy("Sensor.sensor_id")
+        .execute();
+      const sensor_ids = sensors.map((sensor) => sensor.sensor_id);
+
       const sensorDataAggregation = db
+
         .selectFrom("RawValue as rawValue")
         .leftJoin("ProcessedValueHasRawValue as linkTable", (join) =>
           join
@@ -249,12 +216,14 @@ export class ProcessedValueService extends BackendDbService {
         )
         .where("rawValue.logger_id", "=", logger_id)
         .where("rawValue.deployment_id", "=", deployment_id)
+        .where("rawValue.sensor_id", "in", sensor_ids)
         .innerJoin(
           "ProcessedValue as processedValue",
           "linkTable.processed_value_id",
           "processedValue.processed_value_id"
         )
         .where("processedValue.valid", "=", 1)
+        .where("rawValue.deployment_id", "=", deployment_id)
         .select([
           "processedValue.processed_value_id",
           "processedValue.measuring_time",
@@ -287,6 +256,7 @@ export class ProcessedValueService extends BackendDbService {
             .onRef("sensorData.sensor_id", "=", "dataLink.sensor_id")
         )
         .where("processedData.valid", "=", 1)
+        .where("sensorData.deployment_id", "=", deployment_id)
         .innerJoin("Deployment", (join) =>
           join
             .onRef("Deployment.deployment_id", "=", "sensorData.deployment_id")

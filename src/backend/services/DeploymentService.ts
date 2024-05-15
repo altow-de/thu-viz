@@ -44,7 +44,6 @@ export class DeploymentService extends BackendDbService {
         "processedValue.processed_value_id",
         "processedValue.measuring_time",
         sql`MAX(processedValue.processing_time)`.as("latest_processing_time"),
-        sql`MAX(processedValue.pressure)`.as("deepest"),
         "processedValue.pressure",
         "processedValue.value",
         "processedValue.position",
@@ -60,7 +59,7 @@ export class DeploymentService extends BackendDbService {
       .leftJoin("ProcessedValueHasRawValue as dataLink", (join) =>
         join.onRef("processedData.processed_value_id", "=", "dataLink.processed_value_id")
       )
-      .innerJoin(sensorDataAggregation.as("aggregatedData"), (join) =>
+      .leftJoin(sensorDataAggregation.as("aggregatedData"), (join) =>
         join
           .onRef("processedData.processing_time", "=", "aggregatedData.latest_processing_time")
           .onRef("dataLink.sensor_id", "=", "aggregatedData.sensor_id")
@@ -75,10 +74,10 @@ export class DeploymentService extends BackendDbService {
       )
       .where("processedData.valid", "=", 1)
       .where(sql`ST_AsText(sensorData.measuring_location)`, "!=", "POINT(-999 -999)")
-      .innerJoin("PlatformContainsLogger", "sensorData.logger_id", "PlatformContainsLogger.logger_id")
-      .innerJoin("Platform", "Platform.platform_id", "PlatformContainsLogger.platform_id")
-      .innerJoin("Vessel", "Platform.platform_id", "Vessel.platform_id")
-      .innerJoin("Deployment", (join) =>
+      .leftJoin("PlatformContainsLogger", "sensorData.logger_id", "PlatformContainsLogger.logger_id")
+      .leftJoin("Platform", "Platform.platform_id", "PlatformContainsLogger.platform_id")
+      .leftJoin("Vessel", "Platform.platform_id", "Vessel.platform_id")
+      .leftJoin("Deployment", (join) =>
         join
           .onRef("Deployment.deployment_id", "=", "sensorData.deployment_id")
           .onRef("Deployment.logger_id", "=", "sensorData.logger_id")
@@ -86,20 +85,16 @@ export class DeploymentService extends BackendDbService {
       .select([
         "processedData.measuring_time",
         "processedData.value",
-        "sensorData.pressure",
         "processedData.position",
-        "processedData.processing_time",
         "sensorData.sensor_id",
         "sensorData.raw_value_id",
         "processedData.unit_id",
         "Deployment.deployment_id",
         "Deployment.logger_id",
-        "sensorData.measuring_location",
         "Vessel.name",
-        "deepest",
+        sql`MAX(sensorData.pressure)`.as("deepest"),
         "Deployment.time_start",
         "Deployment.time_end",
-        "Deployment.position_start",
       ])
       .groupBy(["sensorData.logger_id", "sensorData.deployment_id"]);
 

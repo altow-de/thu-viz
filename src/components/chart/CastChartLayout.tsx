@@ -1,5 +1,5 @@
 import { ParameterDataForDeployment } from "@/backend/services/ProcessedValueService";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CastData } from "@/frontend/services/UpAndDownCastCalculationService";
 import CastChart from "./CastChart";
 import ChartWrapper from "./ChartWrapper";
@@ -62,6 +62,10 @@ const CastChartLayout = ({
     setSensitivityValues(threshold, windowHalfSize);
   };
 
+  useEffect(() => {
+    resetCastData();
+  }, [onSwitch]);
+
   return (
     <div className="flex flex-row max-[600px]:flex-wrap">
       <div className="flex flex-1 flex-wrap">
@@ -71,24 +75,23 @@ const CastChartLayout = ({
             setAppliedData={setAppliedData}
             threshold={threshold}
             windowHalfSize={windowHalfSize}
-            width={width}
             handleChanges={handleChanges}
           />
         )}
         {parameterData?.map((obj: ParameterDataForDeployment) => {
           return (
-            <div key={obj.parameter} className=" flex-grow flex justify-center ">
+            <div key={obj.parameter + "-" + obj.sensor_id} className=" flex-grow flex justify-center ">
               <ChartWrapper dataLoading={dataLoading} width={width}>
-                {castData[obj.parameter] && (
+                {castData[obj.parameter + "-" + obj.sensor_id] && (
                   <CastChart
-                    data={castData[obj.parameter].data}
-                    i_down={castData[obj.parameter].downStartIndex}
-                    i_down_end={castData[obj.parameter].downEndIndex}
-                    i_up={castData[obj.parameter].upStartIndex}
-                    i_up_end={castData[obj.parameter].upEndIndex}
+                    data={castData[obj.parameter + "-" + obj.sensor_id].data}
+                    i_down={castData[obj.parameter + "-" + obj.sensor_id].downStartIndex}
+                    i_down_end={castData[obj.parameter + "-" + obj.sensor_id].downEndIndex}
+                    i_up={castData[obj.parameter + "-" + obj.sensor_id].upStartIndex}
+                    i_up_end={castData[obj.parameter + "-" + obj.sensor_id].upEndIndex}
                     unit={obj.unit || ""}
                     width={width}
-                    title={obj.parameter}
+                    title={obj.parameter || ""}
                     xBrushValue={xCastBrush}
                     syncCastCharts={syncCastCharts}
                     reset={resetCastChart}
@@ -98,6 +101,7 @@ const CastChartLayout = ({
                     resetCastData={resetCastData}
                     yBrushValue={yBrushValue}
                     handleYBrushEnd={handleYBrushEnd}
+                    sensor_id={obj.sensor_id || 0}
                   />
                 )}
               </ChartWrapper>

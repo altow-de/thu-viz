@@ -5,23 +5,33 @@ import Button from "../basic/Button";
 import "../../../styles/colorindicators.css";
 import CastDetectionLegend from "./CastDetectionLegend";
 import { LegendKey } from "@/frontend/enum";
+import { DefaultThreshold, DefaultWindowHalfSite } from "@/frontend/constants";
+import { useStore } from "@/frontend/store";
+import { observer } from "mobx-react-lite";
 
 interface CastChartSetterProps {
   setAppliedData: (threshold: number, windowHalfSize: number) => void;
   threshold: number;
   windowHalfSize: number;
-  width: number;
   handleChanges: (checkboxes: { [key: string]: boolean }, activeSwitch: boolean) => void;
 }
 
-const CastChartSetter = ({ setAppliedData, width, windowHalfSize, threshold, handleChanges }: CastChartSetterProps) => {
+const CastChartSetter = ({ setAppliedData, windowHalfSize, threshold, handleChanges }: CastChartSetterProps) => {
+  const { data: dataStore } = useStore();
   const defaultCheckbox = { checkbox1: true, checkbox2: true, checkbox3: true };
-
   const [windowHalfSizeVal, setWindowHalfSize] = useState<number>(windowHalfSize);
   const [thresholdVal, setThreshold] = useState<number>(threshold);
   const [switchState, setSwitchState] = useState<boolean>(false);
   const [checkboxes, setCheckboxes] = useState<{ [key: string]: boolean }>(defaultCheckbox);
   const [sensitivityVisible, setSensitivityVisible] = useState<boolean>(false);
+
+  const resetCastChartSetter = () => {
+    setThreshold(DefaultThreshold);
+    setWindowHalfSize(DefaultWindowHalfSite);
+    setCheckboxes(defaultCheckbox);
+    handleChanges(defaultCheckbox, false);
+    setSwitchState(false);
+  };
 
   const handleCheckboxChange = (checkboxName: string, isChecked: boolean) => {
     const newCheckboxes = { ...checkboxes, [checkboxName]: isChecked };
@@ -37,6 +47,11 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, threshold, han
     if (switchState) setCheckboxes(defaultCheckbox);
     handleChanges(defaultCheckbox, switchState);
   }, [switchState]);
+
+  useEffect(() => {
+    console.log("here");
+    resetCastChartSetter();
+  }, [dataStore.switchReset]);
 
   return (
     <div className={`flex justify-center w-[300px]`}>
@@ -103,10 +118,10 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, threshold, han
                     className={`w-full px-2 py-2 h-10 border placeholder-danube-900 rounded-lg ${
                       isNaN(windowHalfSizeVal) ? "border-red-custom" : "border-danube-200"
                     }`}
-                    placeholder=" Number of measurements"
+                    placeholder="Window half size [number of measurements] "
                   />
                   <label className="text-danube-600 text-[10px] relative -top-1  left-1" htmlFor={"threshold"}>
-                    Number of measurements
+                    Window half size [number of measurements]
                   </label>
                 </div>
                 <div className="mb-5">
@@ -140,4 +155,4 @@ const CastChartSetter = ({ setAppliedData, width, windowHalfSize, threshold, han
   );
 };
 
-export default CastChartSetter;
+export default observer(CastChartSetter);

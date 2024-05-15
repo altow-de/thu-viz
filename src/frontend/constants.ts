@@ -86,3 +86,6 @@ export const HoverInfoKeys: { [key: string]: string } = {
   logger_id: "Logger ",
   deployment_id: "Deployment ",
 };
+
+export const DefaultWindowHalfSite = 5;
+export const DefaultThreshold = 0.2;

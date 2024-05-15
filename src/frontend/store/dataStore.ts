@@ -8,6 +8,7 @@ export class DataStore {
   public selectedColumn: { logger_id: number; deployment_id: number } = { logger_id: -1, deployment_id: -1 };
   public tableData: SwitchTableData[] = [];
   public dataChanged: boolean = false;
+  public switchReset: boolean = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -31,5 +32,9 @@ export class DataStore {
 
   setDataChanged(changed: boolean) {
     this.dataChanged = changed;
+  }
+
+  setSwitchReset(switchReset: boolean) {
+    this.switchReset = switchReset;
   }
 }

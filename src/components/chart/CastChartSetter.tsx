@@ -49,7 +49,6 @@ const CastChartSetter = ({ setAppliedData, windowHalfSize, threshold, handleChan
   }, [switchState]);
 
   useEffect(() => {
-    console.log("here");
     resetCastChartSetter();
   }, [dataStore.switchReset]);
 

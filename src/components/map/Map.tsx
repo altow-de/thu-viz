@@ -98,17 +98,7 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
       : [];
 
   const onMapStyleChange = (mapStyle: string) => {
-    const mapUrl =
-      "https://api.maptiler.com/maps/" + mapStyle + "/style.json?key=" + process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN;
-    map.current?.setStyle(`${mapUrl}`, { diff: false });
-
     setMapStyle(mapStyle);
-
-    map.current?.on("style.load", async function () {
-      handleRegionLayer();
-      handleImages();
-      handlePopUps();
-    });
   };
 
   const handlePopUps = () => {
@@ -369,37 +359,47 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     }
   };
 
+  useEffect(() => {
+    const mapUrl =
+      "https://api.maptiler.com/maps/" + mapStyle + "/style.json?key=" + process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN;
+    map?.current?.setStyle(`${mapUrl}`, { diff: false });
+    map.current?.on("style.load", async function () {
+      const center = map.current?.getCenter();
+      const zoom = map.current?.getZoom();
+      if (center && zoom) {
+        map.current?.setCenter(center);
+        map.current?.setZoom(zoom);
+      }
+      handleRegionLayer();
+      handleImages();
+      handlePopUps();
+    });
+  }, [mapStyle]);
   // Effect to initialize the map
   useEffect(() => {
     if (!mapContainer?.current) return;
 
-    if (map?.current && map?.current?.loaded() && map?.current.isStyleLoaded()) {
+    if (
+      map?.current &&
+      map?.current?.loaded() &&
+      map?.current?.isStyleLoaded() &&
+      map?.current?._fullyLoaded &&
+      map?.current?._loaded
+    ) {
       if (data?.[0]) {
         const { lng, lat } = extractCoordinates(data[0]);
         map.current.setCenter([lng, lat]);
       }
       map.current.setZoom(10);
+      handleRegionLayer();
+      handleImages();
+      handlePopUps();
     } else {
       const { lng, lat } = extractCoordinates(data?.[0] as TrackData | OverviewDeploymentTrackData) || [
         initialState.lng,
         initialState.lat,
       ];
-      const center = map.current?.getCenter();
-      const zoom = map.current?.getZoom();
-
-      if (center && zoom) {
-        map.current = new Map({
-          container: mapContainer.current,
-          style: `${
-            "https://api.maptiler.com/maps/" +
-            mapStyle +
-            "/style.json?key=" +
-            process.env.NEXT_PUBLIC_MAPTILER_ACCESS_TOKEN
-          }`,
-          center: center,
-          zoom: zoom,
-        });
-      } else {
+      if (!map.current) {
         map.current = new Map({
           container: mapContainer.current,
           style: `${
@@ -413,46 +413,28 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
         });
       }
     }
-    //workaround to prevent style is not done loading bug
-    map.current?.on("load", async function () {
-      const waiting = () => {
-        if (!map.current?.isStyleLoaded() || !map?.current?.loaded() || !map.current._fullyLoaded) {
-          setTimeout(waiting, 1000);
-        } else {
-          console.log("fffff");
-          handleRegionLayer();
-          handleImages();
-          handlePopUps();
-          if (data?.[0]) {
-            const { lng, lat } = extractCoordinates(data[0]);
-            map.current.setCenter([lng, lat]);
-          }
-        }
-      };
-      waiting();
+    map?.current?.on("load", async function () {
+      handleRegionLayer();
+      handleImages();
+      handlePopUps();
+      if (data?.[0]) {
+        const { lng, lat } = extractCoordinates(data[0]);
+        map?.current?.setCenter([lng, lat]);
+      }
     });
   }, [data, region]);
 
   // Effect to initialize the map
   useEffect(() => {
     map?.current?.on("load", async function () {
-      const waiting = () => {
-        if (!map.current?.isStyleLoaded() || !map?.current?.loaded() || !map.current._fullyLoaded) {
-          setTimeout(waiting, 1000);
-        } else {
-          console.log("adadada");
-
-          handleRegionLayer();
-          handleImages();
-          handlePopUps();
-          map?.current?.addControl(navControl, "bottom-right");
-          if (data?.[0]) {
-            const { lng, lat } = extractCoordinates(data[0]);
-            map.current.setCenter([lng, lat]);
-          }
-        }
-      };
-      waiting();
+      handleRegionLayer();
+      handleImages();
+      handlePopUps();
+      map?.current?.addControl(navControl, "bottom-right");
+      if (data?.[0]) {
+        const { lng, lat } = extractCoordinates(data[0]);
+        map?.current?.setCenter([lng, lat]);
+      }
     });
   }, []);
 

@@ -15,3 +15,8 @@ export enum OverviewAnkers {
   OverviewDeployments = "overview-deployments",
   PositionOfDeployments = "position-of-deployments",
 }
+
+export enum LegendKey {
+  CastDetecion = "cast_detection",
+  Sensitivity = "sensitivity",
+}

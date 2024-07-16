@@ -12,9 +12,10 @@ interface TableProps {
   data: SwitchTableData[];
   maxHeight?: string;
   textSize?: string;
+  hasTableWrapper?: boolean;
 }
 
-const Table = ({ data, maxHeight, textSize }: TableProps) => {
+const Table = ({ data, maxHeight, textSize, hasTableWrapper }: TableProps) => {
   const [tableData, setTableData] = useState<SwitchTableData[]>(data);
   const [sorted, setSorted] = useState<boolean>(false);
   const { data: dataStore } = useStore();
@@ -216,7 +217,13 @@ const Table = ({ data, maxHeight, textSize }: TableProps) => {
         <div
           className={`grid grid-rows-1 bg-white gap-1 min-w-[800px] ${textSize === "small" ? "text-xs" : "text-sm"}`}
         >
-          <TableHeader titles={TableTitle} sort={sort} textSize={textSize} />
+          <TableHeader
+            titles={TableTitle}
+            sort={sort}
+            textSize={textSize}
+            tableData={tableData}
+            hasTableWrapper={hasTableWrapper}
+          />
           <div className={`bg-white ${maxHeight}`}>
             {tableData?.map((row, index) => {
               return (

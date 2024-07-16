@@ -17,12 +17,12 @@ export default async function handler(
 ) {
   const logger_id = Number(req.query.logger_id);
   const deployment_id = Number(req.query.deployment_id);
-  const parameter = req.query.parameter ? req.query.parameter.toString() : "";
+  const sensor_type_id = Number(req.query.sensor_type_id);
   try {
     const dpResponse = await rawValueService.getDiagramDataForParameterAndDeployment(
       logger_id,
       deployment_id,
-      parameter
+      sensor_type_id
     );
     res.status(200).json(dpResponse);
   } catch (error) {

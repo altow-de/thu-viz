@@ -19,10 +19,10 @@ export class ProcessedValueService extends FrontendDbService {
   getDiagramDataForParameterAndDeployment(
     deployment_id: number,
     logger_id: number,
-    parameter: string
+    sensor_type_id: number
   ): Promise<DiagramDataForParameterAndDeployment[] | DatabaseError> {
     return this.fetchData(
-      `getDiagramDataForParameterAndDeployment?deployment_id=${deployment_id}&logger_id=${logger_id}&parameter=${parameter}`
+      `getDiagramDataForParameterAndDeployment?deployment_id=${deployment_id}&logger_id=${logger_id}&sensor_type_id=${sensor_type_id}`
     );
   }
 

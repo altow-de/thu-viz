@@ -22,6 +22,7 @@ interface ChartProps {
   resetCastData: () => void;
   handleYBrushEnd: (y1: number, y0: number) => void;
   unit: string;
+  sensor_id: number;
 }
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
@@ -36,13 +37,14 @@ const CastChart = ({
   title,
   xBrushValue,
   yBrushValue,
-  reset,
   setResetCastChart,
   onCheck,
   onSwitch,
   resetCastData,
   handleYBrushEnd,
   unit,
+  reset,
+  sensor_id,
 }: ChartProps) => {
   const d3Container = useRef<SVGSVGElement | null>(null);
   const [xBrushEnd, setXBrushEnd] = useState<number[]>(reset ? [0, 0] : xBrushValue);
@@ -50,7 +52,7 @@ const CastChart = ({
 
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   useEffect(() => {
-    if (reset || !onSwitch) setXBrushEnd([0, 0]);
+    if (reset) setXBrushEnd([0, 0]);
   }, []);
 
   useEffect(() => {
@@ -74,7 +76,7 @@ const CastChart = ({
 
     const yScale = d3
       .scaleLinear()
-      .domain(yEnd[0] > 0 || yEnd[1] > 0 ? yEnd : [yMax || 0, yMin || 0])
+      .domain(yEnd[0] > 0 || yEnd[1] > 0 ? yEnd : [(yMax || 0) + 0.5, (yMin || 0) - 0.5])
       .range([height, 0]);
 
     return { xScale, yScale };
@@ -228,12 +230,15 @@ const CastChart = ({
     xScale: d3.ScaleLinear<number, number, never>,
     yScale: d3.ScaleLinear<number, number, never>
   ) => {
-    const downcastColor = onCheck.checkbox1 || onSwitch ? "#7B00F6" : "";
-    const bottomcastColor = onCheck.checkbox2 || onSwitch ? "#cae2f3" : "";
-    const upcastColor = onCheck.checkbox3 || onSwitch ? "#BF39D5" : "";
-    drawSegment(svg, 0, i_down, downcastColor, xScale, yScale); // Downcast
-    drawSegment(svg, i_down, i_down_end, bottomcastColor, xScale, yScale); // Bottomcast
+    const downcastColor = onCheck.checkbox1 ? (!onSwitch ? "#7B00F6" : "#4883c8") : "";
+    const bottomcastColor = onCheck.checkbox2 ? (!onSwitch ? "#cae2f3" : "#4883c8") : "";
+    const upcastColor = onCheck.checkbox3 ? (!onSwitch ? "#BF39D5" : "#4883c8") : "";
+
+    drawSegment(svg, 0, i_down + 1, bottomcastColor, xScale, yScale); // Rest
+    drawSegment(svg, i_down, i_down_end, downcastColor, xScale, yScale); // Bottomcast
+    drawSegment(svg, i_down_end - 1, i_up + 1, bottomcastColor, xScale, yScale); // Rest
     drawSegment(svg, i_up, i_up_end, upcastColor, xScale, yScale); // Upcast
+    drawSegment(svg, i_up_end - 1, data.length, bottomcastColor, xScale, yScale); // Rest
   };
 
   const initReset = (svg: d3.Selection<SVGGElement, unknown, null, undefined>) => {
@@ -298,7 +303,11 @@ const CastChart = ({
   return (
     <div id="chartContainer" className="flex-auto inline-block">
       <div className="pl-1 text-sm text-danube-600 font-semibold">{ChartTitle[title]}</div>
-      <svg id={title + "-cast_chart"} ref={d3Container} style={{ display: "block", margin: "auto" }}></svg>
+      <svg
+        id={title + "-" + sensor_id + "-cast_chart"}
+        ref={d3Container}
+        style={{ display: "block", margin: "auto" }}
+      ></svg>
     </div>
   );
 };

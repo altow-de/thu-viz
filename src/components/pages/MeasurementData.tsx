@@ -1,9 +1,8 @@
 import { MapType, MeasurementAnkers } from "@/frontend/enum";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "../basic/Button";
-import OceanMap from "../map/Map";
 import CardWraper from "../wrapper/CardWrapper";
-import { MeasurementAnkerTitles } from "@/frontend/constants";
+import { DefaultThreshold, DefaultWindowHalfSite, MeasurementAnkerTitles } from "@/frontend/constants";
 import AnkerMenu from "../navigation/AnkerMenu";
 import DeploymentSelection from "../measurement/DeploymentSelection";
 import Metadata from "../measurement/Metadata";
@@ -17,16 +16,18 @@ import CastChartLayout from "../chart/CastChartLayout";
 import { CastData } from "@/frontend/services/UpAndDownCastCalculationService";
 import { convertChartToPNG, createAndDownloadZip } from "@/frontend/utils";
 import ZoomLegend from "../chart/ZoomLegend";
+import DynamicMapWrapper from "../map/DynamicMapWrapper";
 
 const MeasurementData = () => {
   const { data: dataStore } = useStore();
-  const [windowHalfSize, setWindowHalfSize] = useState<number>(5);
-  const [threshold, setThreshold] = useState<number>(0.2);
+  const [windowHalfSize, setWindowHalfSize] = useState<number>(DefaultWindowHalfSite);
+  const [threshold, setThreshold] = useState<number>(DefaultThreshold);
   const [deployment, setDeployment] = useState<number>(dataStore.selectedColumn.deployment_id || -1);
   const [logger, setLogger] = useState<number>(dataStore.selectedColumn.logger_id || -1);
   const [tableData, setTableData] = useState<DeploymentTableData | undefined>();
   const [chartWidth, setChartWidth] = useState(window.innerWidth > 370 ? 300 : window.innerWidth - 70);
   const [castData, setCastData] = useState<{ [key: string]: CastData }>({});
+  const [castChartParameter, setCastChartParameter] = useState<ParameterDataForDeployment[]>();
   const [defaultCastData, setDefaultCastData] = useState<{
     [key: string]: CastData;
   }>({});
@@ -36,6 +37,7 @@ const MeasurementData = () => {
   const [dataLoading, setDataLoading] = useState<boolean>(false);
   const [resetCastChart, setResetCastChart] = useState<boolean>(false);
   const oceanMapRef = useRef(null);
+
   const [exportChartIDs, setExportChartIDs] = useState<string[]>([]);
 
   const [parameterDataForDeployment, setParameterDataForDeployment] = useState<
@@ -53,11 +55,13 @@ const MeasurementData = () => {
 
   const exportMap = () => {
     let blobs: any[] = [];
+
     if (oceanMapRef.current) {
       (oceanMapRef.current as any).exportMapAsPNG((blob: any) => {
         blobs.push({ blob, filename: "map.png" });
         exportChartIDs.forEach((chartId, index) => {
           const svgElement = document.getElementById(chartId);
+
           if (svgElement) {
             const serializer = new XMLSerializer();
             const svgString = serializer.serializeToString(svgElement);
@@ -81,7 +85,6 @@ const MeasurementData = () => {
     };
 
     window.addEventListener("resize", handleResize);
-
     return () => {
       window.removeEventListener("resize", handleResize);
     };
@@ -93,19 +96,38 @@ const MeasurementData = () => {
       setLogger(logger);
 
       if (deployment > -1 && logger > -1) {
-        const result = await processedValueService.getParameterDataForDeployment(deployment, logger);
+        const result = (await processedValueService.getParameterDataForDeployment(
+          deployment,
+          logger
+        )) as ParameterDataForDeployment[];
+
+        const hasRelevantTempUnit = result?.find((obj) => obj.unit === "degree_C") !== undefined;
+        const hasRelevantConductivityUnit = result?.find((obj) => obj.unit === "mS_cm-1") !== undefined;
+        const hasRelevantOxygenUnit = result?.find((obj) => obj.unit === "mbar") !== undefined;
 
         setParameterDataForDeployment(result as unknown as ParameterDataForDeployment[]);
         const exportIDs: string[] = ["pressure-chart"];
+        if (hasRelevantTempUnit && hasRelevantConductivityUnit) {
+          exportIDs.push("salinity-0-chart");
+          exportIDs.push("salinity-0-cast_chart");
+          if (hasRelevantOxygenUnit) {
+            exportIDs.push("oxygen_per_liter-0-chart");
+            exportIDs.push("oxygen_per_liter-0-cast_chart");
+          }
+        }
+
         (result as ParameterDataForDeployment[])?.map((res) => {
-          exportIDs.push(res.parameter + "-chart");
-          exportIDs.push(res.parameter + "-cast_chart");
+          exportIDs.push(res.parameter + "-" + res.sensor_id + "-chart");
+          exportIDs.push(res.parameter + "-" + res.sensor_id + "-cast_chart");
         });
 
         setExportChartIDs(exportIDs);
       } else {
         setParameterDataForDeployment([]);
       }
+      setSensitivityValues(DefaultThreshold, DefaultWindowHalfSite);
+      dataStore.setSwitchReset(!dataStore.switchReset);
+      resetCastData();
     },
     [setDeployment, setLogger]
   );
@@ -117,6 +139,7 @@ const MeasurementData = () => {
     }
     const data = await deploymentService.getDeploymentById(deployment, logger);
     const res = await processedValueService.getTrackDataByLoggerAndDeployment(deployment, logger);
+
     setTrackData(res as TrackData[]);
     setTableData(data);
   }, [deployment]);
@@ -159,17 +182,14 @@ const MeasurementData = () => {
   const resetCastData = () => {
     setResetCastChart(true);
     setCastData(defaultCastData);
+    handleXBrushEnd(0, 0, true);
   };
 
   return (
     <div className="flex flex-col">
       <AnkerMenu ankers={MeasurementAnkerTitles} />
       <div className="flex flex-col md:flex-row gap-0 md:gap-4">
-        <DeploymentSelection
-          setAppliedData={setAppliedData}
-          deployment={dataStore.selectedColumn.deployment_id}
-          logger={dataStore.selectedColumn.logger_id}
-        />
+        <DeploymentSelection setAppliedData={setAppliedData} />
         <Metadata tableData={tableData} />
       </div>
 
@@ -190,12 +210,13 @@ const MeasurementData = () => {
           threshold={threshold}
           windowHalfSize={windowHalfSize}
           brushSync={brushSync}
+          setCastChartParameter={setCastChartParameter}
         ></ChartLayout>
       </CardWraper>
       <CardWraper text="Parameter over depth" hasMap={false} id={MeasurementAnkers.ParameterOverDepth}>
         {parameterDataForDeployment && !dataLoading && parameterDataForDeployment.length !== 0 && <ZoomLegend />}
         <CastChartLayout
-          parameterData={parameterDataForDeployment as ParameterDataForDeployment[]}
+          parameterData={castChartParameter as ParameterDataForDeployment[]}
           width={chartWidth}
           dataLoading={dataLoading}
           castData={castData}
@@ -211,9 +232,9 @@ const MeasurementData = () => {
         ></CastChartLayout>
       </CardWraper>
       <CardWraper text={"Track"} hasMap={true} id={MeasurementAnkers.Track}>
-        <OceanMap ref={oceanMapRef} type={MapType.route} data={trackData} />
+        <DynamicMapWrapper key={deployment + "-" + logger} ref={oceanMapRef} type={MapType.route} data={trackData} />
       </CardWraper>
-      <div className="flex justify-center">
+      <div className="flex justify-center mb-4">
         <Button text={"Export plots"} onClick={exportMap} />
       </div>
     </div>

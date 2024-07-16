@@ -1,6 +1,6 @@
 import { MapType, OverviewAnkers } from "@/frontend/enum";
 import React, { useCallback, useEffect, useState } from "react";
-import OceanMap from "../map/Map";
+
 import MeasurementSelection from "../overview/MeasurementSelection";
 import TableWrapper from "../table/TableWrapper";
 import CardWrapper from "../wrapper/CardWrapper";
@@ -12,6 +12,10 @@ import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { useStore } from "@/frontend/store";
 import { OverviewDeploymentTrackData, Region, SwitchTableData } from "@/frontend/types";
 import { observer } from "mobx-react-lite";
+import dynamic from "next/dynamic";
+const OceanMap = dynamic(() => import("../map/Map"), {
+  ssr: false,
+});
 
 const Overview = () => {
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
@@ -32,7 +36,7 @@ const Overview = () => {
       startDate || undefined,
       endDate || undefined
     );
-    const completeArray = res.map((obj: OverviewDeploymentTrackData) => {
+    const completeArray = res.map((obj: SwitchTableData) => {
       return { ...obj, showInMap: true };
     });
     setOverviewDeploymentTrackData(completeArray);
@@ -66,7 +70,7 @@ const Overview = () => {
       )}
       <div className="flex flex-col">
         <AnkerMenu ankers={OverviewAnkerTitles} />
-        <div className="flex flex-col md:flex-row gap-0 md:gap-4">
+        <div className="flex flex-col md:flex-row gap-0 md:gap-4 ">
           <MeasurementSelection
             setStartDate={setStartDate}
             setEndDate={setEndDate}

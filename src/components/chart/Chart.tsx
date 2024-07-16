@@ -19,6 +19,7 @@ interface ChartProps {
   yAxisTitle: string;
   dataObj: ParameterDataForDeployment;
   brushSync: boolean;
+  sensor_id: number;
 }
 
 const Chart = ({
@@ -32,6 +33,7 @@ const Chart = ({
   dataObj,
   onLoggerChange,
   brushSync,
+  sensor_id,
 }: ChartProps) => {
   const [xBrushEnd, setXBrushEnd] = useState<number[]>([brushValue[0], brushValue[1]]);
   const [yBrushEnd, setYBrushEnd] = useState<number[]>([]);
@@ -54,14 +56,10 @@ const Chart = ({
     const svgElement = d3.select(axesRef.current).attr("class", "chart" + yAxisTitle);
     svgElement.selectAll("*").remove();
 
-    const logger = d3.group(
-      data,
-      (d) => d.measuring_time,
-      (d) => d.value
-    );
     // X axis
-    const xMin = new Date(dataObj.time_start);
-    const xMax = new Date(dataObj.time_end);
+    const xMin = new Date(dataObj.time_start || "");
+    const xMax = new Date(dataObj.time_end || "");
+
     const xScale = d3
       .scaleTime() // change to time scale when working with actual time data
       .domain(xBrushEnd[0] === 0 ? [xMin, xMax] : [xBrushEnd[0], xBrushEnd[1]])
@@ -87,14 +85,14 @@ const Chart = ({
 
     const yScale = d3
       .scaleLinear()
-      .domain(yBrushEnd.length === 0 ? [min || 0, max || 0] : [yBrushEnd[0], yBrushEnd[1]])
-      .nice()
+      .domain(yBrushEnd.length === 0 ? [min, max] : [yBrushEnd[0], yBrushEnd[1]])
+
       .range([boundsHeight, 0]);
 
     const maxTickWidth = 50;
     const numberOfTicksX = Math.floor(boundsWidth / maxTickWidth);
     // x axis generator
-    const xAxisGenerator = d3.axisBottom(xScale).ticks(6);
+    const xAxisGenerator = d3.axisBottom(xScale).ticks(numberOfTicksX);
     svgElement
       .append("g")
       .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top + boundsHeight})`)
@@ -148,7 +146,7 @@ const Chart = ({
     const areaBuilder = d3
       .area<DiagramDataForParameterAndDeployment>()
       .x((d) => xScale(d.measuring_time))
-      .y0(yScale(1) < 0 ? -yScale(1) : yScale(1))
+      .y0(yScale(0))
       .y1((d) => yScale(Number(d.value)))
       .curve(d3.curveBasis);
 
@@ -292,7 +290,6 @@ const Chart = ({
       .attr("y2", "1");
 
     linearGradient.append("stop").attr("offset", "0%").style("stop-color", "steelblue");
-
     linearGradient.append("stop").attr("offset", "100%").style("stop-color", "white");
 
     //axis text anchors
@@ -323,7 +320,7 @@ const Chart = ({
     <div id="chartContainer" className="flex-auto inline-block">
       <div className="pl-1 text-sm text-danube-600 font-semibold">{ChartTitle[title]}</div>
       <svg
-        id={title + "-chart"}
+        id={title !== "pressure" ? title + "-" + sensor_id + "-chart" : "pressure-chart"}
         ref={axesRef}
         width={width}
         height={300}

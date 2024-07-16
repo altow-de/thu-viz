@@ -30,7 +30,7 @@ const DatePicker = ({
   }, [resetTriggered]);
 
   return (
-    <div className="mb-4 w-full z-20">
+    <div className="mb-4 w-full">
       <Datepicker
         useRange={false}
         disabled={startDate === null}

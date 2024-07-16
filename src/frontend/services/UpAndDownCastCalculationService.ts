@@ -2,7 +2,7 @@ import { getDepthFromPressure } from "../utils";
 
 export interface DataPoint {
   pressure: number;
-  measuring_time: Date; // oder eine andere passende Repräsentation für Zeit in Ihrer Umgebung
+  measuring_time: Date;
   speed_down_av?: number;
   speed_down?: number;
   threshold_exceeded_down?: boolean;
@@ -74,7 +74,7 @@ export class UpAndDownCastCalculationService {
         (new Date(this.data[iEnd]?.measuring_time).getTime() - new Date(this.data[iBegin]?.measuring_time).getTime()) /
         1000; // Umwandlung in Sekunden
 
-      this.data[i].speed_down_av = dt > 0 ? dDepth / dt : 0; // Vermeiden Sie Division durch Null
+      this.data[i].speed_down_av = dt > 0 ? dDepth / dt : 0; // Vermeiden Division durch Null
       this.data[i].depth = Number(getDepthFromPressure(this.data[i]?.pressure).val);
     }
   }
@@ -117,7 +117,6 @@ export class UpAndDownCastCalculationService {
         currentLength++;
       } else {
         // Überprüfe, ob die aktuelle Sequenz die längste ist
-
         if (currentLength > maxLength) {
           maxLength = currentLength;
           endIndex = cast?.[i - 1]?.index; // Ende der längsten Sequenz

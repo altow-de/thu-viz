@@ -9,6 +9,12 @@ export interface MapStyleProps {
   setSelectedStyle: (selectedStyle: string) => void;
 }
 
+/**
+ * MapStyle component.
+ *
+ * @param {string} selectedStyle - The currently selected map style.
+ * @param {function} setSelectedStyle - Function to update the selected map style.
+ */
 const MapStyle = ({ selectedStyle, setSelectedStyle }: MapStyleProps) => {
   const [windowWidth, setWindowWidth] = useState<number>(0);
   const [visible, setVisible] = useState<boolean>(false);
@@ -17,6 +23,9 @@ const MapStyle = ({ selectedStyle, setSelectedStyle }: MapStyleProps) => {
     setVisible(windowWidth > 640);
   }) as LegacyRef<HTMLDivElement>;
 
+  /**
+   * Handles window resize events.
+   */
   const handleResize = () => {
     const width = window?.innerWidth;
     setWindowWidth(width);
@@ -24,15 +33,16 @@ const MapStyle = ({ selectedStyle, setSelectedStyle }: MapStyleProps) => {
   };
 
   useEffect(() => {
-    //initial after rendering
+    // Initial resize handling after rendering
     handleResize();
-    // add event listener for resize event
+    // Add event listener for resize event
     window?.addEventListener("resize", handleResize);
-    // cleanup
+    // Cleanup event listener
     return () => {
       window?.removeEventListener("resize", handleResize);
     };
   }, []);
+
   return (
     <div
       className={`absolute bg-white w-auto h-auto right-0 top-4 z-10 rounded-l-lg p-2 text-sm flex shadow-md flex-col hover:shadow-lg ${

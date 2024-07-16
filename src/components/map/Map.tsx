@@ -16,13 +16,13 @@ import { TrackData } from "@/backend/services/ProcessedValueService";
 import { OverviewDeploymentTrackData, Region, SwitchTableData } from "@/frontend/types";
 import MapStyle from "./MapStyle";
 import { getDepthFromPressure } from "@/frontend/utils";
+
 export interface OceanMapProps {
   type: MapType;
   data?: TrackData[] | OverviewDeploymentTrackData[];
   region?: Region;
   forwardedRef?: any;
 }
-
 type TrackObj = {
   coordinates: number[][];
   info: {
@@ -34,6 +34,14 @@ type TrackObj = {
   };
 };
 
+/**
+ * OceanMap component.
+ *
+ * @param {MapType} type - Specifies the type of the map to be displayed (route or point).
+ * @param {TrackData[] | OverviewDeploymentTrackData[]} [data] - The data to be displayed on the map.
+ * @param {Region} [region] - The region to be highlighted on the map.
+ * @param {any} [forwardedRef] - A forwarded ref to access the map functions.
+ */
 const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
   const mapContainer = useRef(null);
   const map = useRef<Map | null>(null);
@@ -45,15 +53,18 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     lng: 12.08402,
     zoom: 10,
   };
-  const extractCoordinates = (obj: TrackData | OverviewDeploymentTrackData) => {
-    // Versuch, die Koordinaten aus dem ersten Datenelement zu extrahieren
 
+  /**
+   * Extracts coordinates from the data object.
+   * @param {TrackData | OverviewDeploymentTrackData} obj - The data object.
+   * @returns {object} - The extracted coordinates.
+   */
+  const extractCoordinates = (obj: TrackData | OverviewDeploymentTrackData) => {
     const firstDataItem = obj;
-    let lng = initialState.lng; // Standardwert für Längengrad
-    let lat = initialState.lat; // Standardwert für Breitengrad
+    let lng = initialState.lng; // Default longitude
+    let lat = initialState.lat; // Default latitude
 
     if (firstDataItem) {
-      // Versuch, Längen- und Breitengrad aus den verschiedenen Datenstrukturen zu extrahieren
       lng =
         (firstDataItem as TrackData)?.position?.x ||
         (firstDataItem as OverviewDeploymentTrackData)?.position_start?.x ||
@@ -66,6 +77,12 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
 
     return { lng, lat };
   };
+
+  /**
+   * Creates an object with track data.
+   * @param {TrackData | OverviewDeploymentTrackData} obj - The data object.
+   * @returns {object} - The track data object.
+   */
   const getTrackDataObj = (obj: TrackData | OverviewDeploymentTrackData) => {
     const trackDataObj = obj as TrackData;
     const deploymentTrackDataObj = obj as SwitchTableData;
@@ -88,6 +105,9 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     };
   };
 
+  /**
+   * Generates track data for the map.
+   */
   const trackData =
     data && data.length > 0
       ? data?.map((trackObj: TrackData | OverviewDeploymentTrackData) => {
@@ -97,12 +117,18 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
         })
       : [];
 
+  /**
+   * Changes the map style.
+   * @param {string} mapStyle - The new map style.
+   */
   const onMapStyleChange = (mapStyle: string) => {
     setMapStyle(mapStyle);
   };
 
+  /**
+   * Handles popups on the map.
+   */
   const handlePopUps = () => {
-    // Create a popup, but don't add it to the map yet.
     if (!map.current) return;
     const popup = new Popup({
       closeButton: false,
@@ -116,7 +142,6 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
           features?: MapGeoJSONFeature[];
         }
       ) => {
-        // Change the cursor style as a UI indicator.
         if (!map.current) return;
         map.current.getCanvas().style.cursor = "pointer";
         const feature: GeoJSONFeature = e?.features?.[0] as GeoJSONFeature;
@@ -131,15 +156,10 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
 
         const html = `<div>${htmlString.join("")}</div>`;
 
-        // Ensure that if the map is zoomed out such that multiple
-        // copies of the feature are visible, the popup appears
-        // over the copy being pointed to.
         while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
           coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
         }
 
-        // Populate the popup and set its coordinates
-        // based on the feature found.
         popup
           .setLngLat(coordinates as unknown as LngLat)
           .setHTML(html)
@@ -154,6 +174,9 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     });
   };
 
+  /**
+   * Handles image loading for the map.
+   */
   const handleImages = () => {
     map.current?.loadImage("circle.png", (error, image) => {
       if (error || !image) throw error;
@@ -180,8 +203,7 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
   };
 
   /**
-   * Function to handle adding the map source.
-   * @function
+   * Adds the map source.
    */
   const handleSource = async () => {
     if (!map.current?.getSource("openseamap-source")) {
@@ -251,7 +273,6 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
   const addRouteLayer = () => {
     if (map.current?.getLayer("route")) map.current?.removeLayer("route");
 
-    //Route Layer
     if (!map.current?.getLayer("route")) {
       map.current?.addLayer({
         ...LayerZoom,
@@ -270,9 +291,8 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     }
     addPointLayer("circle_point");
   };
-  const addPointLayer = (image: string) => {
-    //Point Layer
 
+  const addPointLayer = (image: string) => {
     if (map.current?.getLayer("route-point")) map.current?.removeLayer("route-point");
     if (!map.current?.getLayer("route-point")) {
       map.current?.addLayer({
@@ -286,6 +306,9 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     }
   };
 
+  /**
+   * Handles the region layer on the map.
+   */
   const handleRegionLayer = () => {
     if (!region) {
       if (map.current?.getLayer("region")) {
@@ -296,7 +319,7 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     const features = region.coordinates.map((polygon) => {
       return {
         type: "Feature",
-        properties: {}, // Zusätzliche Eigenschaften für das Feature
+        properties: {},
         geometry: {
           type: "Polygon",
           coordinates: polygon,
@@ -331,8 +354,7 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
   };
 
   /**
-   * Function to handle adding the map layer.
-   * @function
+   * Handles adding the map layer.
    */
   const handleLayer = () => {
     handleSource();
@@ -353,6 +375,10 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     exportMapAsPNG,
   }));
 
+  /**
+   * Exports the map as PNG.
+   * @param {function} callback - The callback function to handle the PNG blob.
+   */
   const exportMapAsPNG = (callback: (blob: any) => void) => {
     if (!map.current) return;
 
@@ -384,7 +410,7 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
       handlePopUps();
     });
   }, [mapStyle]);
-  // Effect to initialize the map
+
   useEffect(() => {
     if (!mapContainer?.current) return;
 
@@ -433,7 +459,6 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     });
   }, [data, region]);
 
-  // Effect to initialize the map
   useEffect(() => {
     map?.current?.on("load", async function () {
       handleRegionLayer();
@@ -454,4 +479,5 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     </div>
   );
 };
+
 export default OceanMap;

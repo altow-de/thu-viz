@@ -4,10 +4,26 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "@/frontend/store";
 import DatabaseErrorComponent from "../pages/DatabaseError";
 
+/**
+ * Header component.
+ *
+ * This component renders the header section of the application, including the navigation bar and the error message component.
+ *
+ * @param {Object} props - The component props.
+ * @param {string} props.selectedNav - The currently selected navigation item.
+ * @param {Function} props.setSelectedNav - The function to set the selected navigation item.
+ * @returns {JSX.Element} The Header component.
+ */
 const Header = ({ selectedNav, setSelectedNav }: NavProps) => {
   const { data: dataStore } = useStore();
   const [errorTimer, setErrorTimer] = useState<number | null>(null);
 
+  /**
+   * Effect to handle error message timeout.
+   *
+   * This effect sets a timeout to clear the error message after 5 seconds.
+   * It also cleans up the timeout when the component is unmounted or when the error changes.
+   */
   useEffect(() => {
     if (dataStore.error !== null) {
       const timerId = setTimeout(() => {
@@ -35,4 +51,5 @@ const Header = ({ selectedNav, setSelectedNav }: NavProps) => {
     </div>
   );
 };
+
 export default observer(Header);

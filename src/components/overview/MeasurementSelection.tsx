@@ -22,6 +22,20 @@ interface MeasurementSelectionProps {
   applyClicked: boolean;
 }
 
+/**
+ * MeasurementSelection component.
+ *
+ * This component allows the user to select measurement data based on time range, vessel, and region.
+ *
+ * @param {Object} props - The component props.
+ * @param {Function} props.setStartDate - Function to set the start date.
+ * @param {Function} props.setEndDate - Function to set the end date.
+ * @param {Function} props.setRegion - Function to set the selected region.
+ * @param {Function} props.setPlatform - Function to set the selected platform.
+ * @param {Function} props.setApplyClicked - Function to handle the apply button click state.
+ * @param {boolean} props.applyClicked - State to track if apply button was clicked.
+ * @returns {JSX.Element} The MeasurementSelection component.
+ */
 const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
   setEndDate,
   setStartDate,
@@ -37,16 +51,29 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
   const [selectedRegion, setSelectedRegion] = useState<number>(-1);
   const [resetTriggered, setResetTriggered] = useState<boolean>(false);
 
+  /**
+   * Handles the selection of a region.
+   *
+   * @param {React.ChangeEvent<HTMLSelectElement>} e - The change event.
+   */
   const selectRegion = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = Number(e.target.value);
     setSelectedRegion(selected);
   };
 
+  /**
+   * Handles the selection of a platform.
+   *
+   * @param {React.ChangeEvent<HTMLSelectElement>} e - The change event.
+   */
   const selectPlatform = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = Number(e.target.value);
     setSelectedPlatform(selected);
   };
 
+  /**
+   * Fetches the platforms combined with vessels.
+   */
   const getPlatforms = useCallback(async () => {
     const data = await platformService.getPlatformsCombinedWithVessels();
     setPlatforms(data);
@@ -66,6 +93,9 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
     endDate: null,
   });
 
+  /**
+   * Handles the apply button click event.
+   */
   const onApplyClicked = () => {
     if (dateFrom?.startDate) {
       const date = new Date(dateFrom?.startDate);
@@ -85,6 +115,7 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
     setRegion(regions[selectedRegion]);
     setApplyClicked(!applyClicked);
   };
+
   return (
     <div className="basis-full md:basis-1/3">
       <CardWrapper text={"Selection of measurement data"} hasMap={false} id={OverviewAnkers.MeasurementSelection}>

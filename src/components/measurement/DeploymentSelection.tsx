@@ -12,6 +12,11 @@ import { useStore } from "@/frontend/store";
 import EmptyDropdown from "../basic/EmptyDropdown";
 import { observer } from "mobx-react-lite";
 
+/**
+ * DeploymentSelection component.
+ *
+ * @param {function} setAppliedData - Function to set the applied deployment and logger data.
+ */
 interface DeploymentSelectionProps {
   setAppliedData: (deployment: number, logger: number) => void;
 }
@@ -24,6 +29,10 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [selectedLogger, setSelectedLogger] = useState<number>(-1);
   const [selectedDeployment, setSelectedDeployment] = useState<number>(-1);
+
+  /**
+   * Set initial selected logger and deployment if available in the store.
+   */
   useEffect(() => {
     if (dataStore.selectedColumn.deployment_id > -1 && dataStore.selectedColumn.logger_id > -1) {
       setAppliedData(dataStore.selectedColumn.deployment_id, dataStore.selectedColumn.logger_id);
@@ -31,35 +40,53 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
     }
   }, []);
 
+  /**
+   * Handles the apply button click to set the selected deployment and logger.
+   */
   const onApplyClick = () => {
     setAppliedData(selectedDeployment, selectedLogger);
   };
 
+  /**
+   * Resets the deployment state.
+   */
   const resetDeployments = () => {
     setDeployments([]);
     setSelectedDeployment(-1);
   };
 
+  /**
+   * Handles the selection of a logger.
+   *
+   * @param {React.ChangeEvent<HTMLSelectElement>} e - The change event from the dropdown.
+   */
   const selectLogger = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedDeployment(-1);
     const selected = Number(e.target.value);
     setSelectedLogger(selected > -1 ? loggers[selected].logger_id : -1);
   };
 
+  /**
+   * Handles the selection of a deployment.
+   *
+   * @param {React.ChangeEvent<HTMLSelectElement>} e - The change event from the dropdown.
+   */
   const selectDeployment = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = Number(e.target.value);
     setSelectedDeployment(selected > -1 ? deployments[selected].deployment_id : -1);
   };
 
+  /**
+   * Fetches loggers with deployments from the service.
+   */
   const getLoggersWithDeployments = useCallback(async () => {
     const data = await loggerService.getLoggersWithDeployments();
     setLoggers(data);
   }, []);
 
-  useEffect(() => {
-    getLoggersWithDeployments();
-  }, [getLoggersWithDeployments]);
-
+  /**
+   * Fetches deployments for the selected logger.
+   */
   const getDeploymentsByLogger = useCallback(async () => {
     resetDeployments();
     if (selectedLogger === -1) {
@@ -67,14 +94,26 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
     }
     setSelectedDeployment(-1);
     const data = await deploymentService.getDeploymentsByLogger(selectedLogger);
-
     setDeployments(data);
   }, [selectedLogger]);
 
+  /**
+   * Effect to fetch loggers with deployments on component mount.
+   */
+  useEffect(() => {
+    getLoggersWithDeployments();
+  }, [getLoggersWithDeployments]);
+
+  /**
+   * Effect to fetch deployments when a logger is selected.
+   */
   useEffect(() => {
     getDeploymentsByLogger();
   }, [getDeploymentsByLogger]);
 
+  /**
+   * Effect to set the selected deployment from the store when deployments are fetched.
+   */
   useEffect(() => {
     if (dataStore.selectedColumn.deployment_id > -1 && deployments.length > 0) {
       setSelectedDeployment(dataStore.selectedColumn.deployment_id);

@@ -9,12 +9,26 @@ interface AnkerMenuProps {
   ankers: Anker[];
 }
 
+/**
+ * AnkerMenu component.
+ *
+ * This component renders a menu that allows the user to scroll to different sections of the page.
+ *
+ * @param {Object} props - The component props.
+ * @param {Anker[]} props.ankers - The list of anker objects containing id and title.
+ * @returns {JSX.Element} The AnkerMenu component.
+ */
 const AnkerMenu = ({ ankers }: AnkerMenuProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const ref = useClickAway(() => {
     setOpen(false);
   }) as LegacyRef<HTMLDivElement>;
 
+  /**
+   * Scrolls the view to the element with the specified ID.
+   *
+   * @param {string} id - The ID of the element to scroll to.
+   */
   const scrollToId = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -26,6 +40,13 @@ const AnkerMenu = ({ ankers }: AnkerMenuProps) => {
     }
   };
 
+  /**
+   * Creates a menu entry.
+   *
+   * @param {string} id - The ID of the element to scroll to when the menu entry is clicked.
+   * @param {string} [title] - The title of the menu entry.
+   * @returns {JSX.Element} The menu entry component.
+   */
   const menuEntry = (id: string, title?: string) => {
     return (
       <div
@@ -41,12 +62,12 @@ const AnkerMenu = ({ ankers }: AnkerMenuProps) => {
   return (
     <div ref={ref} className={`fixed text-xs z-50 text-white block md:hidden cursor-pointer top-40 right-0`}>
       {!open && (
-        <div className="w-auto h-auto  p-2 flex shadow-md bg-danube-600 rounded-l-full" onClick={() => setOpen(true)}>
+        <div className="w-auto h-auto p-2 flex shadow-md bg-danube-600 rounded-l-full" onClick={() => setOpen(true)}>
           <MenuIcon />
         </div>
       )}
       {open && (
-        <div className="w-full max-w-78 flex flex-row ">
+        <div className="w-full max-w-78 flex flex-row">
           <div className="color-white rounded-l-full p-3 bg-danube-600 w-12 h-12 shadow-md">
             <Close onClick={() => setOpen(false)} style="hover:text-danube-200" />
           </div>

@@ -17,7 +17,15 @@ const OceanMap = dynamic(() => import("../map/Map"), {
   ssr: false,
 });
 
-const Overview = () => {
+/**
+ * Overview component.
+ *
+ * This component provides an overview of selected measurement data,
+ * including a measurement selection, a table of deployment data, and a map of track data.
+ *
+ * @returns {JSX.Element} The Overview component.
+ */
+const Overview = (): JSX.Element => {
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
   const [overviewDeploymentTrackData, setOverviewDeploymentTrackData] = useState<SwitchTableData[]>([]);
   const { data: dataStore } = useStore();
@@ -29,6 +37,10 @@ const Overview = () => {
   const [applyClicked, setApplyClicked] = useState<boolean>(false);
   const [trackData, setTrackData] = useState<OverviewDeploymentTrackData[]>([]);
 
+  /**
+   * Retrieves the overview deployment data by time, platform, and region.
+   * Sets the deployment track data and updates the data store.
+   */
   const getOverviewDeploymentDataByTimePlatformAndRegion = useCallback(async () => {
     const res = await deploymentService.getOverviewDeploymentDataByTimePlatformAndRegion(
       region || undefined,
@@ -92,4 +104,5 @@ const Overview = () => {
     </div>
   );
 };
+
 export default observer(Overview);

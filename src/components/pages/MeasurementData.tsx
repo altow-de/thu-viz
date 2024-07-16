@@ -18,7 +18,15 @@ import { convertChartToPNG, createAndDownloadZip } from "@/frontend/utils";
 import ZoomLegend from "../chart/ZoomLegend";
 import DynamicMapWrapper from "../map/DynamicMapWrapper";
 
-const MeasurementData = () => {
+/**
+ * MeasurementData component.
+ *
+ * This component is responsible for displaying the measurement data including deployment selection,
+ * metadata, charts, and a map with the track data.
+ *
+ * @returns {JSX.Element} The MeasurementData component.
+ */
+const MeasurementData = (): JSX.Element => {
   const { data: dataStore } = useStore();
   const [windowHalfSize, setWindowHalfSize] = useState<number>(DefaultWindowHalfSite);
   const [threshold, setThreshold] = useState<number>(DefaultThreshold);
@@ -28,9 +36,7 @@ const MeasurementData = () => {
   const [chartWidth, setChartWidth] = useState(window.innerWidth > 370 ? 300 : window.innerWidth - 70);
   const [castData, setCastData] = useState<{ [key: string]: CastData }>({});
   const [castChartParameter, setCastChartParameter] = useState<ParameterDataForDeployment[]>();
-  const [defaultCastData, setDefaultCastData] = useState<{
-    [key: string]: CastData;
-  }>({});
+  const [defaultCastData, setDefaultCastData] = useState<{ [key: string]: CastData }>({});
   const [xBrush, setXBrush] = useState<number[]>([0, 0]);
   const [yBrush, setYBrush] = useState<number[]>([0, 0]);
   const [brushSync, setBrushSync] = useState<boolean>(false);
@@ -39,7 +45,6 @@ const MeasurementData = () => {
   const oceanMapRef = useRef(null);
 
   const [exportChartIDs, setExportChartIDs] = useState<string[]>([]);
-
   const [parameterDataForDeployment, setParameterDataForDeployment] = useState<
     ParameterDataForDeployment[] | undefined
   >(undefined);
@@ -48,11 +53,19 @@ const MeasurementData = () => {
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
   const processedValueService: ProcessedValueService = new ProcessedValueService(dataStore);
 
+  /**
+   * Sets the sensitivity values for threshold and window half size.
+   * @param {number} threshold - The threshold value.
+   * @param {number} windowHalfSize - The window half size value.
+   */
   const setSensitivityValues = (threshold: number, windowHalfSize: number) => {
     setThreshold(threshold);
     setWindowHalfSize(windowHalfSize);
   };
 
+  /**
+   * Exports the map and charts as PNG images and creates a ZIP file for download.
+   */
   const exportMap = () => {
     let blobs: any[] = [];
 
@@ -79,6 +92,9 @@ const MeasurementData = () => {
     }
   };
 
+  /**
+   * Handles window resize event to adjust the chart width.
+   */
   useEffect(() => {
     const handleResize = () => {
       setChartWidth(window.innerWidth > 370 ? 300 : window.innerWidth - 50);
@@ -90,6 +106,11 @@ const MeasurementData = () => {
     };
   }, []);
 
+  /**
+   * Sets the deployment and logger IDs and retrieves the relevant data.
+   * @param {number} deployment - The deployment ID.
+   * @param {number} logger - The logger ID.
+   */
   const setAppliedData = useCallback(
     async (deployment: number, logger: number) => {
       setDeployment(deployment);
@@ -132,6 +153,9 @@ const MeasurementData = () => {
     [setDeployment, setLogger]
   );
 
+  /**
+   * Retrieves the deployment data by ID.
+   */
   const getDeploymentById = useCallback(async () => {
     if (!deployment || deployment === -1) {
       setTableData(undefined);
@@ -148,6 +172,12 @@ const MeasurementData = () => {
     getDeploymentById();
   }, [getDeploymentById]);
 
+  /**
+   * Handles the end of the x-axis brush selection.
+   * @param {number} x0 - The start value of the brush selection.
+   * @param {number} x1 - The end value of the brush selection.
+   * @param {boolean} brushSync - Flag indicating if the brush should be synchronized.
+   */
   const handleXBrushEnd = (x0: number = 0, x1: number = 0, brushSync: boolean) => {
     setXBrush([x0, x1]);
 
@@ -165,20 +195,33 @@ const MeasurementData = () => {
           new Date(dataPoint.measuring_time).getTime() <= endDate.getTime()
         );
       });
-      acc[key] = { ...castData[key], data: dataPoints }; // Behalten Sie die Struktur bei, aber aktualisieren Sie die Daten
+      acc[key] = { ...castData[key], data: dataPoints };
       return acc;
     }, {});
     setCastData(filteredData);
     setResetCastChart(true);
   };
+
+  /**
+   * Handles the end of the y-axis brush selection.
+   * @param {number} y1 - The start value of the brush selection.
+   * @param {number} y0 - The end value of the brush selection.
+   */
   const handleYBrushEnd = (y1: number = 0, y0: number = 0) => {
     setYBrush([y1, y0]);
   };
 
+  /**
+   * Handles the brush synchronization state.
+   * @param {boolean} brushSync - The brush synchronization state.
+   */
   const handleBrushSync = (brushSync: boolean) => {
     setBrushSync(brushSync);
   };
 
+  /**
+   * Resets the cast data to its default state.
+   */
   const resetCastData = () => {
     setResetCastChart(true);
     setCastData(defaultCastData);

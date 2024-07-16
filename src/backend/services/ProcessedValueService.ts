@@ -5,11 +5,22 @@ import { DatabaseError } from "./DatabaseError";
 import { ProcessedValueHasRawValue } from "../entities";
 import { sql } from "kysely";
 
+/**
+ * Service class for handling processed value-related operations.
+ */
 export class ProcessedValueService extends BackendDbService {
   constructor() {
     super("ProcessedValue");
   }
 
+  /**
+   * Retrieves diagram data for a specific parameter and deployment.
+   * @param {number} logger_id - The ID of the logger.
+   * @param {number} deployment_id - The ID of the deployment.
+   * @param {number} sensor_type_id - The ID of the sensor type.
+   * @returns {Promise<any[]>} - A promise that resolves with the diagram data.
+   * @throws {DatabaseError | EmptyDatabaseResult} - Throws an error if the database operation fails or no data is found.
+   */
   async getDiagramDataForParameterAndDeployment(logger_id: number, deployment_id: number, sensor_type_id: number) {
     try {
       // First retrieve sensor IDs associated with the parameter to optimize the query execution speed.
@@ -101,6 +112,13 @@ export class ProcessedValueService extends BackendDbService {
     }
   }
 
+  /**
+   * Retrieves parameter data for a specific deployment.
+   * @param {number} logger_id - The ID of the logger.
+   * @param {number} deployment_id - The ID of the deployment.
+   * @returns {Promise<any[]>} - A promise that resolves with the parameter data.
+   * @throws {DatabaseError | EmptyDatabaseResult} - Throws an error if the database operation fails or no data is found.
+   */
   async getParameterDataForDeployment(logger_id: number, deployment_id: number) {
     try {
       const sensors = await db
@@ -112,7 +130,6 @@ export class ProcessedValueService extends BackendDbService {
       const sensor_ids = sensors.map((sensor) => sensor.sensor_id);
 
       const sensorDataAggregation = db
-
         .selectFrom("RawValue as rawValue")
         .leftJoin("ProcessedValueHasRawValue as linkTable", (join) =>
           join
@@ -194,6 +211,13 @@ export class ProcessedValueService extends BackendDbService {
     }
   }
 
+  /**
+   * Retrieves track data for a specific logger and deployment.
+   * @param {number} logger_id - The ID of the logger.
+   * @param {number} deployment_id - The ID of the deployment.
+   * @returns {Promise<any[]>} - A promise that resolves with the track data.
+   * @throws {DatabaseError | EmptyDatabaseResult} - Throws an error if the database operation fails or no data is found.
+   */
   async getTrackDataByLoggerAndDeployment(logger_id: number, deployment_id: number) {
     try {
       const sensors = await db
@@ -205,7 +229,6 @@ export class ProcessedValueService extends BackendDbService {
       const sensor_ids = sensors.map((sensor) => sensor.sensor_id);
 
       const sensorDataAggregation = db
-
         .selectFrom("RawValue as rawValue")
         .leftJoin("ProcessedValueHasRawValue as linkTable", (join) =>
           join
@@ -265,7 +288,6 @@ export class ProcessedValueService extends BackendDbService {
         .innerJoin("Sensor", "Sensor.sensor_id", "sensorData.sensor_id")
         .innerJoin("SensorType", "Sensor.sensor_type_id", "SensorType.sensor_type_id")
         .where(sql`ST_AsText(processedData.position)`, "!=", "POINT(-999 -999)")
-
         .orderBy("processedData.processing_time", "desc")
         .groupBy("processedData.position")
         .select([
@@ -282,12 +304,21 @@ export class ProcessedValueService extends BackendDbService {
   }
 }
 
+/**
+ * Type representing parameter data for a specific deployment.
+ */
 export type ParameterDataForDeployment = Awaited<
   ReturnType<ProcessedValueService["getParameterDataForDeployment"]>
 >[number];
 
+/**
+ * Type representing diagram data for a specific parameter and deployment.
+ */
 export type DiagramDataForParameterAndDeployment = Awaited<
   ReturnType<ProcessedValueService["getDiagramDataForParameterAndDeployment"]>
 >[number];
 
+/**
+ * Type representing track data for a specific logger and deployment.
+ */
 export type TrackData = Awaited<ReturnType<ProcessedValueService["getTrackDataByLoggerAndDeployment"]>>[number];

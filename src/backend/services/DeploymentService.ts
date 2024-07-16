@@ -5,11 +5,22 @@ import { Region } from "@/frontend/types";
 import { format } from "date-fns";
 import { isValidDate } from "@/frontend/utils";
 
+/**
+ * Service class for handling deployment-related operations.
+ */
 export class DeploymentService extends BackendDbService {
   constructor() {
     super("Deployment");
   }
 
+  /**
+   * Retrieves deployment data based on time range, platform ID, and region.
+   * @param {Date} [time_start] - The start time for the query.
+   * @param {Date} [time_end] - The end time for the query.
+   * @param {number} [platform_id] - The ID of the platform.
+   * @param {Region} [region] - The region for the query.
+   * @returns {Promise<any[]>} - A promise that resolves with the list of deployments.
+   */
   async getOverviewDeploymentDataByTimePlatformAndRegion(
     time_start?: Date,
     time_end?: Date,
@@ -103,12 +114,12 @@ export class DeploymentService extends BackendDbService {
         const conditions = [];
 
         if (isValidDate(time_start)) {
-          const formatedStartDate = format(time_start as Date, "yyyy-MM-dd HH:mm:ss");
-          conditions.push(eb("Deployment.time_start", ">=", formatedStartDate as unknown as Date));
+          const formattedStartDate = format(time_start as Date, "yyyy-MM-dd HH:mm:ss");
+          conditions.push(eb("Deployment.time_start", ">=", formattedStartDate as unknown as Date));
         }
         if (isValidDate(time_end)) {
-          const formatedEndDate = format(time_end as Date, "yyyy-MM-dd HH:mm:ss");
-          conditions.push(eb("Deployment.time_end", "<=", formatedEndDate as unknown as Date));
+          const formattedEndDate = format(time_end as Date, "yyyy-MM-dd HH:mm:ss");
+          conditions.push(eb("Deployment.time_end", "<=", formattedEndDate as unknown as Date));
         }
         if (logger_ids?.length > 0) {
           conditions.push(eb("Deployment.logger_id", "in", logger_ids));
@@ -125,6 +136,11 @@ export class DeploymentService extends BackendDbService {
     return result;
   }
 
+  /**
+   * Retrieves deployments for a specific logger.
+   * @param {number} logger_id - The ID of the logger.
+   * @returns {Promise<any[]>} - A promise that resolves with the list of deployments.
+   */
   async getDeploymentsByLogger(logger_id: number) {
     const result = await db
       .selectFrom("Deployment")
@@ -142,6 +158,12 @@ export class DeploymentService extends BackendDbService {
     return result;
   }
 
+  /**
+   * Retrieves a specific deployment by logger ID and deployment ID.
+   * @param {number} logger_id - The ID of the logger.
+   * @param {number} deployment_id - The ID of the deployment.
+   * @returns {Promise<any>} - A promise that resolves with the deployment details.
+   */
   async getDeploymentById(logger_id: number, deployment_id: number) {
     const result = await db
       .selectFrom("Deployment")

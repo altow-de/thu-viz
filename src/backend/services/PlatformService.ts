@@ -3,11 +3,19 @@ import { db } from "../db";
 import { BackendDbService } from "./BackendDbService";
 import { DatabaseError } from "./DatabaseError";
 
+/**
+ * Service class for handling platform-related operations.
+ */
 export class PlatformService extends BackendDbService {
   constructor() {
     super("Platform");
   }
 
+  /**
+   * Retrieves platforms combined with vessels.
+   * @returns {Promise<any[]>} - A promise that resolves with the list of platforms combined with vessels.
+   * @throws {DatabaseError | EmptyDatabaseResult} - Throws an error if the database operation fails or no platforms are found.
+   */
   async getPlatformsCombinedWithVessels() {
     try {
       const result = await db
@@ -25,6 +33,10 @@ export class PlatformService extends BackendDbService {
     }
   }
 }
+
+/**
+ * Type representing platforms combined with vessels.
+ */
 export type PlatformsCombinedWithVessels = Awaited<
   ReturnType<PlatformService["getPlatformsCombinedWithVessels"]>
 >[number];

@@ -1,3 +1,5 @@
+import React from "react";
+
 interface CheckboxProps {
   activeSwitch: boolean;
   label: string;
@@ -6,7 +8,16 @@ interface CheckboxProps {
   handleCheckboxChange: (checkboxName: string, isChecked: boolean) => void;
 }
 
-const Checkbox = ({ activeSwitch, label, checkbox, handleCheckboxChange, id }: CheckboxProps) => {
+/**
+ * A reusable checkbox component.
+ * @param {CheckboxProps} props - The props for the checkbox component.
+ * @returns {JSX.Element} - The rendered checkbox component.
+ */
+const Checkbox = ({ activeSwitch, label, checkbox, handleCheckboxChange, id }: CheckboxProps): JSX.Element => {
+  /**
+   * Handles the change event for the checkbox.
+   * @param {React.ChangeEvent<HTMLInputElement>} event - The change event.
+   */
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked: boolean = event.target.checked;
     handleCheckboxChange(id, isChecked);
@@ -39,4 +50,5 @@ const Checkbox = ({ activeSwitch, label, checkbox, handleCheckboxChange, id }: C
     </div>
   );
 };
+
 export default Checkbox;

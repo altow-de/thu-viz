@@ -5,7 +5,16 @@ interface RadioButtonProps {
   mapStyleKey: string;
 }
 
-const RadioButton = ({ mapStyleKey, selectedStyle, setSelectedStyle }: RadioButtonProps & MapStyleProps) => {
+/**
+ * A reusable radio button component for selecting map styles.
+ * @param {RadioButtonProps & MapStyleProps} props - The props for the radio button component.
+ * @returns {JSX.Element} - The rendered radio button component.
+ */
+const RadioButton = ({
+  mapStyleKey,
+  selectedStyle,
+  setSelectedStyle,
+}: RadioButtonProps & MapStyleProps): JSX.Element => {
   return (
     <div className="inline-flex items-center" onClick={() => setSelectedStyle(mapStyleKey)}>
       <label className="relative flex items-center p-1 rounded-full cursor-pointer" htmlFor={"radio-" + mapStyleKey}>
@@ -29,4 +38,5 @@ const RadioButton = ({ mapStyleKey, selectedStyle, setSelectedStyle }: RadioButt
     </div>
   );
 };
+
 export default RadioButton;

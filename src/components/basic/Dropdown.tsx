@@ -11,6 +11,11 @@ interface DropwDownProps {
   emptyDefaultRow?: boolean;
 }
 
+/**
+ * A reusable dropdown component.
+ * @param {DropwDownProps} props - The props for the dropdown component.
+ * @returns {JSX.Element} - The rendered dropdown component.
+ */
 const DropwDown: React.FC<DropwDownProps> = ({
   options,
   option_keys,
@@ -19,7 +24,13 @@ const DropwDown: React.FC<DropwDownProps> = ({
   defaultValue,
   emptyDefaultRow,
 }) => {
-  const createValue = (option_keys: string[], option: Option) => {
+  /**
+   * Creates a value string from the specified option keys and option object.
+   * @param {string[]} option_keys - The keys to use for creating the value string.
+   * @param {Option} option - The option object.
+   * @returns {string} - The concatenated value string.
+   */
+  const createValue = (option_keys: string[], option: Option): string => {
     return option_keys
       .map((option_key) => {
         const val = Object(option)[option_key] + "\u00A0";
@@ -27,6 +38,7 @@ const DropwDown: React.FC<DropwDownProps> = ({
       })
       .join("");
   };
+
   const defaultIndex = options?.findIndex((opt: any) => opt[option_keys[0]] === defaultValue);
 
   return (
@@ -41,7 +53,7 @@ const DropwDown: React.FC<DropwDownProps> = ({
       </option>
       {options &&
         options.length > 0 &&
-        options?.map((option: Option, index: number) => {
+        options.map((option: Option, index: number) => {
           return (
             <option
               className="text-danube-900"

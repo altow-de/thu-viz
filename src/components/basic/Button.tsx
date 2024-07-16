@@ -6,7 +6,12 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
-const Button = ({ text, onClick, disabled }: ButtonProps) => {
+/**
+ * A reusable button component.
+ * @param {ButtonProps} props - The props for the button component.
+ * @returns {JSX.Element} - The rendered button component.
+ */
+const Button = ({ text, onClick, disabled }: ButtonProps): JSX.Element => {
   return (
     <button
       className={`bg-danube-600 text-sm font-semibold text-white py-2 px-6 rounded-full ${
@@ -19,4 +24,5 @@ const Button = ({ text, onClick, disabled }: ButtonProps) => {
     </button>
   );
 };
+
 export default Button;

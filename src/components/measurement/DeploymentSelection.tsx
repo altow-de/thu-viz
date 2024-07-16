@@ -10,26 +10,24 @@ import { DeploymentService } from "@/frontend/services/DeploymentService";
 import { MeasurementAnkers } from "@/frontend/enum";
 import { useStore } from "@/frontend/store";
 import EmptyDropdown from "../basic/EmptyDropdown";
+import { observer } from "mobx-react-lite";
 
 interface DeploymentSelectionProps {
   setAppliedData: (deployment: number, logger: number) => void;
-  logger?: number;
-  deployment?: number;
 }
 
-const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedData, logger, deployment }) => {
+const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedData }) => {
   const { data: dataStore } = useStore();
   const loggerService: LoggerService = new LoggerService(dataStore);
   const deploymentService: DeploymentService = new DeploymentService(dataStore);
   const [loggers, setLoggers] = useState<Logger[]>([]);
   const [deployments, setDeployments] = useState<Deployment[]>([]);
-  const [selectedLogger, setSelectedLogger] = useState<number>(dataStore.selectedColumn.logger_id || -1);
-  const [selectedDeployment, setSelectedDeployment] = useState<number>(
-    dataStore.selectedColumn.logger_id && dataStore.selectedColumn.logger_id > -1 ? deployment || -1 : -1
-  );
+  const [selectedLogger, setSelectedLogger] = useState<number>(-1);
+  const [selectedDeployment, setSelectedDeployment] = useState<number>(-1);
   useEffect(() => {
-    if (selectedLogger > -1 && selectedDeployment > -1) {
-      setAppliedData(selectedDeployment, selectedLogger);
+    if (dataStore.selectedColumn.deployment_id > -1 && dataStore.selectedColumn.logger_id > -1) {
+      setAppliedData(dataStore.selectedColumn.deployment_id, dataStore.selectedColumn.logger_id);
+      setSelectedLogger(dataStore.selectedColumn.logger_id);
     }
   }, []);
 
@@ -69,13 +67,20 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
     }
     setSelectedDeployment(-1);
     const data = await deploymentService.getDeploymentsByLogger(selectedLogger);
+
     setDeployments(data);
-    dataStore.setSelectedColumn(-1, -1);
   }, [selectedLogger]);
 
   useEffect(() => {
     getDeploymentsByLogger();
   }, [getDeploymentsByLogger]);
+
+  useEffect(() => {
+    if (dataStore.selectedColumn.deployment_id > -1 && deployments.length > 0) {
+      setSelectedDeployment(dataStore.selectedColumn.deployment_id);
+      dataStore.setSelectedColumn(-1, -1);
+    }
+  }, [deployments]);
 
   return (
     <div className="basis-full md:basis-1/3">
@@ -90,7 +95,7 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
             options={loggers}
             option_keys={["logger_id"]}
             setSelection={selectLogger}
-            defaultValue={logger}
+            defaultValue={selectedLogger}
             emptyDefaultRow={true}
           />
         )}
@@ -98,12 +103,13 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
         <Headline text={"Choose deployment"} />
         {deployments?.length > 0 && (
           <DropwDown
+            key={selectedDeployment}
             emptyDefaultRow={true}
             options={deployments}
             option_keys={["deployment_id"]}
             disabled={selectedLogger === -1}
             setSelection={selectDeployment}
-            defaultValue={deployment}
+            defaultValue={selectedDeployment}
           />
         )}
         {(deployments.length === 0 || !deployments) && <EmptyDropdown />}
@@ -115,4 +121,4 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
   );
 };
 
-export default DeploymentSelection;
+export default observer(DeploymentSelection);

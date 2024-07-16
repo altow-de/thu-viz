@@ -13,7 +13,7 @@ const LegendWrapper = ({ children, isHover }: LegendWrapperProps) => {
   };
 
   return (
-    <div className="group">
+    <div className="group relative">
       {!isOpen && (
         <img
           className="w-4 h-4 cursor-pointer"
@@ -34,7 +34,7 @@ const LegendWrapper = ({ children, isHover }: LegendWrapperProps) => {
       {isHover && (
         <div
           id="zoom-legend"
-          className="hidden absolute flex flex-col w-64 p-2 rounded-md border-danube-500 bg-danube-200 text-xs text-danube-900 cursor-pointer group-hover:block"
+          className="hidden absolute flex flex-col w-64 p-2 rounded-md border-danube-500 bg-danube-200 text-xs text-danube-900 cursor-pointer group-hover:block right-2 top-8"
         >
           {children}
         </div>

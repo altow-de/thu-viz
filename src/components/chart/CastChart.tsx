@@ -76,7 +76,7 @@ const CastChart = ({
 
     const yScale = d3
       .scaleLinear()
-      .domain(yEnd[0] > 0 || yEnd[1] > 0 ? yEnd : [yMax || 0, yMin || 0])
+      .domain(yEnd[0] > 0 || yEnd[1] > 0 ? yEnd : [(yMax || 0) + 0.5, (yMin || 0) - 0.5])
       .range([height, 0]);
 
     return { xScale, yScale };

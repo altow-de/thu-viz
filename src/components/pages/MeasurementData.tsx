@@ -112,6 +112,7 @@ const MeasurementData = () => {
           exportIDs.push("salinity-0-cast_chart");
           if (hasRelevantOxygenUnit) {
             exportIDs.push("oxygen_per_liter-0-chart");
+            exportIDs.push("oxygen_per_liter-0-cast_chart");
           }
         }
 
@@ -188,11 +189,7 @@ const MeasurementData = () => {
     <div className="flex flex-col">
       <AnkerMenu ankers={MeasurementAnkerTitles} />
       <div className="flex flex-col md:flex-row gap-0 md:gap-4">
-        <DeploymentSelection
-          setAppliedData={setAppliedData}
-          deployment={dataStore.selectedColumn.deployment_id}
-          logger={dataStore.selectedColumn.logger_id}
-        />
+        <DeploymentSelection setAppliedData={setAppliedData} />
         <Metadata tableData={tableData} />
       </div>
 
@@ -235,7 +232,7 @@ const MeasurementData = () => {
         ></CastChartLayout>
       </CardWraper>
       <CardWraper text={"Track"} hasMap={true} id={MeasurementAnkers.Track}>
-        <DynamicMapWrapper key={deployment} ref={oceanMapRef} type={MapType.route} data={trackData} />
+        <DynamicMapWrapper key={deployment + "-" + logger} ref={oceanMapRef} type={MapType.route} data={trackData} />
       </CardWraper>
       <div className="flex justify-center mb-4">
         <Button text={"Export plots"} onClick={exportMap} />

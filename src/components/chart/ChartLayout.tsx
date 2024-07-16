@@ -3,7 +3,7 @@ import {
   ParameterDataForDeployment,
 } from "@/backend/services/ProcessedValueService";
 import Chart from "./Chart";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useStore } from "@/frontend/store";
 import { ProcessedValueService } from "@/frontend/services/ProcessedValueService";
 import {
@@ -175,9 +175,14 @@ const ChartLayout = ({
                   parameter: "oxygen_per_liter",
                   value: oxy,
                   measuring_time: newData["oxygen-" + oxygen.sensor_id][index]?.measuring_time,
+                  pressure: newData["temperature-" + temperature.sensor_id][index]?.pressure,
+                  depth: newData["temperature-" + temperature.sensor_id][index]?.depth,
                   sensor_id: 0,
                 };
               });
+
+              const tmp = upAndDownCastCalculationService.execute(oxygenData as unknown as DataPoint[]);
+              castDataObj["oxygen_per_liter-0"] = tmp;
 
               const oxygenObj = {
                 ...pressureObj,
@@ -250,9 +255,9 @@ const ChartLayout = ({
     upAndDownCastCalculationService.windowHalfSize = windowHalfSize;
 
     setDataLoading(true);
-    if (!parameterData) return;
+    if (!completeParameterData) return;
     let castDataObj: { [key: string]: CastData } = {};
-    parameterData.map(async (obj: ParameterDataForDeployment) => {
+    completeParameterData.map(async (obj: ParameterDataForDeployment) => {
       const tmp = upAndDownCastCalculationService.execute(
         diagramData[obj.parameter + "-" + obj.sensor_id] as unknown as DataPoint[]
       );

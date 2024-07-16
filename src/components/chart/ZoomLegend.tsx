@@ -26,12 +26,16 @@ const ZoomLegend = () => {
           <span className="inline-block">double left-click to set the chart to its initial state</span>
         </div>
         <div className="visible md:hidden">
-          <span className="font-semibold text-danube-600 mr-1">Zoom:</span>
-          <span>drag with 1 finger to zoom in and out</span>
+          <span className="font-semibold text-danube-600 mr-1">X-Axis Zoom:</span>
+          Drag with 1 or 2 fingers inside diagram to zoom in
+        </div>
+        <div className="visible md:hidden">
+          <span className="font-semibold text-danube-600 mr-1">Y-Axis Zoom:</span>
+          Drag with 1 or 2 fingers on the y-axis to zoom in
         </div>
         <div className="visible md:hidden">
           <span className="font-semibold text-danube-600 mr-1 inline-block">Reset Chart:</span>
-          <span>double finger-tap on the chart to set it to its initial state</span>
+          <span>Double finger-tap on the chart to reset zoom</span>
         </div>
       </LegendWrapper>
     </div>

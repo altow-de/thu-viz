@@ -157,7 +157,9 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
   const handleImages = () => {
     map.current?.loadImage("circle.png", (error, image) => {
       if (error || !image) throw error;
-      if (!map.current?.hasImage("circle_point")) map.current?.addImage("circle_point", image);
+      if (!map.current?.hasImage("circle_point")) {
+        map.current?.addImage("circle_point", image);
+      }
 
       if (type === MapType.route && trackData) {
         handleLayer();
@@ -167,7 +169,9 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
 
     map.current?.loadImage("location-small.png", (error, image) => {
       if (error || !image) throw error;
-      if (!map.current?.hasImage("location-small")) map.current?.addImage("location-small", image);
+      if (!map.current?.hasImage("location-small")) {
+        map.current?.addImage("location-small", image);
+      }
       if (type === MapType.point && trackData) {
         handleLayer();
         addPointLayer("location-small");
@@ -283,7 +287,12 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
   };
 
   const handleRegionLayer = () => {
-    if (!region) return;
+    if (!region) {
+      if (map.current?.getLayer("region")) {
+        map.current?.removeLayer("region");
+      }
+      return;
+    }
     const features = region.coordinates.map((polygon) => {
       return {
         type: "Feature",
@@ -415,7 +424,7 @@ const OceanMap = ({ type, data, region, forwardedRef }: OceanMapProps) => {
     }
     map?.current?.on("load", async function () {
       handleRegionLayer();
-      handleImages();
+      if (data?.length && data?.length > 0) handleImages();
       handlePopUps();
       if (data?.[0]) {
         const { lng, lat } = extractCoordinates(data[0]);

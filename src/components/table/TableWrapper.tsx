@@ -6,12 +6,22 @@ import { OverviewAnkers } from "@/frontend/enum";
 import { SwitchTableData } from "@/frontend/types";
 import { observer } from "mobx-react-lite";
 
+/**
+ * TableWrapper component.
+ *
+ * This component wraps the table displaying the selected measurement data overview and provides a button to show all data in a popup.
+ *
+ * @param {TableWrapperProps} props - The properties for the TableWrapper component.
+ * @param {(visible: boolean) => void} props.setPopUpVisible - Function to set the visibility of the popup.
+ * @param {SwitchTableData[]} props.tableData - The data to be displayed in the table.
+ * @returns {JSX.Element} The rendered TableWrapper component.
+ */
 interface TableWrapperProps {
   setPopUpVisible: (visible: boolean) => void;
   tableData: SwitchTableData[];
 }
 
-const TableWrapper = ({ setPopUpVisible, tableData }: TableWrapperProps) => {
+const TableWrapper = ({ setPopUpVisible, tableData }: TableWrapperProps): JSX.Element => {
   return (
     <div className="relative basis-full overflow-x-auto sm:basis-2/3 ">
       <CardWrapper

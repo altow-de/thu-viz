@@ -8,6 +8,18 @@ import { useStore } from "@/frontend/store";
 import { OverviewDeploymentTrackData, SwitchTableData } from "@/frontend/types";
 import { observer } from "mobx-react-lite";
 
+/**
+ * Table component.
+ *
+ * This component renders a table with data, sorting functionality, and a switch for each row.
+ *
+ * @param {TableProps} props - The properties for the Table component.
+ * @param {SwitchTableData[]} props.data - The data to be displayed in the table.
+ * @param {string} [props.maxHeight] - The maximum height of the table.
+ * @param {string} [props.textSize] - The text size for the table content.
+ * @param {boolean} [props.hasTableWrapper] - Whether the table has a wrapper.
+ * @returns {JSX.Element} The rendered table component.
+ */
 interface TableProps {
   data: SwitchTableData[];
   maxHeight?: string;
@@ -15,15 +27,23 @@ interface TableProps {
   hasTableWrapper?: boolean;
 }
 
-const Table = ({ data, maxHeight, textSize, hasTableWrapper }: TableProps) => {
+const Table = ({ data, maxHeight, textSize, hasTableWrapper }: TableProps): JSX.Element => {
   const [tableData, setTableData] = useState<SwitchTableData[]>(data);
   const [sorted, setSorted] = useState<boolean>(false);
   const { data: dataStore } = useStore();
+
   useEffect(() => {
     setTableData(data);
   }, [data]);
 
-  const formatColVal = (colObj: SwitchTableData, colKey: string) => {
+  /**
+   * Formats the column value based on the column key.
+   *
+   * @param {SwitchTableData} colObj - The column object.
+   * @param {string} colKey - The key of the column.
+   * @returns {string} The formatted value.
+   */
+  const formatColVal = (colObj: SwitchTableData, colKey: string): string => {
     const value = Object(colObj)[colKey];
 
     switch (colKey) {
@@ -38,12 +58,13 @@ const Table = ({ data, maxHeight, textSize, hasTableWrapper }: TableProps) => {
       case "deepest":
         return getDepthFromPressure(Number(value)).val + "m";
       default:
-        return value;
+        return value.toString();
     }
   };
 
   /**
    * Sorts the table data based on the specified direction and column key.
+   *
    * @param {string} direction - The sorting direction ('up' or 'down').
    * @param {string} column_key - The key of the column to be sorted.
    */
@@ -178,7 +199,16 @@ const Table = ({ data, maxHeight, textSize, hasTableWrapper }: TableProps) => {
     setSorted(!sorted);
   };
 
-  const createColumn = (index: number, i: number, row: OverviewDeploymentTrackData, titleKey: string) => {
+  /**
+   * Creates a column in the table.
+   *
+   * @param {number} index - The row index.
+   * @param {number} i - The column index.
+   * @param {OverviewDeploymentTrackData} row - The row data.
+   * @param {string} titleKey - The key of the title.
+   * @returns {JSX.Element} The created column.
+   */
+  const createColumn = (index: number, i: number, row: OverviewDeploymentTrackData, titleKey: string): JSX.Element => {
     if (titleKey === "deployment_id") {
       return (
         <div

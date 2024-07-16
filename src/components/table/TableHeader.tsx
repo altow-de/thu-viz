@@ -4,6 +4,19 @@ import { useStore } from "@/frontend/store";
 import { SwitchTableData } from "@/frontend/types";
 import { useClickAway } from "@uidotdev/usehooks";
 
+/**
+ * TableHeader component.
+ *
+ * This component renders the header of the table with sortable columns and a popup menu for showing/hiding all rows on the map.
+ *
+ * @param {TableHeaderProps} props - The properties for the TableHeader component.
+ * @param {{}} props.titles - The titles for the table columns.
+ * @param {(direction: string, column_key: string) => void} props.sort - The function to sort the table data.
+ * @param {string} [props.textSize] - The text size for the table content.
+ * @param {SwitchTableData[]} props.tableData - The data to be displayed in the table.
+ * @param {boolean} [props.hasTableWrapper] - Whether the table has a wrapper.
+ * @returns {JSX.Element} The rendered table header component.
+ */
 interface TableHeaderProps {
   titles: {};
   sort: (direction: string, column_key: string) => void;
@@ -12,7 +25,7 @@ interface TableHeaderProps {
   hasTableWrapper?: boolean;
 }
 
-const TableHeader = ({ titles, sort, textSize, tableData, hasTableWrapper }: TableHeaderProps) => {
+const TableHeader = ({ titles, sort, textSize, tableData, hasTableWrapper }: TableHeaderProps): JSX.Element => {
   const [selected, setSelected] = useState<string>(Object.keys(titles)[0] + "_up");
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
   const { data: dataStore } = useStore();
@@ -20,15 +33,31 @@ const TableHeader = ({ titles, sort, textSize, tableData, hasTableWrapper }: Tab
     setPopUpVisible(false);
   }) as LegacyRef<HTMLDivElement>;
 
+  /**
+   * Handles the sorting when the up arrow is clicked.
+   *
+   * @param {string} column_key - The key of the column to be sorted.
+   */
   const onArrowUp = (column_key: string) => {
     setSelected(column_key + "_up");
     if (sort) sort("up", column_key);
   };
+
+  /**
+   * Handles the sorting when the down arrow is clicked.
+   *
+   * @param {string} column_key - The key of the column to be sorted.
+   */
   const onArrowDown = (column_key: string) => {
     setSelected(column_key + "_down");
     if (sort) sort("down", column_key);
   };
 
+  /**
+   * Sets the "show in map" property for all table data.
+   *
+   * @param {boolean} show_in_map - Whether to show or hide all rows in the map.
+   */
   const setShowInMapTableDate = (show_in_map: boolean) => {
     const tmp = tableData.map((obj: SwitchTableData) => {
       return { ...obj, showInMap: show_in_map };

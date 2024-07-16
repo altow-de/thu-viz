@@ -1,4 +1,10 @@
-const MenuIcon = () => {
+import React from "react";
+
+/**
+ * MenuIcon component that renders an SVG menu icon.
+ * @returns {JSX.Element} - The rendered MenuIcon component.
+ */
+const MenuIcon = (): JSX.Element => {
   return (
     <svg width="28" height="28" viewBox="0 0 31 30" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path

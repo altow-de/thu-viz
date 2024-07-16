@@ -1,4 +1,10 @@
-const ScrollTopIcon = () => {
+import React from "react";
+
+/**
+ * ScrollTopIcon component that renders an SVG icon for scrolling to the top.
+ * @returns {JSX.Element} - The rendered ScrollTopIcon component.
+ */
+const ScrollTopIcon = (): JSX.Element => {
   return (
     <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>

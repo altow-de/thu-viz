@@ -5,9 +5,19 @@ interface LegendWrapperProps {
   isHover?: boolean;
 }
 
-const LegendWrapper = ({ children, isHover }: LegendWrapperProps) => {
+/**
+ * LegendWrapper component that displays a legend or additional information.
+ * @param {Object} props - The props for the LegendWrapper component.
+ * @param {React.ReactNode} props.children - The child components to be rendered inside the LegendWrapper.
+ * @param {boolean} [props.isHover] - Flag to indicate if the legend should be shown on hover.
+ * @returns {JSX.Element} - The rendered LegendWrapper component.
+ */
+const LegendWrapper = ({ children, isHover }: LegendWrapperProps): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
 
+  /**
+   * Toggles the visibility of the legend when clicked.
+   */
   const handleOnClick = () => {
     setIsOpen(!isOpen);
   };

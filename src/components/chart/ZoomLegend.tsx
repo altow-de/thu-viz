@@ -1,11 +1,15 @@
 import React from "react";
 import LegendWrapper from "./LegendWrapper";
 
-const ZoomLegend = () => {
+/**
+ * ZoomLegend component that displays zoom instructions for the chart.
+ * @returns {JSX.Element} - The rendered ZoomLegend component.
+ */
+const ZoomLegend = (): JSX.Element => {
   return (
     <div className="ml-1 mb-2 sm:ml-2">
       <LegendWrapper>
-        <div className="hidden  md:inline-block">
+        <div className="hidden md:inline-block">
           <span className="font-semibold text-danube-600 mr-1">X-Axis Zoom:</span>
           hover over the chart until
           <img className="hidden md:inline-block h-3 w-3 mx-1 align-middle" src="ew-arrow.svg" alt="Arrow icon" />

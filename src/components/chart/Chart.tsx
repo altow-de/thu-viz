@@ -22,6 +22,22 @@ interface ChartProps {
   sensor_id: number;
 }
 
+/**
+ * A reusable chart component for displaying data with brushing and zooming functionality.
+ * @param {Object} props - The props for the Chart component.
+ * @param {Function} props.onXBrushEnd - Callback function for when the x brush ends.
+ * @param {ParameterDataForDeployment[]} props.onLoggerChange - Data for the logger change event.
+ * @param {number[]} props.brushValue - The initial brush values for the x-axis.
+ * @param {DiagramDataForParameterAndDeployment[]} props.data - The data to be displayed in the chart.
+ * @param {number} props.width - The width of the chart.
+ * @param {string} props.title - The title of the chart.
+ * @param {string} props.xAxisTitle - The title for the x-axis.
+ * @param {string} props.yAxisTitle - The title for the y-axis.
+ * @param {ParameterDataForDeployment} props.dataObj - The data object containing time start and end.
+ * @param {boolean} props.brushSync - Flag to indicate if the brush should be synchronized.
+ * @param {number} props.sensor_id - The ID of the sensor.
+ * @returns {JSX.Element} - The rendered Chart component.
+ */
 const Chart = ({
   data,
   width,
@@ -34,18 +50,18 @@ const Chart = ({
   onLoggerChange,
   brushSync,
   sensor_id,
-}: ChartProps) => {
+}: ChartProps): JSX.Element => {
   const [xBrushEnd, setXBrushEnd] = useState<number[]>([brushValue[0], brushValue[1]]);
   const [yBrushEnd, setYBrushEnd] = useState<number[]>([]);
-  const axesRef = useRef(null);
-  let selectionRef = useRef(new Array()); // saves last zoom selection
+  const axesRef = useRef<SVGSVGElement | null>(null);
+  let selectionRef = useRef<[number, number][]>([]); // saves last zoom selection
 
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   const boundsHeight = 300 - MARGIN.top - MARGIN.bottom;
 
   useEffect(() => {
     setXBrushEnd([brushValue[0], brushValue[1]]);
-  }, [brushValue[0], brushValue[1]]);
+  }, [brushValue]);
 
   useEffect(() => {
     onXBrushEnd(0, 0, brushSync);
@@ -69,29 +85,22 @@ const Chart = ({
     const filteredData = data.filter(
       (d) => d.measuring_time >= xScale.domain()[0] && d.measuring_time <= xScale.domain()[1]
     );
-    const yData = filteredData?.length > 0 || xBrushEnd[0] > 0 ? filteredData : data;
-    const [calculatedMin, calculatedMax]: (number | undefined)[] = d3.extent(yData, (d) => Number(d.value));
+    const yData = filteredData.length > 0 || xBrushEnd[0] > 0 ? filteredData : data;
+    const [calculatedMin, calculatedMax] = d3.extent(yData, (d) => Number(d.value)) as [number, number];
 
-    //calulcate min and max y axis
-    const min =
-      calculatedMin !== undefined
-        ? calculatedMin !== calculatedMax
-          ? calculatedMin
-          : Math.max(calculatedMin - 10, 0) // > 0
-        : 0;
-
-    const max =
-      calculatedMax !== undefined ? (calculatedMax !== calculatedMin ? calculatedMax : calculatedMax + 10) : 10;
+    // Calculate min and max y axis
+    const min = calculatedMin !== calculatedMax ? calculatedMin : Math.max(calculatedMin - 10, 0);
+    const max = calculatedMax !== calculatedMin ? calculatedMax : calculatedMax + 10;
 
     const yScale = d3
       .scaleLinear()
       .domain(yBrushEnd.length === 0 ? [min, max] : [yBrushEnd[0], yBrushEnd[1]])
-
       .range([boundsHeight, 0]);
 
     const maxTickWidth = 50;
     const numberOfTicksX = Math.floor(boundsWidth / maxTickWidth);
-    // x axis generator
+
+    // X axis generator
     const xAxisGenerator = d3.axisBottom(xScale).ticks(numberOfTicksX);
     svgElement
       .append("g")
@@ -103,8 +112,7 @@ const Chart = ({
       .call((g) => g.select(".domain").attr("stroke-opacity", 0))
       .call((g) => g.selectAll(".tick line").attr("stroke-opacity", 0));
 
-    // y axis generator
-
+    // Y axis generator
     const yAxisGenerator = d3.axisLeft(yScale).ticks(10);
     const generatedYAxis = svgElement
       .append("g")
@@ -136,13 +144,13 @@ const Chart = ({
       .selectAll("text")
       .remove();
 
-    // grouped graphs and translated
+    // Grouped graphs and translated
     const graphGroup = svgElement.append("g").attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
 
     // Apply the clip path to the group
     graphGroup.attr("clip-path", "url(#clipCharts)");
 
-    //building area
+    // Building area
     const areaBuilder = d3
       .area<DiagramDataForParameterAndDeployment>()
       .x((d) => xScale(d.measuring_time))
@@ -160,7 +168,7 @@ const Chart = ({
       .attr("stroke", "steelblue")
       .attr("stroke-width", 2)
       .attr("opacity", 0.8)
-      // transition effect
+      // Transition effect
       .attr("d", (d) => areaBuilder(data.map((item: any) => ({ ...item, value: yScale.domain()[0] }))));
 
     areaPath.transition().duration(1000).attr("d", areaBuilder(data));
@@ -186,15 +194,14 @@ const Chart = ({
       .attr("x", 0)
       .attr("y", 0);
 
-    //XBRUSH
+    // XBRUSH
     const xBrush = d3
       .brushX()
       .extent([
         [0, 0],
         [boundsWidth, boundsHeight],
       ])
-
-      .on("brush", (event) => {
+      .on("brush", () => {
         xBrushGroup.select(".overlay").attr("cursor", "none");
       })
       .on("end", (event) => {
@@ -213,7 +220,7 @@ const Chart = ({
         [0, 0],
         [boundsWidth, boundsHeight],
       ])
-      .on("brush", (event) => {
+      .on("brush", () => {
         yBrushGroup
           .selectAll(".handle--n, .handle--s")
           .style("fill", "steelblue")
@@ -230,7 +237,7 @@ const Chart = ({
 
     yBrush.handleSize(1.5);
 
-    // calling brushes
+    // Calling brushes
     const yBrushGroup = svgElement
       .append("g")
       .attr("transform", `translate(${12}, ${MARGIN.top})`)
@@ -245,8 +252,8 @@ const Chart = ({
     yBrushGroup.call(yBrush).select(".overlay").attr("cursor", "ns-resize");
     xBrushGroup.call(xBrush).select(".overlay").attr("cursor", "ew-resize");
 
-    //reset
-    svgElement.on("dblclick", (event) => {
+    // Reset
+    svgElement.on("dblclick", () => {
       onXBrushEnd(0, 0, brushSync);
       setYBrushEnd([]);
       selectionRef.current = [];
@@ -256,20 +263,20 @@ const Chart = ({
       event.preventDefault();
     });
 
-    //single zoom reset on right click
+    // Single zoom reset on right click
     svgElement.on("mousedown", (event) => {
       if (selectionRef.current.length === 0) return;
       if (event.button === 2) {
         const removedZoom = selectionRef.current.pop();
-        if (typeof removedZoom[0] === "number") {
-          const lastYZoom = selectionRef.current.findLast((item) => typeof item[0] === "number");
+        if (Array.isArray(removedZoom) && typeof removedZoom[0] === "number") {
+          const lastYZoom = selectionRef.current.findLast((item) => Array.isArray(item) && typeof item[0] === "number");
           if (lastYZoom) {
             setYBrushEnd([lastYZoom[0], lastYZoom[1]]);
           } else {
             setYBrushEnd([]);
           }
         } else {
-          const lastXZoom = selectionRef.current.findLast((item) => typeof item[0] !== "number");
+          const lastXZoom = selectionRef.current.findLast((item) => !Array.isArray(item));
           if (lastXZoom) {
             onXBrushEnd(lastXZoom[0], lastXZoom[1], brushSync);
           } else {
@@ -279,7 +286,7 @@ const Chart = ({
       }
     });
 
-    //lineargradient
+    // Linear gradient
     const linearGradient = svgElement
       .append("defs")
       .append("linearGradient")
@@ -292,14 +299,14 @@ const Chart = ({
     linearGradient.append("stop").attr("offset", "0%").style("stop-color", "steelblue");
     linearGradient.append("stop").attr("offset", "100%").style("stop-color", "white");
 
-    //axis text anchors
+    // Axis text anchors
     svgElement
       .append("text")
       .attr("id", "yAnchor" + yAxisTitle)
       .attr("text-anchor", "end")
       .attr("y", -15 + MARGIN.top)
       .attr("x", -10 + MARGIN.left)
-      .text(ChartUnits[yAxisTitle] ? ChartUnits[yAxisTitle] : yAxisTitle) //name of the y axis
+      .text(ChartUnits[yAxisTitle] ? ChartUnits[yAxisTitle] : yAxisTitle) // Name of the y-axis
       .attr("font-size", 9)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
@@ -310,7 +317,7 @@ const Chart = ({
       .attr("text-anchor", "start")
       .attr("y", boundsHeight + MARGIN.top + 7)
       .attr("x", boundsWidth + MARGIN.left)
-      .text(xAxisTitle) //name of the x axis
+      .text(xAxisTitle) // Name of the x-axis
       .attr("font-size", 9)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");

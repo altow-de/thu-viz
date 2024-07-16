@@ -27,6 +27,33 @@ interface ChartProps {
 
 const MARGIN = { top: 30, right: 30, bottom: 50, left: 50 };
 const height = 300 - MARGIN.top - MARGIN.bottom;
+
+/**
+ * A reusable chart component for displaying cast data.
+ * @param {Object} props - The props for the chart component.
+ * @param {DataPoint[]} props.data - The data to be displayed in the chart.
+ * @param {number} props.i_down - The start index for the downcast.
+ * @param {number} props.i_down_end - The end index for the downcast.
+ * @param {number} props.i_up - The start index for the upcast.
+ * @param {number} props.i_up_end - The end index for the upcast.
+ * @param {number} props.width - The width of the chart.
+ * @param {string} props.title - The title of the chart.
+ * @param {number[]} props.xBrushValue - The initial x brush values.
+ * @param {number[]} props.yBrushValue - The initial y brush values.
+ * @param {Function} props.syncCastCharts - Function to synchronize charts.
+ * @param {boolean} props.reset - Flag to reset the chart.
+ * @param {Function} props.setResetCastChart - Function to set the reset flag for the chart.
+ * @param {Object} props.onCheck - Object containing flags for checkboxes.
+ * @param {boolean} props.onCheck.checkbox1 - Flag for the first checkbox.
+ * @param {boolean} props.onCheck.checkbox2 - Flag for the second checkbox.
+ * @param {boolean} props.onCheck.checkbox3 - Flag for the third checkbox.
+ * @param {boolean} props.onSwitch - Flag to indicate switching state.
+ * @param {Function} props.resetCastData - Function to reset cast data.
+ * @param {Function} props.handleYBrushEnd - Function to handle the end of a y brush event.
+ * @param {string} props.unit - The unit of the data being displayed.
+ * @param {number} props.sensor_id - The ID of the sensor.
+ * @returns {JSX.Element} - The rendered chart component.
+ */
 const CastChart = ({
   data,
   i_down,
@@ -45,22 +72,29 @@ const CastChart = ({
   unit,
   reset,
   sensor_id,
-}: ChartProps) => {
+}: ChartProps): JSX.Element => {
   const d3Container = useRef<SVGSVGElement | null>(null);
   const [xBrushEnd, setXBrushEnd] = useState<number[]>(reset ? [0, 0] : xBrushValue);
   const [yBrushEnd, setYBrushEnd] = useState<number[]>(reset ? [0, 0] : yBrushValue);
 
   const boundsWidth = width - MARGIN.right - MARGIN.left;
+
   useEffect(() => {
     if (reset) setXBrushEnd([0, 0]);
-  }, []);
+  }, [reset]);
 
   useEffect(() => {
     setYBrushEnd([yBrushValue[0], yBrushValue[1]]);
-  }, [yBrushValue[0], yBrushValue[1]]);
+  }, [yBrushValue]);
 
+  /**
+   * Sets up the scales for the x and y axes.
+   * @param {DataPoint[]} data - The data to be used in the chart.
+   * @param {number} boundsWidth - The width of the chart bounds.
+   * @returns {{ xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number> }} - The x and y scales.
+   */
   const setupScales = (data: DataPoint[], boundsWidth: number) => {
-    const [xMin, xMax]: (number | undefined)[] = d3.extent(data, (d) => Number(d?.value));
+    const [xMin, xMax] = d3.extent(data, (d) => Number(d?.value));
     const xEnd = reset ? [0, 0] : xBrushEnd;
     const yEnd = reset ? [0, 0] : yBrushEnd;
     const xScale = d3
@@ -72,7 +106,7 @@ const CastChart = ({
       (d) => Number(d.value) >= xScale.domain()[0] && Number(d.value) <= xScale.domain()[1]
     );
     const yData = filteredData?.length > 0 || yEnd[0] > 0 ? filteredData : data;
-    const [yMin, yMax]: (number | undefined)[] = d3.extent(yData, (d) => Number(d.depth));
+    const [yMin, yMax] = d3.extent(yData, (d) => Number(d.depth));
 
     const yScale = d3
       .scaleLinear()
@@ -82,10 +116,16 @@ const CastChart = ({
     return { xScale, yScale };
   };
 
+  /**
+   * Draws the axes for the chart.
+   * @param {d3.Selection<SVGGElement, unknown, null, undefined>} svg - The SVG selection.
+   * @param {d3.ScaleLinear<number, number>} xScale - The x scale.
+   * @param {d3.ScaleLinear<number, number>} yScale - The y scale.
+   */
   const drawAxes = (
     svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-    xScale: d3.ScaleLinear<number, number, never>,
-    yScale: d3.ScaleLinear<number, number, never>
+    xScale: d3.ScaleLinear<number, number>,
+    yScale: d3.ScaleLinear<number, number>
   ) => {
     const maxTickWidth = 50;
     const numberOfTicksX = Math.floor(boundsWidth / maxTickWidth);
@@ -97,6 +137,7 @@ const CastChart = ({
       .attr("stroke-opacity", 0)
       .attr("font-size", 10)
       .attr("color", "#8c9192");
+
     svg
       .append("g")
       .call(d3.axisLeft(yScale).ticks(10))
@@ -114,10 +155,16 @@ const CastChart = ({
       );
   };
 
+  /**
+   * Creates the brushes for the x and y axes.
+   * @param {d3.Selection<SVGGElement, unknown, null, undefined>} svg - The SVG selection.
+   * @param {d3.ScaleLinear<number, number>} xScale - The x scale.
+   * @param {d3.ScaleLinear<number, number>} yScale - The y scale.
+   */
   const createBrushes = (
     svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-    xScale: d3.ScaleLinear<number, number, never>,
-    yScale: d3.ScaleLinear<number, number, never>
+    xScale: d3.ScaleLinear<number, number>,
+    yScale: d3.ScaleLinear<number, number>
   ) => {
     const yBrushGroup = svg
       .append("g")
@@ -131,12 +178,12 @@ const CastChart = ({
         [0, 0],
         [boundsWidth, height],
       ])
-      .on("brush", (event) => {
+      .on("brush", () => {
         xBrushGroup.select(".overlay").attr("cursor", "none");
       })
       .on("end", (event) => {
         if (!event.selection) return;
-        const [x0, x1] = event?.selection !== null ? event?.selection?.map(xScale.invert) : [0, 0];
+        const [x0, x1] = event.selection.map(xScale.invert);
         setXBrushEnd([x0, x1]);
         setResetCastChart(false);
       });
@@ -171,13 +218,22 @@ const CastChart = ({
     yBrushGroup.call(yBrush).select(".overlay").attr("cursor", "ns-resize");
   };
 
+  /**
+   * Draws a segment of the chart.
+   * @param {d3.Selection<SVGGElement, unknown, null, undefined>} svg - The SVG selection.
+   * @param {number} start - The start index of the segment.
+   * @param {number} end - The end index of the segment.
+   * @param {string} color - The color of the segment.
+   * @param {d3.ScaleLinear<number, number>} xScale - The x scale.
+   * @param {d3.ScaleLinear<number, number>} yScale - The y scale.
+   */
   const drawSegment = (
     svg: d3.Selection<SVGGElement, unknown, null, undefined>,
     start: number,
     end: number,
     color: string,
-    xScale: d3.ScaleLinear<number, number, never>,
-    yScale: d3.ScaleLinear<number, number, never>
+    xScale: d3.ScaleLinear<number, number>,
+    yScale: d3.ScaleLinear<number, number>
   ) => {
     const lineGenerator = d3
       .line<DataPoint>()
@@ -186,13 +242,19 @@ const CastChart = ({
 
     svg
       .append("path")
-      .datum(data.slice(start, end)) // Verwenden Sie die geschnittene Datenliste als Datengrundlage für den Pfad.
+      .datum(data.slice(start, end))
       .attr("fill", "none")
       .attr("stroke", color)
       .attr("stroke-width", 2)
-      .attr("d", lineGenerator); // Verwenden Sie die lineGenerator-Funktion direkt.
+      .attr("d", lineGenerator);
   };
 
+  /**
+   * Adds labels to the axes of the chart.
+   * @param {d3.Selection<SVGGElement, unknown, null, undefined>} svg - The SVG selection.
+   * @param {string} title - The title of the chart.
+   * @param {number} boundsWidth - The width of the chart bounds.
+   */
   const addAxisLabels = (
     svg: d3.Selection<SVGGElement, unknown, null, undefined>,
     title: string,
@@ -204,7 +266,7 @@ const CastChart = ({
       .attr("text-anchor", "start")
       .attr("y", 222)
       .attr("x", boundsWidth)
-      .text(ChartUnits[unit] ? ChartUnits[unit] : unit) //name of the x axis
+      .text(ChartUnits[unit] ? ChartUnits[unit] : unit)
       .attr("font-size", 9)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
@@ -215,20 +277,30 @@ const CastChart = ({
       .attr("text-anchor", "end")
       .attr("y", -10)
       .attr("x", 0)
-      .text("depth") //name of the y axis
+      .text("depth")
       .attr("font-size", 9)
       .attr("font-weight", 600)
       .attr("fill", "#4883c8");
   };
 
+  /**
+   * Draws the chart.
+   * @param {d3.Selection<SVGGElement, unknown, null, undefined>} svg - The SVG selection.
+   * @param {number} i_down - The start index for the downcast.
+   * @param {number} i_down_end - The end index for the downcast.
+   * @param {number} i_up - The start index for the upcast.
+   * @param {number} i_up_end - The end index for the upcast.
+   * @param {d3.ScaleLinear<number, number>} xScale - The x scale.
+   * @param {d3.ScaleLinear<number, number>} yScale - The y scale.
+   */
   const draw = (
     svg: d3.Selection<SVGGElement, unknown, null, undefined>,
     i_down: number,
     i_down_end: number,
     i_up: number,
     i_up_end: number,
-    xScale: d3.ScaleLinear<number, number, never>,
-    yScale: d3.ScaleLinear<number, number, never>
+    xScale: d3.ScaleLinear<number, number>,
+    yScale: d3.ScaleLinear<number, number>
   ) => {
     const downcastColor = onCheck.checkbox1 ? (!onSwitch ? "#7B00F6" : "#4883c8") : "";
     const bottomcastColor = onCheck.checkbox2 ? (!onSwitch ? "#cae2f3" : "#4883c8") : "";
@@ -241,9 +313,12 @@ const CastChart = ({
     drawSegment(svg, i_up_end - 1, data.length, bottomcastColor, xScale, yScale); // Rest
   };
 
+  /**
+   * Initializes the reset functionality for the chart.
+   * @param {d3.Selection<SVGGElement, unknown, null, undefined>} svg - The SVG selection.
+   */
   const initReset = (svg: d3.Selection<SVGGElement, unknown, null, undefined>) => {
-    //reset
-    svg.on("dblclick", (event) => {
+    svg.on("dblclick", () => {
       setXBrushEnd([0, 0]);
       setYBrushEnd([0, 0]);
       handleYBrushEnd(0, 0);
@@ -264,27 +339,23 @@ const CastChart = ({
         .attr("height", 300)
         .html("")
         .append("g")
-        .attr("transform", `translate(${MARGIN.left},${MARGIN.top})`); // grouped graphs and translated
+        .attr("transform", `translate(${MARGIN.left},${MARGIN.top})`);
 
       const { xScale, yScale } = setupScales(data, boundsWidth);
       const chartBody = svg.append("g").attr("clip-path", "url(#clipCharts)");
       draw(chartBody, i_down, i_down_end, i_up, i_up_end, xScale, yScale);
       drawAxes(svg, xScale, yScale);
       const chartBrushBody = svg.append("g");
-      const graphGroup = svg
-        .attr("id", "castGraphGroup")
-        .append("g")
-        .attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
+      svg.attr("id", "castGraphGroup").append("g").attr("transform", `translate(${MARGIN.left}, ${MARGIN.top})`);
 
-      // CLIPS
-      const yBrushArea = svg
+      svg
         .append("defs")
         .attr("width", boundsWidth / 6)
         .attr("height", height)
         .attr("x", 0)
         .attr("y", 0);
 
-      const xBrushArea = svg
+      svg
         .append("defs")
         .append("clipPath")
         .attr("id", "clipCharts")

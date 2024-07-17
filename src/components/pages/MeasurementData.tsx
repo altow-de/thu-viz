@@ -1,9 +1,9 @@
-import { MapType, MeasurementAnkers } from "@/frontend/enum";
+import { MapType, MeasurementAnchors } from "@/frontend/enum";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "../basic/Button";
 import CardWraper from "../wrapper/CardWrapper";
-import { DefaultThreshold, DefaultWindowHalfSite, MeasurementAnkerTitles } from "@/frontend/constants";
-import AnkerMenu from "../navigation/AnkerMenu";
+import { DefaultThreshold, DefaultWindowHalfSite, MeasurementAnchorTitles } from "@/frontend/constants";
+import AnchorMenu from "../navigation/AnchorMenu";
 import DeploymentSelection from "../measurement/DeploymentSelection";
 import Metadata from "../measurement/Metadata";
 import { DeploymentTableData } from "@/frontend/types";
@@ -230,13 +230,13 @@ const MeasurementData = (): JSX.Element => {
 
   return (
     <div className="flex flex-col">
-      <AnkerMenu ankers={MeasurementAnkerTitles} />
+      <AnchorMenu anchors={MeasurementAnchorTitles} />
       <div className="flex flex-col md:flex-row gap-0 md:gap-4">
         <DeploymentSelection setAppliedData={setAppliedData} />
         <Metadata tableData={tableData} />
       </div>
 
-      <CardWraper text="Parameter over time" hasMap={false} id={MeasurementAnkers.ParameterOverTime}>
+      <CardWraper text="Parameter over time" hasMap={false} id={MeasurementAnchors.ParameterOverTime}>
         {parameterDataForDeployment && !dataLoading && parameterDataForDeployment.length !== 0 && <ZoomLegend />}
         <ChartLayout
           parameterData={parameterDataForDeployment as ParameterDataForDeployment[]}
@@ -256,7 +256,7 @@ const MeasurementData = (): JSX.Element => {
           setCastChartParameter={setCastChartParameter}
         ></ChartLayout>
       </CardWraper>
-      <CardWraper text="Parameter over depth" hasMap={false} id={MeasurementAnkers.ParameterOverDepth}>
+      <CardWraper text="Parameter over depth" hasMap={false} id={MeasurementAnchors.ParameterOverDepth}>
         {parameterDataForDeployment && !dataLoading && parameterDataForDeployment.length !== 0 && <ZoomLegend />}
         <CastChartLayout
           parameterData={castChartParameter as ParameterDataForDeployment[]}
@@ -274,7 +274,7 @@ const MeasurementData = (): JSX.Element => {
           handleYBrushEnd={handleYBrushEnd}
         ></CastChartLayout>
       </CardWraper>
-      <CardWraper text={"Track"} hasMap={true} id={MeasurementAnkers.Track}>
+      <CardWraper text={"Track"} hasMap={true} id={MeasurementAnchors.Track}>
         <DynamicMapWrapper key={deployment + "-" + logger} ref={oceanMapRef} type={MapType.route} data={trackData} />
       </CardWraper>
       <div className="flex justify-center mb-4">

@@ -1,4 +1,4 @@
-import { MeasurementAnkers } from "@/frontend/enum";
+import { MeasurementAnchors } from "@/frontend/enum";
 import CardWrapper from "../wrapper/CardWrapper";
 import SmallTable, { SmallTableProps } from "../table/SmallTable";
 
@@ -13,7 +13,7 @@ import SmallTable, { SmallTableProps } from "../table/SmallTable";
 const Metadata = ({ tableData }: SmallTableProps) => {
   return (
     <div className="basis-full md:basis-2/3">
-      <CardWrapper text={"Metadata (short selection)"} hasMap={false} id={MeasurementAnkers.Metadata}>
+      <CardWrapper text={"Metadata (short selection)"} hasMap={false} id={MeasurementAnchors.Metadata}>
         <SmallTable tableData={tableData} />
       </CardWrapper>
     </div>

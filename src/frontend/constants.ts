@@ -1,6 +1,6 @@
 import { DatabaseError } from "@/backend/services/DatabaseError";
-import { MeasurementAnkers, OverviewAnkers } from "./enum";
-import { Anker } from "./types";
+import { MeasurementAnchors, OverviewAnchors } from "./enum";
+import { Anchor } from "./types";
 
 // Navigation pages available in the application
 export const NavigationPage = ["Overview", "Measurement Data"];
@@ -15,28 +15,28 @@ export const MapStyles: { [key: string]: string } = {
 export const LayerZoom = { minzoom: 0, maxzoom: 22 };
 
 // Titles and identifiers for the Overview section anchors
-export const OverviewAnkerTitles: Anker[] = [
+export const OverviewAnchorTitles: Anchor[] = [
   {
-    id: OverviewAnkers.MeasurementSelection,
+    id: OverviewAnchors.MeasurementSelection,
     title: "Selection of measurement data",
   },
-  { id: OverviewAnkers.OverviewDeployments, title: "Overview of selected measurement data" },
+  { id: OverviewAnchors.OverviewDeployments, title: "Overview of selected measurement data" },
   {
-    id: OverviewAnkers.PositionOfDeployments,
+    id: OverviewAnchors.PositionOfDeployments,
     title: "Measurement locations (start positions of deployments)",
   },
 ];
 
 // Titles and identifiers for the Measurement section anchors
-export const MeasurementAnkerTitles: Anker[] = [
+export const MeasurementAnchorTitles: Anchor[] = [
   {
-    id: MeasurementAnkers.SelectionSingleDeployment,
+    id: MeasurementAnchors.SelectionSingleDeployment,
     title: "Selection of single deployment",
   },
-  { id: MeasurementAnkers.Metadata, title: "Metadata (short selection)" },
-  { id: MeasurementAnkers.ParameterOverTime, title: "Parameter over time" },
-  { id: MeasurementAnkers.ParameterOverDepth, title: "Parameter over depth" },
-  { id: MeasurementAnkers.Track, title: "Track" },
+  { id: MeasurementAnchors.Metadata, title: "Metadata (short selection)" },
+  { id: MeasurementAnchors.ParameterOverTime, title: "Parameter over time" },
+  { id: MeasurementAnchors.ParameterOverDepth, title: "Parameter over depth" },
+  { id: MeasurementAnchors.Track, title: "Track" },
 ];
 
 // Column titles for the data table

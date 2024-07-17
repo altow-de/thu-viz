@@ -1,24 +1,24 @@
-import { Anker } from "@/frontend/types";
+import { Anchor } from "@/frontend/types";
 import { useClickAway } from "@uidotdev/usehooks";
 import React, { LegacyRef, useState } from "react";
 import MenuIcon from "../icons/MenuIcon";
 import Close from "../basic/Close";
 import ScrollTopIcon from "../icons/ScrollTopIcon";
 
-interface AnkerMenuProps {
-  ankers: Anker[];
+interface AnchorMenuProps {
+  anchors: Anchor[];
 }
 
 /**
- * AnkerMenu component.
+ * AnchorMenu component.
  *
  * This component renders a menu that allows the user to scroll to different sections of the page.
  *
  * @param {Object} props - The component props.
- * @param {Anker[]} props.ankers - The list of anker objects containing id and title.
- * @returns {JSX.Element} The AnkerMenu component.
+ * @param {Anchor[]} props.anchors - The list of anchor objects containing id and title.
+ * @returns {JSX.Element} The AnchorMenu component.
  */
-const AnkerMenu = ({ ankers }: AnkerMenuProps) => {
+const AnchorMenu = ({ anchors }: AnchorMenuProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const ref = useClickAway(() => {
     setOpen(false);
@@ -82,8 +82,8 @@ const AnkerMenu = ({ ankers }: AnkerMenuProps) => {
                 <ScrollTopIcon />
               </div>
             </div>
-            {ankers.map((anker: Anker) => {
-              return menuEntry(anker.id, anker.title);
+            {anchors.map((anchor: Anchor) => {
+              return menuEntry(anchor.id, anchor.title);
             })}
           </div>
         </div>
@@ -92,4 +92,4 @@ const AnkerMenu = ({ ankers }: AnkerMenuProps) => {
   );
 };
 
-export default AnkerMenu;
+export default AnchorMenu;

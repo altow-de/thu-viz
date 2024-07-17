@@ -1,11 +1,11 @@
-import { MapType, OverviewAnkers } from "@/frontend/enum";
+import { MapType, OverviewAnchors } from "@/frontend/enum";
 import React, { useCallback, useEffect, useState } from "react";
 
 import MeasurementSelection from "../overview/MeasurementSelection";
 import TableWrapper from "../table/TableWrapper";
 import CardWrapper from "../wrapper/CardWrapper";
-import AnkerMenu from "../navigation/AnkerMenu";
-import { OverviewAnkerTitles } from "@/frontend/constants";
+import AnchorMenu from "../navigation/AnchorMenu";
+import { OverviewAnchorTitles } from "@/frontend/constants";
 import PopUpWrapper from "../wrapper/PopUpWrapper";
 import Table from "../table/Table";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
@@ -81,7 +81,7 @@ const Overview = (): JSX.Element => {
         </PopUpWrapper>
       )}
       <div className="flex flex-col">
-        <AnkerMenu ankers={OverviewAnkerTitles} />
+        <AnchorMenu anchors={OverviewAnchorTitles} />
         <div className="flex flex-col md:flex-row gap-0 md:gap-4 ">
           <MeasurementSelection
             setStartDate={setStartDate}
@@ -96,7 +96,7 @@ const Overview = (): JSX.Element => {
         <CardWrapper
           text={"Measurement locations (start positions of deployments)"}
           hasMap={true}
-          id={OverviewAnkers.PositionOfDeployments}
+          id={OverviewAnchors.PositionOfDeployments}
         >
           <OceanMap type={MapType.point} data={trackData} region={region} />
         </CardWrapper>

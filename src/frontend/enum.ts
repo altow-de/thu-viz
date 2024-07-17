@@ -5,7 +5,7 @@ export enum MapType {
 }
 
 // Enumeration for anchor IDs used in the Measurement section
-export enum MeasurementAnkers {
+export enum MeasurementAnchors {
   SelectionSingleDeployment = "selection-single-deployment", // Anchor for selecting a single deployment
   Metadata = "metadata", // Anchor for displaying metadata
   ParameterOverTime = "parameter-over-time", // Anchor for parameters over time chart
@@ -14,7 +14,7 @@ export enum MeasurementAnkers {
 }
 
 // Enumeration for anchor IDs used in the Overview section
-export enum OverviewAnkers {
+export enum OverviewAnchors {
   MeasurementSelection = "measurement-selection", // Anchor for selecting measurement data
   OverviewDeployments = "overview-deployments", // Anchor for overview of deployments
   PositionOfDeployments = "position-of-deployments", // Anchor for positions of deployments

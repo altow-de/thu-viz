@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import Button from "../basic/Button";
 import CardWrapper from "../wrapper/CardWrapper";
 import Table from "./Table";
-import { OverviewAnkers } from "@/frontend/enum";
+import { OverviewAnchors } from "@/frontend/enum";
 import { SwitchTableData } from "@/frontend/types";
 import { observer } from "mobx-react-lite";
 
@@ -27,7 +27,7 @@ const TableWrapper = ({ setPopUpVisible, tableData }: TableWrapperProps): JSX.El
       <CardWrapper
         text={"Overview of selected measurement data"}
         hasMap={false}
-        id={OverviewAnkers.OverviewDeployments}
+        id={OverviewAnchors.OverviewDeployments}
       >
         <Table data={tableData} maxHeight={"max-h-64"} hasTableWrapper={true} />
         <div className="mt-4 flex justify-center">

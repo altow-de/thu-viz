@@ -9,7 +9,7 @@ import CardWrapper from "../wrapper/CardWrapper";
 import { PlatformsCombinedWithVessels } from "@/backend/services/PlatformService";
 import { PlatformService } from "@/frontend/services/PlatformService";
 import { Region } from "@/frontend/types";
-import { OverviewAnkers } from "@/frontend/enum";
+import { OverviewAnchors } from "@/frontend/enum";
 import { useStore } from "@/frontend/store";
 import { regions } from "@/frontend/regions";
 
@@ -118,7 +118,7 @@ const MeasurementSelection: React.FC<MeasurementSelectionProps> = ({
 
   return (
     <div className="basis-full md:basis-1/3">
-      <CardWrapper text={"Selection of measurement data"} hasMap={false} id={OverviewAnkers.MeasurementSelection}>
+      <CardWrapper text={"Selection of measurement data"} hasMap={false} id={OverviewAnchors.MeasurementSelection}>
         <Headline text={"Choose time range"} />
         <div className="flex flex-col md:flex-row gap-1 z-30">
           <DatePicker

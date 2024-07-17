@@ -7,7 +7,7 @@ import CardWrapper from "../wrapper/CardWrapper";
 import { LoggerService } from "@/frontend/services/LoggerService";
 import { Deployment, Logger } from "@/backend/entities";
 import { DeploymentService } from "@/frontend/services/DeploymentService";
-import { MeasurementAnkers } from "@/frontend/enum";
+import { MeasurementAnchors } from "@/frontend/enum";
 import { useStore } from "@/frontend/store";
 import EmptyDropdown from "../basic/EmptyDropdown";
 import { observer } from "mobx-react-lite";
@@ -126,7 +126,7 @@ const DeploymentSelection: React.FC<DeploymentSelectionProps> = ({ setAppliedDat
       <CardWrapper
         text={"Selection of single deployment"}
         hasMap={false}
-        id={MeasurementAnkers.SelectionSingleDeployment}
+        id={MeasurementAnchors.SelectionSingleDeployment}
       >
         <Headline text={"Choose logger ID"} />
         {loggers.length > 0 && (

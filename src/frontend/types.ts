@@ -11,8 +11,8 @@ export type Region = {
   coordinates: number[][][][];
 };
 
-// Define the Anker type with id and title properties
-export type Anker = {
+// Define the Anchor type with id and title properties
+export type Anchor = {
   id: string;
   title: string;
 };

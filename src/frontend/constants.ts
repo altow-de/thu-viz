@@ -2,15 +2,19 @@ import { DatabaseError } from "@/backend/services/DatabaseError";
 import { MeasurementAnkers, OverviewAnkers } from "./enum";
 import { Anker } from "./types";
 
+// Navigation pages available in the application
 export const NavigationPage = ["Overview", "Measurement Data"];
 
+// Different map styles available for the user
 export const MapStyles: { [key: string]: string } = {
   "basic-v2": "Street Map",
   satellite: "Satellite",
 };
 
+// Zoom level configuration for map layers
 export const LayerZoom = { minzoom: 0, maxzoom: 22 };
 
+// Titles and identifiers for the Overview section anchors
 export const OverviewAnkerTitles: Anker[] = [
   {
     id: OverviewAnkers.MeasurementSelection,
@@ -23,6 +27,7 @@ export const OverviewAnkerTitles: Anker[] = [
   },
 ];
 
+// Titles and identifiers for the Measurement section anchors
 export const MeasurementAnkerTitles: Anker[] = [
   {
     id: MeasurementAnkers.SelectionSingleDeployment,
@@ -34,6 +39,7 @@ export const MeasurementAnkerTitles: Anker[] = [
   { id: MeasurementAnkers.Track, title: "Track" },
 ];
 
+// Column titles for the data table
 export const TableTitle = {
   deployment_id: "Deployment",
   logger_id: "Logger",
@@ -43,6 +49,7 @@ export const TableTitle = {
   time_end: "Duration",
 };
 
+// Keys for mapping table data to display values
 export const TableDataKeys = {
   time_start: "Time begin",
   time_end: "Time end",
@@ -51,6 +58,7 @@ export const TableDataKeys = {
   position_end: "Position end: lat, long",
 };
 
+// Locale options for formatting dates and times
 export const DateTimeLocaleOptions: Intl.DateTimeFormatOptions = {
   year: "numeric",
   month: "numeric",
@@ -59,6 +67,7 @@ export const DateTimeLocaleOptions: Intl.DateTimeFormatOptions = {
   minute: "numeric",
 };
 
+// Units for displaying chart data
 export const ChartUnits: { [key: string]: string } = {
   mbar: "mbar",
   "mS_cm-1": "mS/cm",
@@ -68,8 +77,10 @@ export const ChartUnits: { [key: string]: string } = {
   degree_: "°C",
 };
 
+// Error object for empty database results
 export const EmptyDatabaseResult = new DatabaseError(406, "Database error occurred. Result is empty.", []);
 
+// Titles for different chart types
 export const ChartTitle: { [key: string]: string } = {
   oxygen_per_liter: "Oxygen",
   salinity: "Salinity",
@@ -79,6 +90,7 @@ export const ChartTitle: { [key: string]: string } = {
   pressure: "Pressure",
 };
 
+// Keys for hover info in charts and maps
 export const HoverInfoKeys: { [key: string]: string } = {
   deepest: "Depth ",
   measuring_time: "",
@@ -87,5 +99,6 @@ export const HoverInfoKeys: { [key: string]: string } = {
   deployment_id: "Deployment ",
 };
 
+// Default configuration values for window size and threshold in calculations
 export const DefaultWindowHalfSite = 5;
 export const DefaultThreshold = 0.2;

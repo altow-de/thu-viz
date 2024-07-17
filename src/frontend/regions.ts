@@ -1,5 +1,6 @@
 import { Region } from "./types";
 
+// Define an array of regions, each with a name, polygon, and coordinates
 export const regions: Region[] = [
   {
     name: "Baltic Sea",

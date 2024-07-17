@@ -10,15 +10,18 @@ export interface DataPoint {
   depth: number;
   value: string;
 }
+
 interface IndexRange {
   start: number;
   end: number;
   length: number;
 }
+
 interface Cast {
   point: DataPoint;
   index: number;
 }
+
 export interface CastData {
   data: DataPoint[];
   downStartIndex: number;
@@ -27,6 +30,9 @@ export interface CastData {
   upEndIndex: number;
 }
 
+/**
+ * Service class for calculating up and down casts from pressure data.
+ */
 export class UpAndDownCastCalculationService {
   private _threshold: number;
   private _windowHalfSize: number;
@@ -39,7 +45,13 @@ export class UpAndDownCastCalculationService {
     this._windowHalfSize = windowHalfSize;
   }
 
-  execute(data: DataPoint[]) {
+  /**
+   * Executes the calculation of up and down casts.
+   *
+   * @param {DataPoint[]} data - The array of data points to process.
+   * @returns {CastData} - The resulting cast data.
+   */
+  execute(data: DataPoint[]): CastData {
     this.calculateAveragedVerticalSpeed(data);
     this.compareSpeedToThreshold();
     const downCastsExeeded = this.getExceededDownCasts();
@@ -61,6 +73,11 @@ export class UpAndDownCastCalculationService {
     };
   }
 
+  /**
+   * Calculates the averaged vertical speed for the data points.
+   *
+   * @param {DataPoint[]} data - The array of data points to process.
+   */
   private calculateAveragedVerticalSpeed(data: DataPoint[]): void {
     this.data = data;
     for (let i = 0; i < this.data.length; i++) {
@@ -72,13 +89,16 @@ export class UpAndDownCastCalculationService {
 
       const dt =
         (new Date(this.data[iEnd]?.measuring_time).getTime() - new Date(this.data[iBegin]?.measuring_time).getTime()) /
-        1000; // Umwandlung in Sekunden
+        1000; // Convert to seconds
 
-      this.data[i].speed_down_av = dt > 0 ? dDepth / dt : 0; // Vermeiden Division durch Null
+      this.data[i].speed_down_av = dt > 0 ? dDepth / dt : 0; // Avoid division by zero
       this.data[i].depth = Number(getDepthFromPressure(this.data[i]?.pressure).val);
     }
   }
 
+  /**
+   * Compares the averaged vertical speed to the threshold and sets flags.
+   */
   private compareSpeedToThreshold(): void {
     this.data.forEach((point) => {
       point.threshold_exceeded_down = (point.speed_down_av || 0) > this.threshold;
@@ -86,14 +106,30 @@ export class UpAndDownCastCalculationService {
     });
   }
 
-  private getExceededDownCasts() {
+  /**
+   * Retrieves the exceeded down casts.
+   *
+   * @returns {Cast[]} - The array of exceeded down casts.
+   */
+  private getExceededDownCasts(): Cast[] {
     return this.getExceededCasts("threshold_exceeded_down");
   }
 
-  private getExceededUpCasts() {
+  /**
+   * Retrieves the exceeded up casts.
+   *
+   * @returns {Cast[]} - The array of exceeded up casts.
+   */
+  private getExceededUpCasts(): Cast[] {
     return this.getExceededCasts("threshold_exceeded_up");
   }
 
+  /**
+   * Retrieves the exceeded casts based on the given condition key.
+   *
+   * @param {"threshold_exceeded_down" | "threshold_exceeded_up"} conditionKey - The key to check the condition.
+   * @returns {Cast[]} - The array of exceeded casts.
+   */
   private getExceededCasts(conditionKey: "threshold_exceeded_down" | "threshold_exceeded_up"): Cast[] {
     return this.data.reduce((acc: Cast[], point: DataPoint, index: number) => {
       if (point[conditionKey]) {
@@ -103,31 +139,32 @@ export class UpAndDownCastCalculationService {
     }, []);
   }
 
-  private findLongestCast(cast: Cast[]) {
+  /**
+   * Finds the longest cast in the given array of casts.
+   *
+   * @param {Cast[]} cast - The array of casts to search.
+   * @returns {[number, number]} - The start and end index of the longest cast.
+   */
+  private findLongestCast(cast: Cast[]): [number, number] {
     let maxLength = 0;
     let currentLength = 1;
     let startIndex = 0;
     let endIndex = 0;
     const castLength = cast.length;
 
-    // Starte von dem zweiten Element, da wir das aktuelle Element mit dem vorherigen vergleichen
     for (let i = 1; i < cast.length; i++) {
-      // Überprüfe, ob die aktuelle Sequenz fortgesetzt wird
       if (cast?.[i]?.index - cast?.[i - 1]?.index === 1) {
         currentLength++;
       } else {
-        // Überprüfe, ob die aktuelle Sequenz die längste ist
         if (currentLength > maxLength) {
           maxLength = currentLength;
-          endIndex = cast?.[i - 1]?.index; // Ende der längsten Sequenz
-          startIndex = cast?.[i - currentLength]?.index; // Anfang der längsten Sequenz
+          endIndex = cast?.[i - 1]?.index;
+          startIndex = cast?.[i - currentLength]?.index;
         }
-        // Starte die Zählung einer neuen Sequenz
         currentLength = 1;
       }
     }
 
-    // Überprüfe am Ende noch einmal, ob die letzte Sequenz die längste war
     if (currentLength > maxLength) {
       maxLength = currentLength;
       endIndex = cast?.[castLength - 1]?.index;
@@ -136,18 +173,21 @@ export class UpAndDownCastCalculationService {
     return [startIndex, endIndex];
   }
 
+  /**
+   * Finds all consecutive casts in the given array of casts.
+   *
+   * @param {Cast[]} casts - The array of casts to search.
+   * @returns {IndexRange[]} - The array of index ranges for consecutive casts.
+   */
   private findAllConsecutiveCasts(casts: Cast[]): IndexRange[] {
     const sequences: IndexRange[] = [];
     let currentStartIndex = casts.length > 0 ? casts[0]?.index : 0;
     let currentLength = casts.length > 0 ? 1 : 0;
 
-    // Starte von dem zweiten Element, da wir das aktuelle Element mit dem vorherigen vergleichen
     for (let i = 1; i < casts.length; i++) {
-      // Überprüfe, ob die aktuelle Sequenz fortgesetzt wird
       if (casts[i]?.index - casts[i - 1]?.index === 1) {
         currentLength++;
       } else {
-        // Speichere die aktuelle Sequenz, wenn sie beendet ist
         if (currentLength > 0) {
           sequences.push({
             start: casts[i - currentLength]?.index,
@@ -155,13 +195,11 @@ export class UpAndDownCastCalculationService {
             length: currentLength,
           });
         }
-        // Starte die Zählung einer neuen Sequenz
         currentStartIndex = casts[i]?.index;
         currentLength = 1;
       }
     }
 
-    // Überprüfe am Ende noch einmal, ob eine Sequenz im Gang ist
     if (currentLength > 0) {
       sequences.push({
         start: casts[casts.length - currentLength]?.index,
@@ -173,6 +211,15 @@ export class UpAndDownCastCalculationService {
     return sequences;
   }
 
+  /**
+   * Determines the boundaries of the casts.
+   *
+   * @param {number} downStartIndex - The start index of the down cast.
+   * @param {number} downEndIndex - The end index of the down cast.
+   * @param {number} upStartIndex - The start index of the up cast.
+   * @param {number} upEndIndex - The end index of the up cast.
+   * @returns {Object} - An object containing the indices of the casts.
+   */
   private determineCastsBoundaries(
     downStartIndex: number,
     downEndIndex: number,
@@ -205,6 +252,9 @@ export class UpAndDownCastCalculationService {
     return { i_down, i_down_end, i_up, i_up_end };
   }
 
+  /**
+   * Calculates the averaged vertical speed for plotting purposes.
+   */
   private calculateAveragedVerticalSpeedForPlotting(): void {
     for (let i = 0; i < this.data.length; i++) {
       const iBegin = Math.max(i - this.windowHalfSize, 0);
@@ -213,41 +263,62 @@ export class UpAndDownCastCalculationService {
       const dDepth = this.data[iEnd]?.pressure - this.data[iBegin]?.pressure;
       const dt =
         (new Date(this.data[iEnd]?.measuring_time).getTime() - new Date(this.data[iBegin]?.measuring_time).getTime()) /
-        1000; // Umwandlung in Sekunden
+        1000; // Convert to seconds
 
-      this.data[i].speed_down_av = dt > 0 ? dDepth / dt : 0; // Vermeiden Sie Division durch Null
+      this.data[i].speed_down_av = dt > 0 ? dDepth / dt : 0; // Avoid division by zero
     }
   }
 
+  /**
+   * Calculates the vertical speed for the data points.
+   */
   private calculateVerticalSpeed(): void {
     for (let i = 0; i < this.data.length - 1; i++) {
-      // Beachte, dass wir hier bis length - 1 gehen
       const dDepth = this.data[i + 1]?.pressure - this.data[i]?.pressure;
       const dt =
         (new Date(this.data[i + 1]?.measuring_time).getTime() - new Date(this.data[i]?.measuring_time).getTime()) /
         1000;
 
-      this.data[i].speed_down = dt > 0 ? dDepth / dt : 0; // Vermeiden Sie Division durch Null
+      this.data[i].speed_down = dt > 0 ? dDepth / dt : 0; // Avoid division by zero
     }
-    // Hinweis: Das letzte Element bekommt keinen 'speed_down' Wert, da es keinen nächsten Punkt gibt.
-    // Du könntest entscheiden, es auf 0 zu setzen, den vorherigen Wert zu kopieren oder es undefiniert zu lassen.
+
     if (this.data.length > 0) {
       this.data[this.data.length - 1].speed_down = this.data[this.data.length - 2]?.speed_down || 0;
     }
   }
 
+  /**
+   * Sets the threshold value.
+   *
+   * @param {number} threshold - The new threshold value.
+   */
   set threshold(threshold: number) {
     this._threshold = threshold;
   }
 
+  /**
+   * Gets the threshold value.
+   *
+   * @returns {number} - The current threshold value.
+   */
   get threshold(): number {
     return this._threshold;
   }
 
+  /**
+   * Sets the window half size value.
+   *
+   * @param {number} windowHalfSize - The new window half size value.
+   */
   set windowHalfSize(windowHalfSize: number) {
     this._windowHalfSize = windowHalfSize;
   }
 
+  /**
+   * Gets the window half size value.
+   *
+   * @returns {number} - The current window half size value.
+   */
   get windowHalfSize(): number {
     return this._windowHalfSize;
   }

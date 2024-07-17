@@ -1,5 +1,17 @@
 import { useEffect, useState } from "react";
 
+/**
+ * CardWrapper component.
+ *
+ * This component wraps its children in a styled card with a header and optional collapsible content.
+ *
+ * @param {CardWrapperTypes} props - The properties for the CardWrapper component.
+ * @param {React.ReactNode} props.children - The content to be displayed inside the card.
+ * @param {string} props.text - The header text for the card.
+ * @param {boolean} props.hasMap - Flag to indicate if the card contains a map.
+ * @param {string} props.id - The unique identifier for the card.
+ * @returns {JSX.Element} The rendered CardWrapper component.
+ */
 interface CardWrapperTypes {
   children: React.ReactNode;
   text: string;
@@ -7,24 +19,27 @@ interface CardWrapperTypes {
   id: string;
 }
 
-const CardWrapper = ({ children, text, hasMap, id }: CardWrapperTypes) => {
+const CardWrapper = ({ children, text, hasMap, id }: CardWrapperTypes): JSX.Element => {
   const [hinged, setHinged] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(true);
+
   const handleResize = () => {
     const width = window.innerWidth;
     setHinged(width < 768);
     setVisible(true);
   };
+
   useEffect(() => {
-    //initial after rendering
+    // Initial after rendering
     handleResize();
-    // add event listener for resize event
+    // Add event listener for resize event
     window.addEventListener("resize", handleResize);
-    // cleanup
+    // Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
   return (
     <div
       className={`flex-1 flex-col bg-danube-500 rounded-lg shadow-md mb-8 w-full  ${!hasMap ? "z-30" : ""} ${

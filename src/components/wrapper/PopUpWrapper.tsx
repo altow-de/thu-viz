@@ -1,13 +1,24 @@
 import { MouseEventHandler } from "react";
 import Close from "../basic/Close";
 
+/**
+ * PopUpWrapper component.
+ *
+ * This component provides a modal-like popup overlay with a title and close button.
+ *
+ * @param {PopUpWrapperProps} props - The properties for the PopUpWrapper component.
+ * @param {React.ReactNode} props.children - The content to be displayed inside the popup.
+ * @param {string} props.title - The title of the popup.
+ * @param {MouseEventHandler} props.onClick - The function to call when the close button is clicked.
+ * @returns {JSX.Element} The rendered PopUpWrapper component.
+ */
 interface PopUpWrapperProps {
   children: React.ReactNode;
   title: string;
   onClick: MouseEventHandler;
 }
 
-const PopUpWrapper = ({ children, title, onClick }: PopUpWrapperProps) => {
+const PopUpWrapper = ({ children, title, onClick }: PopUpWrapperProps): JSX.Element => {
   return (
     <div className="relative">
       <div className="fixed bg-black w-screen top-0 h-screen right-0 z-40 opacity-40" />
@@ -25,4 +36,5 @@ const PopUpWrapper = ({ children, title, onClick }: PopUpWrapperProps) => {
     </div>
   );
 };
+
 export default PopUpWrapper;
